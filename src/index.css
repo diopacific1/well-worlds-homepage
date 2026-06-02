@@ -1,13 +1,25 @@
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/geist@1.0.3/dist/fonts/geist-sans/style.css');
 @import url('https://cdn.jsdelivr.net/npm/geist@1.0.3/dist/fonts/geist-mono/style.css');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Inter", "Pretendard", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", "Pretendard", ui-sans-serif, system-ui;
+  --font-sans: "Hanken Grotesk", "Geist", "Pretendard", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Hanken Grotesk", "Geist", "Pretendard", ui-sans-serif, system-ui;
   --font-mono: "Geist Mono", "Geist", monospace;
+
+  --color-primary: #4648d4;
+  --color-primary-hover: #3d3eb5;
+  --color-primary-light: #e1e0ff;
+  --color-secondary: #8127cf;
+  --color-background: #faf8ff;
+  --color-surface: #ffffff;
+  --color-surface-dim: #d2d9f4;
+  --color-on-surface: #131b2e;
+  --color-on-surface-variant: #464554;
+  --color-outline: #c7c4d7;
 
   --color-bullish: #00C853;
   --color-bearish: #FF2E63;
@@ -15,14 +27,10 @@
   --color-terracotta: #E2725B;
   --color-sage: #5D7964;
   --color-forest: #2D4739;
-  --color-neon-cyan: #0088cc;
-  --color-neon-purple: #6200EE;
-  --color-deep-space: #FFFFFF;
-  --color-surface-dim: #F8FAFC;
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-background text-on-surface antialiased;
   overflow-x: hidden;
 }
 
@@ -33,34 +41,31 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
-}
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
+  @apply bg-outline rounded-full;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @apply font-display tracking-tight text-slate-900;
+  @apply font-display tracking-tight text-on-surface;
 }
 
 p {
-  @apply font-sans text-base leading-relaxed text-slate-600;
+  @apply font-sans leading-relaxed text-on-surface-variant;
 }
 
 .glass-card {
-  @apply bg-white/80 backdrop-blur-[16px] border border-slate-200 transition-all duration-300 shadow-sm;
-  border-radius: 8px;
+  @apply bg-surface backdrop-blur-[16px] border border-outline/30 transition-all duration-300 shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)];
+  border-radius: 16px;
 }
 .glass-card:hover {
-  @apply border-slate-300 shadow-md;
+  @apply border-primary/20 shadow-[0_12px_24px_-4px_rgba(70,72,212,0.1)];
 }
 
 .glass-card-sm {
-  @apply bg-white/80 backdrop-blur-[12px] border border-slate-200 transition-all duration-300 shadow-sm;
-  border-radius: 4px;
+  @apply bg-surface backdrop-blur-[12px] border border-outline/30 transition-all duration-300 shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)];
+  border-radius: 8px;
 }
 .glass-card-sm:hover {
-  @apply border-slate-300 shadow-md;
+  @apply border-primary/20 shadow-[0_8px_16px_-4px_rgba(70,72,212,0.1)];
 }
 
 .sentiment-gauge {
@@ -69,22 +74,37 @@ p {
 }
 
 .polaroid-frame {
-  @apply bg-white border border-slate-200 shadow-lg p-4 pb-12 rotate-[-1deg] transition-all duration-500;
+  @apply bg-white border border-outline shadow-[0_12px_24px_-4px_rgba(70,72,212,0.1)] p-4 pb-12 rotate-[-1deg] transition-all duration-500 rounded-lg;
 }
 .polaroid-frame:hover {
-  @apply rotate-0 scale-[1.02] border-slate-300 shadow-xl;
+  @apply rotate-0 scale-[1.02] border-primary/40 shadow-[0_16px_32px_-4px_rgba(70,72,212,0.15)];
 }
 
 .btn-primary {
-  @apply bg-slate-900 text-white px-6 py-2 rounded-[4px] font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-sm;
+  @apply bg-primary text-white px-6 py-2 rounded-[8px] font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_2px_4px_rgba(70,72,212,0.3)];
 }
-.btn-primary:hover {
-  @apply shadow-md bg-slate-800;
+.btn-primary:active {
+  @apply shadow-none translate-y-[1px];
 }
 
 .btn-ghost {
-  @apply bg-transparent border border-slate-300 text-slate-700 px-6 py-2 rounded-[4px] font-bold transition-all duration-300 flex items-center justify-center gap-2;
+  @apply bg-transparent border border-primary/20 text-primary px-6 py-2 rounded-[8px] font-bold transition-all duration-300 flex items-center justify-center gap-2;
 }
 .btn-ghost:hover {
-  @apply bg-slate-100;
+  @apply bg-primary-light/30;
+}
+
+.card {
+  @apply bg-surface rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05),_0_2px_4px_-2px_rgba(70,72,212,0.05)] p-8 border border-outline/30 transition-all duration-300;
+}
+.card:hover {
+  @apply shadow-[0_12px_24px_-4px_rgba(70,72,212,0.1),_0_4px_8px_-2px_rgba(70,72,212,0.05)] border-primary/20;
+}
+
+.input-field {
+  @apply bg-[#F1F5F9] border-2 border-transparent rounded-lg px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(70,72,212,0.2)] transition-all duration-200;
+}
+
+.chip {
+  @apply bg-primary-light text-primary rounded-full px-3 py-1 font-semibold text-xs tracking-wide uppercase;
 }

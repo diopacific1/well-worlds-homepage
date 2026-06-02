@@ -1,55 +1,55 @@
-import { MessageCircle, Image as ImageIcon, Send, Heart, Share2, MoreHorizontal, Radio, Activity } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { PenSquare, Image as ImageIcon, Send, Heart, Share2, MoreHorizontal, BookOpen, Coffee, Feather, Book, Trash2, Eye, Edit3, Save } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import Markdown from 'react-markdown';
+
+const CATEGORIES = [
+  { id: '전체', icon: BookOpen, label: '전체 보기' },
+  { id: '일기', icon: Coffee, label: '일기' },
+  { id: '칼럼', icon: PenSquare, label: '칼럼' },
+  { id: '소설', icon: Book, label: '소설' },
+  { id: '이야기', icon: Feather, label: '이야기' },
+];
 
 const MOCK_POSTS = [
   {
     id: 1,
-    author: '스토리텔러',
-    avatar: 'bg-neon-cyan',
-    time: '2시간 전',
-    content: '테크 트렌드와 미니멀리즘 디자인이 결합된 이 인터페이스는 읽는 경험을 완전히 다르게 만듭니다. 긴 글을 읽어도 눈이 피로하지 않은 디자인 시스템, 정말 인상적이네요. 다들 이번 주말은 어떻게 보내시나요?',
+    category: '칼럼',
+    title: '미니멀리즘과 삶의 속도',
+    date: '2026. 05. 24',
+    content: '우리는 항상 더 많은 것을 원하도록 설계된 사회에 살고 있다. 하지만 가끔은 멈춰 서서 내 주변을 둘러볼 필요가 있다.\n\n불필요한 것들을 비워낼 때, 비로소 내가 진정으로 원하는 것이 무엇인지 명확해진다. **디지털 디톡스**를 시작한 지 일주일 째, 생각보다 내 머릿속이 훨씬 더 맑아진 것을 느낀다.',
     image: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2670&auto=format&fit=crop',
-    likes: 124,
-    comments: 15,
-    tag: '디자인'
+    likes: 12,
   },
   {
     id: 2,
-    author: '딥스페이스',
-    avatar: 'bg-neon-purple',
-    time: '5시간 전',
-    content: '우주를 연상케 하는 어두운 캔버스 배경에 고대비 텍스트가 시선을 집중시킵니다. 글라스모피즘 효과가 더해지니 마치 미래의 헤드업 디스플레이(HUD)를 보는 것 같은 기분입니다 🚀',
-    likes: 89,
-    comments: 32,
-    tag: '미래기술'
+    category: '일기',
+    title: '조용한 주말 아침',
+    date: '2026. 05. 20',
+    content: '오랜만에 알람 없이 일어났다. 창문 틈으로 들어오는 햇살이 기분 좋다.\n\n- 따뜻한 커피 한 잔\n- 좋아하는 음악 플레이리스트\n\n오늘은 아무런 계획 없이 그저 이 여유를 즐겨야겠다.',
+    likes: 8,
   },
   {
     id: 3,
-    author: '일상기록가',
-    avatar: 'bg-emerald-500',
-    time: '어제',
-    content: '올해 목표했던 개인 프로젝트를 방금 배포했습니다. 길고 힘든 시간이었지만 그만큼 뿌듯함도 크네요! 새로운 시작을 위해 잠시 휴식기를 가질 예정입니다.',
-    likes: 245,
-    comments: 64,
-    tag: '성취'
+    category: '소설',
+    title: '별 먼지의 기억 - 1화',
+    date: '2026. 05. 15',
+    content: "서기 2154년, 지구의 궤도 정거장 '오리온'.\n\n창밖으로 보이는 푸른 별은 예전의 그 아름다움을 간직한 채 조용히 돌고 있었다. 엘리는 커피 잔을 만지작거리며 낡은 홀로그램 사진을 쳐다보았다.\n\n> \"이제 며칠 안 남았네...\"",
+    likes: 24,
   }
 ];
 
-const MOCK_NEWS_HEADLINES = [
-  "글로벌 증시, AI 사이클 기대감에 일제히 상승",
-  "글라스모피즘 UI 트렌드, 새로운 웹 표준으로 자리잡나",
-  "스페이스X 화성 탐사선 발사 초읽기 돌입",
-  "실리콘밸리 스타트업, 의도적 미니멀리즘 선언",
-  "MZ세대 새로운 라이프스타일, '디지털 디톡스'",
-  "미래 반도체 기술 컨퍼런스, 혁신 아키텍처 공개",
-  "친환경 자동차 배터리 충전 속도 2배 단축 기술 개발",
-];
-
 export default function Stories() {
-  const [newPost, setNewPost] = useState('');
+  const [newTitle, setNewTitle] = useState(() => localStorage.getItem('story_draft_title') || '');
+  const [newPost, setNewPost] = useState(() => localStorage.getItem('story_draft_content') || '');
+  const [selectedCategory, setSelectedCategory] = useState('일기');
+  const [activeFilter, setActiveFilter] = useState('전체');
+  const [isPreview, setIsPreview] = useState(false);
+  const [toasts, setToasts] = useState<{id: number, message: string}[]>([]);
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  
   const [feed, setFeed] = useState(() => {
-    const saved = localStorage.getItem('stories_feed');
+    const saved = localStorage.getItem('personal_writings');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -59,207 +59,291 @@ export default function Stories() {
     }
     return MOCK_POSTS;
   });
-  
-  // Real-time News State
-  const [newsTicker, setNewsTicker] = useState<any[]>([]);
 
+  // Save feed to local storage
   useEffect(() => {
-    localStorage.setItem('stories_feed', JSON.stringify(feed));
+    localStorage.setItem('personal_writings', JSON.stringify(feed));
   }, [feed]);
 
-  // Fetch real-time news
+  // Save draft to local storage
   useEffect(() => {
-    fetch('/api/news?q=IT+테크')
-      .then(res => res.json())
-      .then(data => {
-        if (data.items) {
-          setNewsTicker(data.items.slice(0, 5).map((item: any, idx: number) => ({
-            id: Date.now() + idx,
-            title: item.title,
-            time: '최신',
-            link: item.link
-          })));
-        }
-      })
-      .catch(err => console.error(err));
-  }, []);
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('story_draft_title', newTitle);
+      localStorage.setItem('story_draft_content', newPost);
+      if (newTitle.trim() || newPost.trim()) {
+        showToast('임시저장 됨');
+      }
+    }, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [newTitle, newPost]);
 
-  const handlePost = () => {
-    if(!newPost.trim()) return;
-    const post = {
-      id: Date.now(),
-      author: '나',
-      avatar: 'bg-white text-deep-space',
-      time: '방금 전',
-      content: newPost,
-      likes: 0,
-      comments: 0,
-      tag: '새소식'
-    };
-    setFeed([post, ...feed]);
-    setNewPost('');
+  const showToast = (message: string) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
   };
 
+  const handlePost = () => {
+    if(!newPost.trim() || !newTitle.trim()) {
+      showToast('제목과 내용을 모두 입력해주세요.');
+      return;
+    }
+    
+    const post = {
+      id: Date.now(),
+      category: selectedCategory,
+      title: newTitle,
+      date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/-/g, '. '),
+      content: newPost,
+      likes: 0,
+    };
+    
+    setFeed([post, ...feed]);
+    setNewTitle('');
+    setNewPost('');
+    setIsPreview(false);
+    localStorage.removeItem('story_draft_title');
+    localStorage.removeItem('story_draft_content');
+    showToast('새로운 세계가 기록되었습니다.');
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('기록을 정말 삭제하시겠습니까?')) {
+      setFeed(feed.filter((p: any) => p.id !== id));
+      setActiveDropdown(null);
+      showToast('기록이 삭제되었습니다.');
+    }
+  };
+
+  const handleLike = (id: number) => {
+    setFeed(feed.map((p: any) => {
+      if (p.id === id) {
+        return { ...p, likes: p.likes + 1 };
+      }
+      return p;
+    }));
+  };
+
+  const filteredFeed = activeFilter === '전체' ? feed : feed.filter((post: any) => post.category === activeFilter);
+
   return (
-    <div className="p-4 lg:py-10 max-w-[1200px] mx-auto min-h-screen">
+    <div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
       
       {/* Cinematic Header */}
-      <div className="flex flex-col gap-3 pb-8 mb-8 border-b border-slate-200">
-        <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-slate-900 flex items-center gap-4">
-          세상사는 이야기 <span className="text-emerald-600 font-mono text-xl md:text-2xl mt-2 hidden sm:inline-block">/ PUBLIC_SQUARE</span>
+      <div className="flex flex-col gap-4 pb-10 mb-10 border-b border-outline/20">
+        <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-on-surface flex items-center gap-4">
+          나의 세계
         </h1>
-        <p className="text-lg md:text-xl text-slate-500 font-sans max-w-2xl">
-          자유롭게 생각을 나누고 소통하는 딥스페이스 광장입니다.
+        <p className="text-lg md:text-xl text-on-surface-variant font-sans max-w-2xl font-medium">
+          나만의 일상, 생각, 그리고 상상의 나래를 기록하는 공간입니다.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="space-y-10">
         
-        {/* Main Feed Sector */}
-        <div className="lg:col-span-8 space-y-8">
-          
-          {/* Compose Box */}
-          <div className="glass-card p-6 relative shadow-sm border border-slate-200">
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-[4px] bg-slate-100 shrink-0 flex items-center justify-center font-bold text-slate-900 text-lg z-10">
-                나
-              </div>
-              <div className="flex-1 space-y-4">
-                <textarea 
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                  placeholder="새로운 서사를 기록해 보세요..." 
-                  className="w-full bg-transparent border-b border-slate-200 text-slate-900 font-sans text-lg resize-none focus:outline-none focus:border-emerald-500 focus:shadow-[0_4px_15px_-3px_rgba(16,185,129,0.1)] min-h-[60px] pb-2 placeholder:text-slate-400 transition-all duration-300"
-                />
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-3">
-                    <button className="p-2 rounded-[4px] hover:bg-emerald-50 text-emerald-500 hover:text-emerald-600 transition-colors group">
-                      <ImageIcon className="w-5 h-5 group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                    </button>
-                  </div>
-                  <button onClick={handlePost} className="px-6 py-2 rounded-[4px] font-bold transition-all duration-300 flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm">
-                    <Send className="w-4 h-4" /> 송신
-                  </button>
-                </div>
-              </div>
+        {/* Compose Box */}
+        <div className="bg-surface p-6 md:p-10 rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)] border border-outline/30">
+          <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
+            <div className="flex gap-2">
+              {CATEGORIES.slice(1).map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-sm ${selectedCategory === cat.id ? 'bg-primary text-white shadow-primary/20' : 'bg-surface-container-lowest text-on-surface-variant border border-outline/20 hover:bg-surface-dim hover:text-on-surface hover:border-outline/40'}`}
+                >
+                  <cat.icon className="w-4 h-4" />
+                  {cat.label}
+                </button>
+              ))}
             </div>
+            
+            <button 
+              onClick={() => setIsPreview(!isPreview)}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-lg text-on-surface-variant border border-outline/20 bg-surface-container-lowest hover:bg-surface-dim hover:text-on-surface transition-colors shrink-0 shadow-sm"
+            >
+              {isPreview ? <Edit3 className="w-4 h-4 text-primary" /> : <Eye className="w-4 h-4 text-primary" />}
+              {isPreview ? '작성하기' : '미리보기'}
+            </button>
           </div>
 
-          {/* Stories Feed */}
-          <div className="space-y-6">
-            <AnimatePresence>
-              {feed.map(post => (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  key={post.id} 
-                  className="glass-card p-6 md:p-8 group/card shadow-sm border border-slate-200"
-                >
+          <div className="space-y-6" role="form" aria-label="기록 작성 양식">
+            <label htmlFor="story-title" className="sr-only">제목</label>
+            <input 
+              id="story-title"
+              type="text" 
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="제목을 입력하세요" 
+              className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-3xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-outline-variant transition-all duration-300"
+            />
+            {isPreview ? (
+              <div aria-label="마크다운 미리보기" className="w-full bg-surface-container-lowest rounded-xl p-6 text-on-surface font-sans text-lg leading-relaxed min-h-[200px] mt-4 border border-outline/20 prose prose-lg prose-headings:text-on-surface prose-p:text-on-surface-variant prose-strong:text-primary max-w-none shadow-inner">
+                {newPost.trim() ? (
+                  <Markdown>{newPost}</Markdown>
+                ) : (
+                  <span className="text-outline-variant italic font-medium">내용이 없습니다.</span>
+                )}
+              </div>
+            ) : (
+              <>
+                <label htmlFor="story-content" className="sr-only">내용</label>
+                <textarea 
+                  id="story-content"
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder="당신의 이야기를 들려주세요... (마크다운 지원)" 
+                  className="w-full bg-transparent text-on-surface-variant font-sans text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
+                />
+              </>
+            )}
+            
+            <div className="flex items-center justify-between pt-6 border-t border-outline/20">
+              <div className="flex items-center gap-4">
+                <button className="p-2.5 rounded-lg bg-surface-container hover:bg-primary-light/50 text-primary transition-colors border border-outline/10 shadow-sm" title="이미지 첨부">
+                  <ImageIcon className="w-5 h-5" />
+                </button>
+                <div className="text-xs text-on-surface-variant font-mono font-semibold flex items-center gap-2 px-3 py-1.5 bg-surface-dim/30 rounded-full border border-outline/10 shadow-inner">
+                  <Save className="w-3.5 h-3.5 text-primary" /> 자동 임시저장
+                </div>
+              </div>
+              <button onClick={handlePost} className="px-8 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 bg-on-surface text-surface hover:bg-primary hover:shadow-lg shadow-md tracking-wide">
+                <Send className="w-4 h-4" /> 기록하기
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter */}
+        <div className="flex items-center gap-6 py-6 border-b border-outline/20 overflow-x-auto hide-scrollbar">
+           <div className="flex gap-6 px-1">
+             {CATEGORIES.map(cat => (
+               <button
+                 key={cat.id}
+                 onClick={() => setActiveFilter(cat.id)}
+                 className={`text-base font-bold pb-3 border-b-[3px] transition-all whitespace-nowrap -mb-[27px] ${activeFilter === cat.id ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline/40'}`}
+               >
+                 {cat.label}
+               </button>
+             ))}
+           </div>
+        </div>
+
+        {/* Stories Feed */}
+        <div className="space-y-10 pb-20 pt-4">
+          <AnimatePresence>
+            {filteredFeed.map((post: any) => (
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                key={post.id} 
+                className="bg-surface p-8 md:p-12 group/card shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] border border-outline/20 rounded-2xl relative overflow-hidden"
+              >
+                {/* Visual Flair */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
+
+                <div className="flex flex-col gap-8 relative z-10">
                   {/* Post Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-[4px] ${post.avatar} flex items-center justify-center text-white font-black text-xl shadow-sm`}>
-                        {post.author[0]}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <p className="font-display font-semibold text-slate-900 tracking-wide text-lg">{post.author}</p>
-                          <span className="font-mono text-[10px] uppercase bg-emerald-50 text-emerald-600 px-2 py-1 rounded-[4px] border border-emerald-100 shadow-sm">
-                            {post.tag}
-                          </span>
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold flex items-center gap-2 w-fit border border-primary/20 letter-spacing-widest">
+                        {CATEGORIES.find(c => c.id === post.category)?.icon && (() => {
+                            const Icon = CATEGORIES.find(c => c.id === post.category)!.icon;
+                            return <Icon className="w-3.5 h-3.5" />;
+                        })()}
+                        {post.category}
+                      </span>
+                      <div className="flex items-center gap-4">
+                        <p className="font-mono text-xs text-on-surface-variant font-semibold tracking-wider bg-surface-container-lowest px-3 py-1 rounded border border-outline/20">{post.date}</p>
+                        <div className="relative">
+                          <button 
+                            aria-expanded={activeDropdown === post.id}
+                            aria-haspopup="true"
+                            aria-label={`${post.title} 추가 메뉴`}
+                            onClick={() => setActiveDropdown(activeDropdown === post.id ? null : post.id)}
+                            className="text-on-surface-variant hover:text-on-surface p-1.5 bg-surface hover:bg-surface-dim rounded-md border border-transparent hover:border-outline/20 transition-all shadow-none hover:shadow-sm"
+                          >
+                            <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
+                          </button>
+                          {activeDropdown === post.id && (
+                            <div className="absolute right-0 mt-2 w-36 bg-surface rounded-lg shadow-xl border border-outline/20 py-2 z-10 text-on-surface">
+                              <button 
+                                onClick={() => handleDelete(post.id)}
+                                className="w-full text-left px-5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" aria-hidden="true" /> 삭제하기
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        <p className="font-mono text-xs text-slate-500 uppercase tracking-widest mt-1">{post.time}</p>
                       </div>
                     </div>
-                    <button className="text-slate-400 hover:text-emerald-600 transition-colors">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
+                    <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">{post.title}</h2>
                   </div>
 
                   {/* Post Content */}
-                  <div className="space-y-6 mb-8 text-slate-700">
-                    <p className="text-lg">
-                      {post.content}
-                    </p>
+                  <div className="text-on-surface-variant font-medium">
                     {post.image && (
-                      <div className="relative rounded-[4px] overflow-hidden max-h-[400px] border border-slate-200 opacity-90 group-hover/card:opacity-100 transition-opacity duration-500">
-                        <img src={post.image} alt="Post attachment" className="w-full h-full object-cover transition-all duration-700 hover:scale-105" />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none" />
+                      <div className="relative rounded-xl overflow-hidden max-h-[500px] border border-outline/20 mb-8 shadow-sm">
+                        <img src={post.image} alt="게시물 표지 이미지" loading="lazy" className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700" />
                       </div>
                     )}
+                    <div className="prose prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
+                      <Markdown>{post.content}</Markdown>
+                    </div>
                   </div>
 
                   {/* Post Actions */}
-                  <div className="flex items-center gap-8 pt-6 border-t border-slate-100 text-slate-500 font-mono">
-                    <button className="flex items-center gap-2 hover:text-emerald-600 transition-colors group">
-                      <Heart className="w-5 h-5 group-hover:drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                      <span className="text-sm">{post.likes}</span>
+                  <div className="flex items-center gap-8 pt-8 border-t border-outline/20 text-on-surface-variant font-mono">
+                    <button 
+                      aria-label="좋아요"
+                      onClick={() => handleLike(post.id)}
+                      className="flex items-center gap-2.5 hover:text-[#00C853] transition-colors group"
+                    >
+                      <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-[#00C853]/10 group-hover:border-[#00C853]/30 transition-colors shadow-sm">
+                        <Heart className="w-5 h-5 group-hover:scale-110 transition-transform group-hover:fill-[#00C853]/20" aria-hidden="true" />
+                      </div>
+                      <span className="text-sm font-bold">{post.likes}</span>
                     </button>
-                    <button className="flex items-center gap-2 hover:text-emerald-600 transition-colors group">
-                      <MessageCircle className="w-5 h-5 group-hover:drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                      <span className="text-sm">{post.comments}</span>
-                    </button>
-                    <button className="flex items-center gap-2 hover:text-emerald-600 transition-colors group ml-auto">
-                      <Share2 className="w-5 h-5 group-hover:drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                    <button aria-label="공유하기" className="flex items-center gap-2 hover:text-primary transition-colors group">
+                       <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-primary/10 group-hover:border-primary/30 transition-colors shadow-sm">
+                          <Share2 className="w-5 h-5" aria-hidden="true" />
+                       </div>
                     </button>
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {filteredFeed.length === 0 && (
+             <div className="text-center py-24 text-on-surface-variant bg-surface border border-outline/20 rounded-2xl border-dashed">
+               <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-30" />
+               <p className="text-xl font-display font-bold text-on-surface mb-2">아직 작성된 세계가 없습니다.</p>
+               <p className="text-sm font-medium">새로운 기록을 남겨보세요.</p>
+             </div>
+          )}
         </div>
+      </div>
 
-        {/* Tactical UI Right Sidebar - Real-time News */}
-        <div className="lg:col-span-4">
-          <div className="sticky top-24">
-            <div className="glass-card p-6 border-slate-200 shadow-sm">
-              
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-                <h3 className="font-display font-bold text-lg text-slate-900 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-emerald-600 animate-pulse" /> 실시간 속보
-                </h3>
-                <span className="font-mono text-[10px] text-emerald-600 bg-emerald-50 px-2 py-1 rounded-[4px] border border-emerald-100 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                  LIVE
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                <AnimatePresence>
-                  {newsTicker.map((newsItem) => (
-                    <motion.a 
-                      href={newsItem.link} 
-                      target="_blank" rel="noopener noreferrer"
-                      key={newsItem.id}
-                      initial={{ opacity: 0, x: -20, backgroundColor: 'rgba(16,185,129,0.1)' }}
-                      animate={{ opacity: 1, x: 0, backgroundColor: 'rgba(0,0,0,0)' }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.5 }}
-                      className="group block p-3 rounded-[4px] hover:bg-slate-50 transition-colors border-l-2 border-transparent hover:border-emerald-500 relative overflow-hidden"
-                    >
-                      <div className="flex flex-col gap-1 relative z-10">
-                        <span className="font-mono text-[10px] text-emerald-600/80 uppercase">
-                          {newsItem.time}
-                        </span>
-                        <h4 className="font-sans text-sm text-slate-700 group-hover:text-slate-900 transition-colors leading-relaxed">
-                          {newsItem.title}
-                        </h4>
-                      </div>
-                    </motion.a>
-                  ))}
-                </AnimatePresence>
-              </div>
-              
-              <div className="mt-8 pt-4 border-t border-slate-200">
-                <button className="w-full bg-slate-100 text-slate-700 px-6 py-2 rounded-[4px] font-bold transition-all duration-300 flex items-center justify-center gap-2 hover:bg-slate-200 shadow-sm text-sm">
-                  전체 뉴스 모니터링 <Radio className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
+      {/* Toasts */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none">
+        <AnimatePresence>
+          {toasts.map(toast => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-on-surface text-surface px-8 py-3.5 rounded-full shadow-[0_8px_16px_rgba(0,0,0,0.2)] font-bold text-sm tracking-wide border border-outline-variant/30 text-center pointer-events-auto flex items-center justify-center gap-2"
+            >
+              <Feather className="w-4 h-4 opacity-50" />
+              {toast.message}
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );
