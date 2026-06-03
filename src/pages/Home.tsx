@@ -1,152 +1,135 @@
-import { Link } from 'react-router-dom';
-import { LineChart, Leaf, ArrowRight, MessageSquareHeart, Activity, ArrowUpRight, BarChart3, Clock, Zap, ShieldCheck } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Link } from "react-router-dom";
+import {
+  LineChart,
+  Leaf,
+  ArrowRight,
+  MessageSquareHeart,
+  BookOpen,
+  Sparkles,
+} from "lucide-react";
 
 export default function Home() {
-  const [latestPlant, setLatestPlant] = useState<any>(null);
-  const [latestStory, setLatestStory] = useState<any>(null);
-
-  useEffect(() => {
-    try {
-      const savedPlants = localStorage.getItem('plant_journal_entries');
-      if (savedPlants) {
-        const parsedPlants = JSON.parse(savedPlants);
-        if (parsedPlants && parsedPlants.length > 0) {
-          setLatestPlant(parsedPlants[0]);
-        }
-      }
-
-      const savedStories = localStorage.getItem('stories_feed');
-      if (savedStories) {
-        const parsedStories = JSON.parse(savedStories);
-        if (parsedStories && parsedStories.length > 0) {
-          setLatestStory(parsedStories[0]);
-        }
-      }
-    } catch (e) {
-      console.error('Failed to parse local storage', e);
-    }
-  }, []);
-
   return (
-    <div className="max-w-[1280px] mx-auto space-y-12 pb-12">
-      
-      {/* Cinematic Header */}
-      <div className="mb-12">
-        <h1 className="text-5xl md:text-6xl font-display font-bold text-on-surface mb-6 tracking-tight leading-tight">
-          다양한 세계를<br/>
-          탐험하세요
+    <div className="space-y-16 pb-16">
+      {/* Hero Section */}
+      <header className="pt-12 md:pt-20 pb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary mb-6">
+          <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+          <span>새로운 탐험의 시작</span>
+        </div>
+        <h1 className="text-5xl md:text-7xl font-display font-bold text-on-surface mb-6 tracking-tight leading-[1.1]">
+          다양한 데이터를 <br className="hidden md:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+            한곳에서 탐색하세요
+          </span>
         </h1>
-        <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl leading-relaxed font-sans">
-          여러 주제로 분리된 공간에서 흥미로운 데이터를 탐색하고, 기록을 남기며, 다른 이들의 이야기에 귀 기울여보세요.
+        <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl leading-relaxed font-sans mb-10">
+          금융 시장의 흐름부터 평온한 식물의 성장, 그리고 개인적인 이야기까지.
+          아름답게 설계된 여러 공간을 자유롭게 넘나들며 기록해보세요.
         </p>
-      </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link to="/stories" className="btn-primary">
+            나의 이야기 기록하기 <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link to="/crypto" className="btn-ghost">
+            시장 모니터링
+          </Link>
+        </div>
+      </header>
 
-      {/* Main Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
+      {/* Bento Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 auto-rows-min">
         
-        {/* Crypto Terminal (Large Featured Card) */}
-        <Link to="/crypto" className="md:col-span-8 group relative flex flex-col min-h-[320px] card overflow-hidden p-0">
-          <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors duration-700 pointer-events-none" />
-          
-          <div className="p-8 md:p-10 flex flex-col h-full relative z-10">
-            <div className="flex justify-between items-start mb-auto">
-              <div className="w-14 h-14 bg-primary-light/50 text-primary rounded-xl border border-primary/10 flex items-center justify-center shadow-sm">
-                <LineChart className="w-6 h-6" />
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-dim/30 border border-outline/20 text-xs font-semibold text-on-surface-variant">
-                <Activity className="w-3.5 h-3.5 text-primary" /> 실시간 마켓
-              </div>
+        {/* Crypto Dashboard */}
+        <Link
+          to="/crypto"
+          aria-label="금융 터미널로 이동"
+          className="md:col-span-7 group relative flex flex-col min-h-[340px] card overflow-hidden border-outline/20 hover:border-primary/30"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-dim/30 -z-10" />
+          <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-700 pointer-events-none" />
+
+          <div className="flex flex-col h-full relative z-10">
+            <div className="w-14 h-14 bg-surface shadow-sm text-primary rounded-2xl flex items-center justify-center mb-auto border border-outline/10 group-hover:scale-105 transition-transform duration-500" aria-hidden="true">
+              <LineChart className="w-7 h-7" />
             </div>
-            
-            <div className="mt-12 w-full max-w-lg">
-              <h2 className="text-3xl font-display font-bold text-on-surface mb-4">금융 터미널</h2>
-              <p className="text-base md:text-lg text-on-surface-variant leading-relaxed mb-8">
-                고급 가상자산 모니터링 시스템. 실시간 데이터, 변동성 지수 및 기관 최고 수준의 차트 기능을 제공합니다.
+
+            <div className="mt-12">
+              <h2 className="text-3xl font-display font-bold text-on-surface mb-3">
+                금융 터미널
+              </h2>
+              <p className="text-base text-on-surface-variant leading-relaxed max-w-md">
+                고급 가상자산 모니터링 대시보드. 기관 수준의 차트와 실시간 포트폴리오 성과를 분석하고 관리하세요.
               </p>
               
-              <div className="grid grid-cols-3 gap-6 border-t border-outline/20 pt-6">
-                 <div>
-                   <p className="text-[11px] text-on-surface-variant/70 mb-1 font-semibold uppercase tracking-wider">BTC/USD</p>
-                   <p className="text-on-surface text-lg font-bold font-mono">$64,230</p>
-                 </div>
-                 <div>
-                   <p className="text-[11px] text-on-surface-variant/70 mb-1 font-semibold uppercase tracking-wider">ETH/USD</p>
-                   <p className="text-on-surface text-lg font-bold font-mono">$3,420</p>
-                 </div>
-                 <div>
-                   <p className="text-[11px] text-on-surface-variant/70 mb-1 font-semibold uppercase tracking-wider">24h 변동</p>
-                   <p className="text-[#00C853] text-lg font-bold font-mono">+12.4%</p>
-                 </div>
+              <div className="mt-8 flex items-center gap-2 text-sm font-bold text-primary">
+                대시보드 열기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" />
               </div>
             </div>
           </div>
-          <ArrowUpRight className="absolute bottom-8 right-8 w-6 h-6 text-outline-variant group-hover:text-primary group-hover:scale-110 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all duration-300" />
         </Link>
 
-        {/* Plant Journal (Vertical Card) */}
-        <Link to="/plants" className="md:col-span-4 group relative flex flex-col min-h-[320px] card">
-          <div className="w-14 h-14 bg-[#5D7964]/10 text-[#5D7964] rounded-xl flex items-center justify-center mb-auto relative z-10 group-hover:scale-110 transition-transform duration-500">
-            <Leaf className="w-6 h-6" />
-          </div>
-          
-          <div className="relative z-10 mt-12 w-full">
-            <h2 className="text-3xl font-display font-bold text-on-surface mb-4 tracking-tight">디지털 정원</h2>
-            <p className="text-base md:text-lg text-on-surface-variant leading-relaxed">
-              조용한 식물 성장 기록. 유기적인 성장 지표와 사진 타임라인을 관리하세요.
-            </p>
-            <div className="mt-6 flex items-center gap-2 text-sm font-semibold text-[#5D7964]">
-              일지 탐색 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
+        {/* Digital Garden */}
+        <Link
+          to="/plants"
+          aria-label="디지털 정원으로 이동"
+          className="md:col-span-5 group relative flex flex-col min-h-[340px] card border-[#5D7964]/20 hover:border-[#5D7964]/40"
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-[#5D7964]/5 to-transparent -z-10" />
 
-        {/* Stories (Wide Card) */}
-        <Link to="/stories" className="md:col-span-12 group relative flex flex-col md:flex-row gap-8 items-center min-h-[280px] card overflow-hidden p-0">
-          <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-          
-          <div className="p-8 md:p-10 w-full md:w-2/3 h-full flex flex-col justify-between flex-1 relative z-10">
-            <div className="w-14 h-14 bg-[#f0dbff] text-[#6900b3] rounded-xl border border-[#ddb7ff] flex items-center justify-center mb-8 md:mb-auto group-hover:scale-110 transition-transform duration-500">
-              <MessageSquareHeart className="w-6 h-6" />
+          <div className="flex flex-col h-full relative z-10">
+            <div className="w-14 h-14 bg-surface shadow-sm text-[#5D7964] rounded-2xl flex items-center justify-center mb-auto border border-[#5D7964]/10 group-hover:rotate-6 transition-transform duration-500" aria-hidden="true">
+              <Leaf className="w-7 h-7" />
             </div>
-            
-            <div className="mt-auto">
-              <h2 className="text-3xl font-display font-bold text-on-surface mb-4">나의 세계</h2>
-              <p className="text-base md:text-lg text-on-surface-variant leading-relaxed max-w-2xl">
-                자유롭게 생각을 나누고 소통하는 공간. 일기, 칼럼, 그리고 소설 등 나만의 글을 기록해보세요.
+
+            <div className="mt-12">
+              <h2 className="text-3xl font-display font-bold text-on-surface mb-3 tracking-tight">
+                디지털 정원
+              </h2>
+              <p className="text-base text-on-surface-variant leading-relaxed">
+                조용한 반려 식물 성장 기록. 유기적인 성장 지표와 사진 타임라인을 기록하며 나만의 정원을 가꾸세요.
               </p>
-              <div className="mt-6 flex items-center gap-2 text-sm font-semibold text-primary">
-                기록 남기기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              
+              <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#5D7964]">
+                정원 산책하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" />
               </div>
             </div>
           </div>
-          
-          {/* Callout Visual for Stories */}
-          <div className="w-full md:w-1/3 bg-surface-container-low rounded-xl p-8 border border-outline/10 hidden md:block group-hover:bg-primary-light/20 transition-all duration-500 shadow-inner my-8 mr-8">
-            <div className="space-y-4">
-              <div className="w-3/4 h-2.5 bg-outline-variant/40 rounded-full"></div>
-              <div className="w-full h-2.5 bg-outline-variant/40 rounded-full"></div>
-              <div className="w-5/6 h-2.5 bg-outline-variant/40 rounded-full"></div>
+        </Link>
+
+        {/* Stories & Journals */}
+        <Link
+          to="/stories"
+          aria-label="나의 세계로 이동"
+          className="md:col-span-12 group relative flex flex-col md:flex-row gap-8 items-center min-h-[280px] card border-secondary/20 hover:border-secondary/40 overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-secondary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+          <div className="w-full md:w-1/2 flex flex-col justify-between h-full relative z-10">
+            <div className="w-14 h-14 bg-surface shadow-sm text-secondary rounded-2xl border border-secondary/10 flex items-center justify-center mb-8 md:mb-auto group-hover:scale-105 transition-transform duration-500" aria-hidden="true">
+              <MessageSquareHeart className="w-7 h-7" />
             </div>
-            <div className="mt-8 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/20"></div>
-              <div className="w-24 h-2.5 bg-primary/20 rounded-full"></div>
+
+            <div className="mt-auto">
+              <h2 className="text-3xl font-display font-bold text-on-surface mb-3">
+                나의 이야기
+              </h2>
+              <p className="text-base text-on-surface-variant leading-relaxed max-w-md">
+                자유롭게 생각을 남기세요. 일상적인 감정부터 깊이 있는 에세이까지, 당신의 세계를 온전히 기록하는 아카이브입니다.
+              </p>
+              <div className="mt-8 flex items-center gap-2 text-sm font-bold text-secondary">
+                새로운 글 작성하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" />
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full md:w-1/2 relative hidden md:flex justify-end items-center pointer-events-none h-full pr-8">
+            <div className="w-24 h-24 absolute right-[20%] text-secondary/10 group-hover:text-secondary/20 transition-colors duration-700 group-hover:-rotate-12">
+              <BookOpen className="w-full h-full" />
             </div>
           </div>
         </Link>
-      </div>
-      
-      {/* Security/Trust Footer */}
-      <div className="pt-8 border-t border-outline/20 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-on-surface-variant">
-         <div className="flex items-center gap-4">
-           <span>v2.0.4-stable</span>
-           <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
-           <span>대기 시간: 24ms</span>
-         </div>
-         <div>
-           보안 통합 코어 인프라에 의해 보호됨
-         </div>
-      </div>
+      </section>
     </div>
   );
 }

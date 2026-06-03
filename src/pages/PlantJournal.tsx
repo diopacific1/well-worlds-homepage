@@ -1,55 +1,74 @@
-import { PenSquare, Sprout, Image as ImageIcon, X, Upload, Edit3, Trash2, Search, Sun, Cloud, CloudRain, Droplets, Leaf, Scissors } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import {
+  PenSquare,
+  Sprout,
+  Image as ImageIcon,
+  X,
+  Upload,
+  Edit3,
+  Trash2,
+  Search,
+  Sun,
+  Cloud,
+  CloudRain,
+  Droplets,
+  Leaf,
+  Scissors,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 
 const INITIAL_ENTRIES = [
   {
     id: 1,
     title: "베란다 정원의 소중한 첫 만남",
     date: "2026-05-12",
-    content: "상추와 고추, 그리고 대파는 우리 집 작은 베란다 정원에서 함께 자라나는 단짝 친구들입니다.\n\n먼저 상추는 이 화분의 평화주의자입니다. 연둣빛 잎사귀를 보들보들하게 펼치고 있는 모습은 마치 누구든 안아줄 준비가 된 포근한 성격임을 말해주는 것 같습니다.\n\n대파는 이 정원의 든든한 파수꾼 같은 존재입니다. 꼿꼿하게 서서 위로 뻗어나가는 모습이 꽤나 멋집니다.\n\n이 세 단짝이 어떻게 자라날지 매일 물을 주며 지켜보려고 합니다.",
-    image: "https://images.unsplash.com/photo-1453904300235-0f2f60b15b5d?q=80&w=2574&auto=format&fit=crop",
+    content:
+      "상추와 고추, 그리고 대파는 우리 집 작은 베란다 정원에서 함께 자라나는 단짝 친구들입니다.\n\n먼저 상추는 이 화분의 평화주의자입니다. 연둣빛 잎사귀를 보들보들하게 펼치고 있는 모습은 마치 누구든 안아줄 준비가 된 포근한 성격임을 말해주는 것 같습니다.\n\n대파는 이 정원의 든든한 파수꾼 같은 존재입니다. 꼿꼿하게 서서 위로 뻗어나가는 모습이 꽤나 멋집니다.\n\n이 세 단짝이 어떻게 자라날지 매일 물을 주며 지켜보려고 합니다.",
+    image:
+      "https://images.unsplash.com/photo-1453904300235-0f2f60b15b5d?q=80&w=2574&auto=format&fit=crop",
     tags: ["상추", "고추", "대파"],
     type: "Balcony Garden",
     weather: "sun",
-    activity: "observation"
+    activity: "observation",
   },
   {
     id: 2,
     title: "새싹이 돋아나다",
     date: "2026-05-18",
-    content: "아침에 일어나보니 고추 싹이 흙을 뚫고 올라왔습니다! 생명의 신비란 정말 놀랍습니다. 물만 줬을 뿐인데 저렇게 혼자 힘으로 빛을 향해 뻗어나오다니요. 주말에는 영양제도 조금 챙겨줘야겠습니다.",
-    image: "https://images.unsplash.com/photo-1599598425947-33002629fb10?w=800&auto=format&fit=crop",
+    content:
+      "아침에 일어나보니 고추 싹이 흙을 뚫고 올라왔습니다! 생명의 신비란 정말 놀랍습니다. 물만 줬을 뿐인데 저렇게 혼자 힘으로 빛을 향해 뻗어나오다니요. 주말에는 영양제도 조금 챙겨줘야겠습니다.",
+    image:
+      "https://images.unsplash.com/photo-1599598425947-33002629fb10?w=800&auto=format&fit=crop",
     tags: ["고추", "새싹", "생명의신비"],
     type: "Balcony Garden",
     weather: "cloud",
-    activity: "watering"
-  }
+    activity: "watering",
+  },
 ];
 
 const PRESET_IMAGES = [
   "https://images.unsplash.com/photo-1466692476877-396416fd8b22?w=800&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1416879598555-220b8fcc5a44?w=800&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1518731306385-d6d7ac5c15ab?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1453904300235-0f2f60b15b5d?w=800&auto=format&fit=crop"
+  "https://images.unsplash.com/photo-1453904300235-0f2f60b15b5d?w=800&auto=format&fit=crop",
 ];
 
 const WEATHER_OPTIONS = [
-  { id: 'sun', icon: Sun, label: '맑음' },
-  { id: 'cloud', icon: Cloud, label: '흐림' },
-  { id: 'rain', icon: CloudRain, label: '비' }
+  { id: "sun", icon: Sun, label: "맑음" },
+  { id: "cloud", icon: Cloud, label: "흐림" },
+  { id: "rain", icon: CloudRain, label: "비" },
 ];
 
 const ACTIVITY_OPTIONS = [
-  { id: 'observation', icon: Sprout, label: '관찰' },
-  { id: 'watering', icon: Droplets, label: '물주기' },
-  { id: 'fertilizing', icon: Leaf, label: '영양제' },
-  { id: 'repotting', icon: Scissors, label: '분갈이/관리' }
+  { id: "observation", icon: Sprout, label: "관찰" },
+  { id: "watering", icon: Droplets, label: "물주기" },
+  { id: "fertilizing", icon: Leaf, label: "영양제" },
+  { id: "repotting", icon: Scissors, label: "분갈이/관리" },
 ];
 
 export default function PlantJournal() {
   const [entries, setEntries] = useState(() => {
-    const saved = localStorage.getItem('plant_journal_entries');
+    const saved = localStorage.getItem("plant_journal_entries");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -61,23 +80,23 @@ export default function PlantJournal() {
   });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filterActivity, setFilterActivity] = useState<string | null>(null);
 
   // Save to localStorage whenever entries change
   useEffect(() => {
-    localStorage.setItem('plant_journal_entries', JSON.stringify(entries));
+    localStorage.setItem("plant_journal_entries", JSON.stringify(entries));
   }, [entries]);
 
   const [formParams, setFormParams] = useState({
-    title: '',
-    content: '',
-    image: '',
-    tags: '',
-    type: 'Balcony Garden',
-    date: new Date().toISOString().split('T')[0],
-    weather: 'sun',
-    activity: 'observation'
+    title: "",
+    content: "",
+    image: "",
+    tags: "",
+    type: "Balcony Garden",
+    date: new Date().toISOString().split("T")[0],
+    weather: "sun",
+    activity: "observation",
   });
 
   const openForm = (entry?: any) => {
@@ -87,23 +106,23 @@ export default function PlantJournal() {
         title: entry.title,
         content: entry.content,
         image: entry.image,
-        tags: entry.tags.join(', '),
+        tags: entry.tags.join(", "),
         type: entry.type,
         date: entry.date,
-        weather: entry.weather || 'sun',
-        activity: entry.activity || 'observation'
+        weather: entry.weather || "sun",
+        activity: entry.activity || "observation",
       });
     } else {
       setEditingId(null);
       setFormParams({
-        title: '',
-        content: '',
-        image: '',
-        tags: '',
-        type: 'Balcony Garden',
-        date: new Date().toISOString().split('T')[0],
-        weather: 'sun',
-        activity: 'observation'
+        title: "",
+        content: "",
+        image: "",
+        tags: "",
+        type: "Balcony Garden",
+        date: new Date().toISOString().split("T")[0],
+        weather: "sun",
+        activity: "observation",
       });
     }
     setIsFormOpen(true);
@@ -121,106 +140,132 @@ export default function PlantJournal() {
       return;
     }
 
-    const newTags = formParams.tags.split(',').map(t => t.trim()).filter(Boolean);
+    const newTags = formParams.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
 
     if (editingId) {
-      setEntries(entries.map((e: any) => e.id === editingId ? {
-        ...e,
-        title: formParams.title,
-        content: formParams.content,
-        image: formParams.image || PRESET_IMAGES[2],
-        tags: newTags,
-        type: formParams.type,
-        date: formParams.date,
-        weather: formParams.weather,
-        activity: formParams.activity
-      } : e));
+      setEntries(
+        entries.map((e: any) =>
+          e.id === editingId
+            ? {
+                ...e,
+                title: formParams.title,
+                content: formParams.content,
+                image: formParams.image || PRESET_IMAGES[2],
+                tags: newTags,
+                type: formParams.type,
+                date: formParams.date,
+                weather: formParams.weather,
+                activity: formParams.activity,
+              }
+            : e,
+        ),
+      );
     } else {
-      setEntries([{
-        id: Date.now(),
-        title: formParams.title,
-        date: formParams.date,
-        content: formParams.content,
-        image: formParams.image || PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)],
-        tags: newTags,
-        type: formParams.type,
-        weather: formParams.weather,
-        activity: formParams.activity
-      }, ...entries]);
+      setEntries([
+        {
+          id: Date.now(),
+          title: formParams.title,
+          date: formParams.date,
+          content: formParams.content,
+          image:
+            formParams.image ||
+            PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)],
+          tags: newTags,
+          type: formParams.type,
+          weather: formParams.weather,
+          activity: formParams.activity,
+        },
+        ...entries,
+      ]);
     }
     closeForm();
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("정말 이 기록을 삭제하시겠습니까? (되돌릴 수 없습니다)")) {
-      setEntries(entries.filter((e: any) => e.id !== id));
-    }
+    setEntries(entries.filter((e: any) => e.id !== id));
   };
 
   const handleImageRandomize = () => {
-    const randomImg = PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)];
+    const randomImg =
+      PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)];
     setFormParams({ ...formParams, image: randomImg });
   };
 
-  const filteredEntries = entries.filter((e: any) => {
-    const matchesSearch = e.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          e.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          e.tags.some((t: string) => t.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesActivity = filterActivity ? e.activity === filterActivity : true;
-    return matchesSearch && matchesActivity;
-  }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const filteredEntries = entries
+    .filter((e: any) => {
+      const matchesSearch =
+        e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.tags.some((t: string) =>
+          t.toLowerCase().includes(searchTerm.toLowerCase()),
+        );
+      const matchesActivity = filterActivity
+        ? e.activity === filterActivity
+        : true;
+      return matchesSearch && matchesActivity;
+    })
+    .sort(
+      (a: any, b: any) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
 
   const WeatherIcon = ({ weather }: { weather: string }) => {
-    const option = WEATHER_OPTIONS.find(w => w.id === weather) || WEATHER_OPTIONS[0];
+    const option =
+      WEATHER_OPTIONS.find((w) => w.id === weather) || WEATHER_OPTIONS[0];
     const Icon = option.icon;
     return <Icon className="w-4 h-4" />;
   };
 
   const ActivityIcon = ({ activity }: { activity: string }) => {
-    const option = ACTIVITY_OPTIONS.find(a => a.id === activity) || ACTIVITY_OPTIONS[0];
+    const option =
+      ACTIVITY_OPTIONS.find((a) => a.id === activity) || ACTIVITY_OPTIONS[0];
     const Icon = option.icon;
     return <Icon className="w-4 h-4" />;
   };
 
   return (
     <div className="p-4 lg:p-6 space-y-8 animate-in fade-in duration-700 max-w-5xl mx-auto min-h-screen">
-      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-outline/20 pb-6 mt-4">
         <div className="space-y-4 w-full">
           <div>
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-on-surface flex items-center gap-3">
-               <div className="w-12 h-12 rounded-xl bg-[#5D7964]/10 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20 shadow-sm md:w-14 md:h-14">
-                 <Sprout className="w-6 h-6 md:w-8 md:h-8" />
-               </div>
-               디지털 정원
+              <div className="w-12 h-12 rounded-xl bg-[#5D7964]/10 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20 shadow-sm md:w-14 md:h-14">
+                <Sprout className="w-6 h-6 md:w-8 md:h-8" />
+              </div>
+              디지털 정원
             </h1>
-            <p className="text-on-surface-variant font-medium mt-3">나만의 정원 스토리를 자유롭게 기록하고 관리하세요.</p>
+            <p className="text-on-surface-variant font-medium mt-3">
+              나만의 정원 스토리를 자유롭게 기록하고 관리하세요.
+            </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 items-center w-full max-w-2xl mt-4">
             <div className="relative w-full">
               <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
-              <input 
-                type="text" 
-                placeholder="일지 내용, 태그 검색..." 
+              <input
+                type="text"
+                placeholder="일지 내용, 태그 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full input-field !pl-12 font-medium"
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 sm:pb-0 hide-scrollbar scroll-smooth p-1">
-              <button 
+              <button
                 onClick={() => setFilterActivity(null)}
-                className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all shadow-sm ${!filterActivity ? 'bg-[#5D7964] text-white' : 'bg-surface border border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]'}`}
+                className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all shadow-sm ${!filterActivity ? "bg-[#5D7964] text-white" : "bg-surface border border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
               >
                 전체
               </button>
-              {ACTIVITY_OPTIONS.map(opt => (
-                <button 
+              {ACTIVITY_OPTIONS.map((opt) => (
+                <button
                   key={opt.id}
                   onClick={() => setFilterActivity(opt.id)}
-                  className={`px-4 py-2 whitespace-nowrap flex items-center gap-2 rounded-lg text-sm font-bold transition-all shadow-sm ${filterActivity === opt.id ? 'bg-[#5D7964] text-white' : 'bg-surface border border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]'}`}
+                  className={`px-4 py-2 whitespace-nowrap flex items-center gap-2 rounded-lg text-sm font-bold transition-all shadow-sm ${filterActivity === opt.id ? "bg-[#5D7964] text-white" : "bg-surface border border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
                 >
                   <opt.icon className="w-4 h-4" />
                   {opt.label}
@@ -229,59 +274,89 @@ export default function PlantJournal() {
             </div>
           </div>
         </div>
-        <button 
-          onClick={() => openForm()} 
+        <button
+          onClick={() => openForm()}
           className="bg-[#5D7964] text-white px-8 py-3 rounded-lg font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(93,121,100,0.3)] shrink-0 w-full sm:w-auto h-12"
         >
-          <PenSquare className="w-4 h-4" />
-          새 일기 작성
+          <PenSquare className="w-4 h-4" />새 일기 작성
         </button>
       </div>
 
       {/* Editor Modal */}
       <AnimatePresence>
         {isFormOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-on-surface/40 backdrop-blur-md overflow-y-auto"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               className="bg-surface border border-outline/20 w-full max-w-2xl rounded-2xl p-6 md:p-8 shadow-2xl relative my-auto box-border"
             >
-              <button onClick={closeForm} className="absolute top-6 right-6 p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 rounded-xl transition-colors z-10 bg-surface/50 backdrop-blur-sm">
+              <button
+                onClick={closeForm}
+                className="absolute top-6 right-6 p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 rounded-xl transition-colors z-10 bg-surface/50 backdrop-blur-sm"
+              >
                 <X className="w-5 h-5" />
               </button>
-              
+
               <h3 className="text-3xl font-display font-bold text-on-surface mb-8 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#5D7964]/10 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20">
-                  {editingId ? <Edit3 className="w-5 h-5" /> : <PenSquare className="w-5 h-5" />}
+                  {editingId ? (
+                    <Edit3 className="w-5 h-5" />
+                  ) : (
+                    <PenSquare className="w-5 h-5" />
+                  )}
                 </div>
-                {editingId ? '일기 수정하기' : '새 일기 작성하기'}
+                {editingId ? "일기 수정하기" : "새 일기 작성하기"}
               </h3>
 
               <div className="space-y-8">
                 {/* Image Section */}
                 <div>
-                  <span className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Cover Image</span>
+                  <span className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">
+                    Cover Image
+                  </span>
                   <div className="relative w-full h-56 bg-surface-container-lowest border border-outline/30 rounded-xl overflow-hidden group shadow-inner">
                     {formParams.image ? (
-                      <img src={formParams.image} alt="커버 이미지 미리보기" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <img
+                        src={formParams.image}
+                        alt="커버 이미지 미리보기"
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-outline-variant flex-col gap-3">
                         <ImageIcon className="w-10 h-10" />
-                        <span className="text-sm font-semibold">커버 이미지를 선택해주세요</span>
+                        <span className="text-sm font-semibold">
+                          커버 이미지를 선택해주세요
+                        </span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-on-surface/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
-                      <button onClick={handleImageRandomize} className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg">
+                      <button
+                        onClick={handleImageRandomize}
+                        className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg"
+                      >
                         <Upload className="w-4 h-4" /> 샘플 바꾸기
                       </button>
-                      <button onClick={() => setFormParams({...formParams, image: prompt('이미지 URL을 입력하세요:', formParams.image) || formParams.image})} className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg">
+                      <button
+                        onClick={() =>
+                          setFormParams({
+                            ...formParams,
+                            image:
+                              prompt(
+                                "이미지 URL을 입력하세요:",
+                                formParams.image,
+                              ) || formParams.image,
+                          })
+                        }
+                        className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg"
+                      >
                         URL 링크
                       </button>
                     </div>
@@ -291,23 +366,37 @@ export default function PlantJournal() {
                 {/* Date & Title */}
                 <div className="flex flex-col sm:flex-row gap-6">
                   <div className="w-full sm:w-1/3">
-                    <label htmlFor="journal-date" className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Date</label>
-                    <input 
+                    <label
+                      htmlFor="journal-date"
+                      className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3"
+                    >
+                      Date
+                    </label>
+                    <input
                       id="journal-date"
-                      type="date" 
+                      type="date"
                       value={formParams.date}
-                      onChange={(e) => setFormParams({...formParams, date: e.target.value})}
+                      onChange={(e) =>
+                        setFormParams({ ...formParams, date: e.target.value })
+                      }
                       className="w-full input-field font-semibold text-[15px]"
                     />
                   </div>
                   <div className="w-full sm:w-2/3">
-                    <label htmlFor="journal-title" className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Title</label>
-                    <input 
+                    <label
+                      htmlFor="journal-title"
+                      className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3"
+                    >
+                      Title
+                    </label>
+                    <input
                       id="journal-title"
-                      type="text" 
+                      type="text"
                       value={formParams.title}
-                      onChange={(e) => setFormParams({...formParams, title: e.target.value})}
-                      placeholder="제목을 입력하세요" 
+                      onChange={(e) =>
+                        setFormParams({ ...formParams, title: e.target.value })
+                      }
+                      placeholder="제목을 입력하세요"
                       className="w-full input-field font-semibold text-[15px]"
                     />
                   </div>
@@ -316,49 +405,72 @@ export default function PlantJournal() {
                 {/* Weather & Activity row */}
                 <div className="flex flex-col sm:flex-row gap-6">
                   <div className="w-full sm:w-1/2">
-                    <span className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Weather</span>
-                    <div className="flex gap-2" role="group" aria-label="날씨 선택">
-                       {WEATHER_OPTIONS.map(w => (
-                         <button
-                           key={w.id}
-                           type="button"
-                           aria-pressed={formParams.weather === w.id}
-                           onClick={() => setFormParams({...formParams, weather: w.id})}
-                           className={`flex-1 py-3 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold shadow-sm ${formParams.weather === w.id ? 'bg-[#5D7964] border-[#5D7964] text-white shadow-[#5D7964]/20' : 'bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]'}`}
-                         >
-                           <w.icon className="w-4 h-4" />
-                           <span className="hidden sm:inline">{w.label}</span>
-                         </button>
-                       ))}
+                    <span className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">
+                      Weather
+                    </span>
+                    <div
+                      className="flex gap-2"
+                      role="group"
+                      aria-label="날씨 선택"
+                    >
+                      {WEATHER_OPTIONS.map((w) => (
+                        <button
+                          key={w.id}
+                          type="button"
+                          aria-pressed={formParams.weather === w.id}
+                          onClick={() =>
+                            setFormParams({ ...formParams, weather: w.id })
+                          }
+                          className={`flex-1 py-3 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold shadow-sm ${formParams.weather === w.id ? "bg-[#5D7964] border-[#5D7964] text-white shadow-[#5D7964]/20" : "bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
+                        >
+                          <w.icon className="w-4 h-4" />
+                          <span className="hidden sm:inline">{w.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                   <div className="w-full sm:w-1/2">
-                    <span className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Activity</span>
-                    <div className="grid grid-cols-2 gap-2" role="group" aria-label="활동 상태 선택">
-                       {ACTIVITY_OPTIONS.map(a => (
-                         <button
-                           key={a.id}
-                           type="button"
-                           aria-pressed={formParams.activity === a.id}
-                           onClick={() => setFormParams({...formParams, activity: a.id})}
-                           className={`py-2 px-1 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold text-xs shadow-sm ${formParams.activity === a.id ? 'bg-[#5D7964] border-[#5D7964] text-white shadow-[#5D7964]/20' : 'bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]'}`}
-                         >
-                           <a.icon className="w-3.5 h-3.5" />
-                           <span>{a.label}</span>
-                         </button>
-                       ))}
+                    <span className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">
+                      Activity
+                    </span>
+                    <div
+                      className="grid grid-cols-2 gap-2"
+                      role="group"
+                      aria-label="활동 상태 선택"
+                    >
+                      {ACTIVITY_OPTIONS.map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          aria-pressed={formParams.activity === a.id}
+                          onClick={() =>
+                            setFormParams({ ...formParams, activity: a.id })
+                          }
+                          className={`py-2 px-1 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold text-xs shadow-sm ${formParams.activity === a.id ? "bg-[#5D7964] border-[#5D7964] text-white shadow-[#5D7964]/20" : "bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
+                        >
+                          <a.icon className="w-3.5 h-3.5" />
+                          <span>{a.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
 
                 {/* Content */}
                 <div>
-                  <label htmlFor="journal-story" className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Story</label>
-                  <textarea 
+                  <label
+                    htmlFor="journal-story"
+                    className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3"
+                  >
+                    Story
+                  </label>
+                  <textarea
                     id="journal-story"
                     value={formParams.content}
-                    onChange={(e) => setFormParams({...formParams, content: e.target.value})}
-                    placeholder="어떤 일들이 있었나요?" 
+                    onChange={(e) =>
+                      setFormParams({ ...formParams, content: e.target.value })
+                    }
+                    placeholder="어떤 일들이 있었나요?"
                     className="w-full input-field h-40 resize-none font-medium leading-relaxed"
                   />
                 </div>
@@ -366,24 +478,38 @@ export default function PlantJournal() {
                 {/* Tags & Type */}
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="journal-tags" className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Tags</label>
-                    <input 
+                    <label
+                      htmlFor="journal-tags"
+                      className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3"
+                    >
+                      Tags
+                    </label>
+                    <input
                       id="journal-tags"
-                      type="text" 
+                      type="text"
                       value={formParams.tags}
-                      onChange={(e) => setFormParams({...formParams, tags: e.target.value})}
-                      placeholder="콤마(,)로 구분 (예: 상추, 거름)" 
+                      onChange={(e) =>
+                        setFormParams({ ...formParams, tags: e.target.value })
+                      }
+                      placeholder="콤마(,)로 구분 (예: 상추, 거름)"
                       className="w-full input-field font-medium text-sm"
                     />
                   </div>
                   <div>
-                    <label htmlFor="journal-type" className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Garden Type</label>
-                    <input 
+                    <label
+                      htmlFor="journal-type"
+                      className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3"
+                    >
+                      Garden Type
+                    </label>
+                    <input
                       id="journal-type"
-                      type="text" 
+                      type="text"
                       value={formParams.type}
-                      onChange={(e) => setFormParams({...formParams, type: e.target.value})}
-                      placeholder="장소 타입" 
+                      onChange={(e) =>
+                        setFormParams({ ...formParams, type: e.target.value })
+                      }
+                      placeholder="장소 타입"
                       className="w-full input-field font-medium text-sm"
                     />
                   </div>
@@ -391,10 +517,21 @@ export default function PlantJournal() {
               </div>
 
               <div className="mt-10 pt-6 border-t border-outline/20 flex justify-end gap-3">
-                <button onClick={closeForm} className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors">
+                <button
+                  onClick={closeForm}
+                  className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors"
+                >
                   취소
                 </button>
-                <button onClick={handleSave} className="bg-[#5D7964] text-white px-8 py-3 rounded-lg font-bold hover:brightness-110 transition-all shadow-md">
+                <button
+                  onClick={handleSave}
+                  disabled={!formParams.title.trim() || !formParams.content.trim()}
+                  className={`px-8 py-3 rounded-lg font-bold transition-all shadow-md ${
+                    !formParams.title.trim() || !formParams.content.trim()
+                      ? "bg-surface-dim text-outline-variant cursor-not-allowed"
+                      : "bg-[#5D7964] text-white hover:brightness-110"
+                  }`}
+                >
                   저장하기
                 </button>
               </div>
@@ -407,18 +544,24 @@ export default function PlantJournal() {
       <div className="space-y-12 mt-8">
         <AnimatePresence>
           {filteredEntries.length === 0 && (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               className="text-center py-20 bg-surface border border-outline/20 rounded-2xl border-dashed"
             >
               <Sprout className="w-16 h-16 text-[#5D7964]/40 mx-auto mb-6" />
-              <p className="text-on-surface font-display font-bold text-2xl">해당 조건에 맞는 일지가 없습니다.</p>
-              <p className="text-on-surface-variant font-medium text-lg mt-3">새로운 생명의 성장을 기록하거나 검색 조건을 변경해보세요.</p>
+              <p className="text-on-surface font-display font-bold text-2xl">
+                해당 조건에 맞는 일지가 없습니다.
+              </p>
+              <p className="text-on-surface-variant font-medium text-lg mt-3">
+                새로운 생명의 성장을 기록하거나 검색 조건을 변경해보세요.
+              </p>
             </motion.div>
           )}
 
           {filteredEntries.map((entry: any) => (
-            <motion.div 
+            <motion.div
               key={entry.id}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -429,21 +572,31 @@ export default function PlantJournal() {
               <div className="relative z-10 w-full md:w-3/5 p-8 md:p-10 flex flex-col justify-between order-2 md:order-1">
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                     <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-3 py-1 rounded-full border border-[#5D7964]/20">{entry.date.replace(/-/g, '. ')}</span>
-                     <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                       <button onClick={() => openForm(entry)} className="p-2.5 bg-surface-container-lowest hover:bg-surface-dim border border-outline/20 text-on-surface-variant rounded-lg transition-colors shadow-sm" title="수정">
-                         <Edit3 className="w-4 h-4" />
-                       </button>
-                       <button onClick={() => handleDelete(entry.id)} className="p-2.5 bg-surface-container-lowest hover:bg-[#ba1a1a]/10 border border-outline/20 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 rounded-lg transition-colors shadow-sm" title="삭제">
-                         <Trash2 className="w-4 h-4" />
-                       </button>
-                     </div>
+                    <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-3 py-1 rounded-full border border-[#5D7964]/20">
+                      {entry.date.replace(/-/g, ". ")}
+                    </span>
+                    <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => openForm(entry)}
+                        className="p-2.5 bg-surface-container-lowest hover:bg-surface-dim border border-outline/20 text-on-surface-variant rounded-lg transition-colors shadow-sm"
+                        title="수정"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(entry.id)}
+                        className="p-2.5 bg-surface-container-lowest hover:bg-[#ba1a1a]/10 border border-outline/20 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 rounded-lg transition-colors shadow-sm"
+                        title="삭제"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  
+
                   <h3 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-6 leading-tight max-w-[95%] break-words tracking-tight">
                     {entry.title}
                   </h3>
-                  
+
                   <div className="prose prose-p:leading-relaxed prose-p:text-on-surface-variant max-w-none text-base md:text-lg whitespace-pre-wrap break-words font-medium">
                     {entry.content}
                   </div>
@@ -451,54 +604,66 @@ export default function PlantJournal() {
 
                 <div className="mt-10 pt-6 border-t border-outline/20">
                   <div className="flex flex-col gap-4">
-                     <div className="flex items-center divide-x divide-outline/30">
-                       {entry.weather && (
-                         <span className="inline-flex items-center gap-2 pr-4 text-on-surface-variant text-sm font-bold tracking-wide">
-                           <WeatherIcon weather={entry.weather} />
-                           {WEATHER_OPTIONS.find(w => w.id === entry.weather)?.label}
-                         </span>
-                       )}
-                       {entry.activity && (
-                         <span className="inline-flex items-center gap-2 pl-4 text-on-surface-variant text-sm font-bold tracking-wide">
-                           <ActivityIcon activity={entry.activity} />
-                           <span>{ACTIVITY_OPTIONS.find(a => a.id === entry.activity)?.label}</span>
-                         </span>
-                       )}
-                     </div>
-                     
-                     <div className="flex items-center justify-between mt-2">
-                       <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-surface-container-lowest border border-outline/20 text-on-surface-variant rounded-md text-xs font-bold whitespace-nowrap shadow-sm">
-                         <Leaf className="w-3.5 h-3.5 text-[#5D7964]" /> {entry.type}
-                       </span>
-                       <div className="flex gap-2 flex-wrap justify-end">
-                         {entry.tags?.map((tag: string, idx: number) => (
-                           <span key={idx} className="text-xs font-mono font-semibold text-[#5D7964] block bg-[#5D7964]/5 px-2 py-0.5 rounded border border-[#5D7964]/10">#{tag}</span>
-                         ))}
-                       </div>
-                     </div>
+                    <div className="flex items-center divide-x divide-outline/30">
+                      {entry.weather && (
+                        <span className="inline-flex items-center gap-2 pr-4 text-on-surface-variant text-sm font-bold tracking-wide">
+                          <WeatherIcon weather={entry.weather} />
+                          {
+                            WEATHER_OPTIONS.find((w) => w.id === entry.weather)
+                              ?.label
+                          }
+                        </span>
+                      )}
+                      {entry.activity && (
+                        <span className="inline-flex items-center gap-2 pl-4 text-on-surface-variant text-sm font-bold tracking-wide">
+                          <ActivityIcon activity={entry.activity} />
+                          <span>
+                            {
+                              ACTIVITY_OPTIONS.find(
+                                (a) => a.id === entry.activity,
+                              )?.label
+                            }
+                          </span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-surface-container-lowest border border-outline/20 text-on-surface-variant rounded-md text-xs font-bold whitespace-nowrap shadow-sm">
+                        <Leaf className="w-3.5 h-3.5 text-[#5D7964]" />{" "}
+                        {entry.type}
+                      </span>
+                      <div className="flex gap-2 flex-wrap justify-end">
+                        {entry.tags?.map((tag: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="text-xs font-mono font-semibold text-[#5D7964] block bg-[#5D7964]/5 px-2 py-0.5 rounded border border-[#5D7964]/10"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Hero Image */}
               <div className="w-full md:w-2/5 order-1 md:order-2 bg-surface-container-lowest border-b md:border-b-0 md:border-l border-outline/20">
-                 <div className="relative w-full h-[300px] md:h-full md:min-h-[400px] overflow-hidden">
-                    <img 
-                      src={entry.image} 
-                      alt={`${entry.title} 이미지`}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-700 brightness-95 group-hover:brightness-100" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none md:hidden" />
-                 </div>
+                <div className="relative w-full h-[300px] md:h-full md:min-h-[400px] overflow-hidden">
+                  <img
+                    src={entry.image}
+                    alt={`${entry.title} 이미지`}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-700 brightness-95 group-hover:brightness-100"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none md:hidden" />
+                </div>
               </div>
-
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
-      
     </div>
   );
 }
-

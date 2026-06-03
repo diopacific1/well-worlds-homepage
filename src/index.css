@@ -108,3 +108,9 @@ p {
 .chip {
   @apply bg-primary-light text-primary rounded-full px-3 py-1 font-semibold text-xs tracking-wide uppercase;
 }
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.3333%); }
+}
+

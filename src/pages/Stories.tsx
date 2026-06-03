@@ -1,55 +1,83 @@
-import { PenSquare, Image as ImageIcon, Send, Heart, Share2, MoreHorizontal, BookOpen, Coffee, Feather, Book, Trash2, Eye, Edit3, Save } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import Markdown from 'react-markdown';
+import {
+  PenSquare,
+  Image as ImageIcon,
+  Send,
+  Heart,
+  Share2,
+  MoreHorizontal,
+  BookOpen,
+  Coffee,
+  Feather,
+  Book,
+  Trash2,
+  Eye,
+  Edit3,
+  Save,
+} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import Markdown from "react-markdown";
 
 const CATEGORIES = [
-  { id: '전체', icon: BookOpen, label: '전체 보기' },
-  { id: '일기', icon: Coffee, label: '일기' },
-  { id: '칼럼', icon: PenSquare, label: '칼럼' },
-  { id: '소설', icon: Book, label: '소설' },
-  { id: '이야기', icon: Feather, label: '이야기' },
+  { id: "전체", icon: BookOpen, label: "전체 보기" },
+  { id: "일기", icon: Coffee, label: "일기" },
+  { id: "칼럼", icon: PenSquare, label: "칼럼" },
+  { id: "소설", icon: Book, label: "소설" },
+  { id: "이야기", icon: Feather, label: "이야기" },
 ];
 
 const MOCK_POSTS = [
   {
     id: 1,
-    category: '칼럼',
-    title: '미니멀리즘과 삶의 속도',
-    date: '2026. 05. 24',
-    content: '우리는 항상 더 많은 것을 원하도록 설계된 사회에 살고 있다. 하지만 가끔은 멈춰 서서 내 주변을 둘러볼 필요가 있다.\n\n불필요한 것들을 비워낼 때, 비로소 내가 진정으로 원하는 것이 무엇인지 명확해진다. **디지털 디톡스**를 시작한 지 일주일 째, 생각보다 내 머릿속이 훨씬 더 맑아진 것을 느낀다.',
-    image: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2670&auto=format&fit=crop',
+    category: "칼럼",
+    title: "미니멀리즘과 삶의 속도",
+    date: "2026. 05. 24",
+    content:
+      "우리는 항상 더 많은 것을 원하도록 설계된 사회에 살고 있다. 하지만 가끔은 멈춰 서서 내 주변을 둘러볼 필요가 있다.\n\n불필요한 것들을 비워낼 때, 비로소 내가 진정으로 원하는 것이 무엇인지 명확해진다. **디지털 디톡스**를 시작한 지 일주일 째, 생각보다 내 머릿속이 훨씬 더 맑아진 것을 느낀다.",
+    image:
+      "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2670&auto=format&fit=crop",
     likes: 12,
   },
   {
     id: 2,
-    category: '일기',
-    title: '조용한 주말 아침',
-    date: '2026. 05. 20',
-    content: '오랜만에 알람 없이 일어났다. 창문 틈으로 들어오는 햇살이 기분 좋다.\n\n- 따뜻한 커피 한 잔\n- 좋아하는 음악 플레이리스트\n\n오늘은 아무런 계획 없이 그저 이 여유를 즐겨야겠다.',
+    category: "일기",
+    title: "조용한 주말 아침",
+    date: "2026. 05. 20",
+    content:
+      "오랜만에 알람 없이 일어났다. 창문 틈으로 들어오는 햇살이 기분 좋다.\n\n- 따뜻한 커피 한 잔\n- 좋아하는 음악 플레이리스트\n\n오늘은 아무런 계획 없이 그저 이 여유를 즐겨야겠다.",
     likes: 8,
   },
   {
     id: 3,
-    category: '소설',
-    title: '별 먼지의 기억 - 1화',
-    date: '2026. 05. 15',
-    content: "서기 2154년, 지구의 궤도 정거장 '오리온'.\n\n창밖으로 보이는 푸른 별은 예전의 그 아름다움을 간직한 채 조용히 돌고 있었다. 엘리는 커피 잔을 만지작거리며 낡은 홀로그램 사진을 쳐다보았다.\n\n> \"이제 며칠 안 남았네...\"",
+    category: "소설",
+    title: "별 먼지의 기억 - 1화",
+    date: "2026. 05. 15",
+    content:
+      "서기 2154년, 지구의 궤도 정거장 '오리온'.\n\n창밖으로 보이는 푸른 별은 예전의 그 아름다움을 간직한 채 조용히 돌고 있었다. 엘리는 커피 잔을 만지작거리며 낡은 홀로그램 사진을 쳐다보았다.\n\n> \"이제 며칠 안 남았네...\"",
     likes: 24,
-  }
+  },
 ];
 
 export default function Stories() {
-  const [newTitle, setNewTitle] = useState(() => localStorage.getItem('story_draft_title') || '');
-  const [newPost, setNewPost] = useState(() => localStorage.getItem('story_draft_content') || '');
-  const [selectedCategory, setSelectedCategory] = useState('일기');
-  const [activeFilter, setActiveFilter] = useState('전체');
+  const [newTitle, setNewTitle] = useState(
+    () => localStorage.getItem("story_draft_title") || "",
+  );
+  const [newPost, setNewPost] = useState(
+    () => localStorage.getItem("story_draft_content") || "",
+  );
+  const [selectedCategory, setSelectedCategory] = useState("일기");
+  const [activeFilter, setActiveFilter] = useState("전체");
   const [isPreview, setIsPreview] = useState(false);
-  const [toasts, setToasts] = useState<{id: number, message: string}[]>([]);
+  const [toasts, setToasts] = useState<{ id: number; message: string }[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
-  
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [newImage, setNewImage] = useState(
+    () => localStorage.getItem("story_draft_image") || "",
+  );
+
   const [feed, setFeed] = useState(() => {
-    const saved = localStorage.getItem('personal_writings');
+    const saved = localStorage.getItem("personal_writings");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -62,75 +90,113 @@ export default function Stories() {
 
   // Save feed to local storage
   useEffect(() => {
-    localStorage.setItem('personal_writings', JSON.stringify(feed));
+    localStorage.setItem("personal_writings", JSON.stringify(feed));
   }, [feed]);
 
   // Save draft to local storage
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      localStorage.setItem('story_draft_title', newTitle);
-      localStorage.setItem('story_draft_content', newPost);
-      if (newTitle.trim() || newPost.trim()) {
-        showToast('임시저장 됨');
-      }
+      localStorage.setItem("story_draft_title", newTitle);
+      localStorage.setItem("story_draft_content", newPost);
+      if (newImage) localStorage.setItem("story_draft_image", newImage);
     }, 2000);
     return () => clearTimeout(timeoutId);
-  }, [newTitle, newPost]);
+  }, [newTitle, newPost, newImage]);
 
   const showToast = (message: string) => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, message }]);
+    setToasts((prev) => [...prev, { id, message }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
   };
 
   const handlePost = () => {
-    if(!newPost.trim() || !newTitle.trim()) {
-      showToast('제목과 내용을 모두 입력해주세요.');
+    if (!newPost.trim() || !newTitle.trim()) {
+      showToast("제목과 내용을 모두 입력해주세요.");
       return;
     }
-    
-    const post = {
-      id: Date.now(),
-      category: selectedCategory,
-      title: newTitle,
-      date: new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/-/g, '. '),
-      content: newPost,
-      likes: 0,
-    };
-    
-    setFeed([post, ...feed]);
-    setNewTitle('');
-    setNewPost('');
+
+    if (editingId) {
+      setFeed(
+        feed.map((p: any) =>
+          p.id === editingId
+            ? {
+                ...p,
+                title: newTitle,
+                content: newPost,
+                category: selectedCategory,
+                image: newImage,
+              }
+            : p,
+        ),
+      );
+      setEditingId(null);
+      showToast("기록이 수정되었습니다.");
+    } else {
+      const post = {
+        id: Date.now(),
+        category: selectedCategory,
+        title: newTitle,
+        date: new Date()
+          .toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+          .replace(/-/g, ". "),
+        content: newPost,
+        likes: 0,
+        image: newImage,
+      };
+      setFeed([post, ...feed]);
+      showToast("새로운 세계가 기록되었습니다.");
+    }
+
+    setNewTitle("");
+    setNewPost("");
+    setNewImage("");
     setIsPreview(false);
-    localStorage.removeItem('story_draft_title');
-    localStorage.removeItem('story_draft_content');
-    showToast('새로운 세계가 기록되었습니다.');
+    localStorage.removeItem("story_draft_title");
+    localStorage.removeItem("story_draft_content");
+    localStorage.removeItem("story_draft_image");
+  };
+
+  const handleEdit = (post: any) => {
+    setEditingId(post.id);
+    setNewTitle(post.title);
+    setNewPost(post.content);
+    setNewImage(post.image || "");
+    setSelectedCategory(post.category);
+    setIsPreview(false);
+    setActiveDropdown(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = (id: number) => {
-    if (window.confirm('기록을 정말 삭제하시겠습니까?')) {
-      setFeed(feed.filter((p: any) => p.id !== id));
-      setActiveDropdown(null);
-      showToast('기록이 삭제되었습니다.');
-    }
+    setFeed(feed.filter((p: any) => p.id !== id));
+    setActiveDropdown(null);
+    showToast("기록이 삭제되었습니다.");
   };
 
   const handleLike = (id: number) => {
-    setFeed(feed.map((p: any) => {
-      if (p.id === id) {
-        return { ...p, likes: p.likes + 1 };
-      }
-      return p;
-    }));
+    setFeed(
+      feed.map((p: any) => {
+        if (p.id === id) {
+          return { ...p, likes: p.likes + 1 };
+        }
+        return p;
+      }),
+    );
   };
 
-  const filteredFeed = activeFilter === '전체' ? feed : feed.filter((post: any) => post.category === activeFilter);
+  const filteredFeed =
+    activeFilter === "전체"
+      ? feed
+      : feed.filter((post: any) => post.category === activeFilter);
 
   return (
     <div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
-      
       {/* Cinematic Header */}
       <div className="flex flex-col gap-4 pb-10 mb-10 border-b border-outline/20">
         <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-on-surface flex items-center gap-4">
@@ -142,103 +208,152 @@ export default function Stories() {
       </div>
 
       <div className="space-y-10">
-        
         {/* Compose Box */}
         <div className="bg-surface p-6 md:p-10 rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)] border border-outline/30">
           <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
             <div className="flex gap-2">
-              {CATEGORIES.slice(1).map(cat => (
+              {CATEGORIES.slice(1).map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-sm ${selectedCategory === cat.id ? 'bg-primary text-white shadow-primary/20' : 'bg-surface-container-lowest text-on-surface-variant border border-outline/20 hover:bg-surface-dim hover:text-on-surface hover:border-outline/40'}`}
+                  className={`px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-sm ${selectedCategory === cat.id ? "bg-primary text-white shadow-primary/20" : "bg-surface-container-lowest text-on-surface-variant border border-outline/20 hover:bg-surface-dim hover:text-on-surface hover:border-outline/40"}`}
                 >
                   <cat.icon className="w-4 h-4" />
                   {cat.label}
                 </button>
               ))}
             </div>
-            
-            <button 
+
+            <button
               onClick={() => setIsPreview(!isPreview)}
               className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-lg text-on-surface-variant border border-outline/20 bg-surface-container-lowest hover:bg-surface-dim hover:text-on-surface transition-colors shrink-0 shadow-sm"
             >
-              {isPreview ? <Edit3 className="w-4 h-4 text-primary" /> : <Eye className="w-4 h-4 text-primary" />}
-              {isPreview ? '작성하기' : '미리보기'}
+              {isPreview ? (
+                <Edit3 className="w-4 h-4 text-primary" />
+              ) : (
+                <Eye className="w-4 h-4 text-primary" />
+              )}
+              {isPreview ? "작성하기" : "미리보기"}
             </button>
           </div>
 
           <div className="space-y-6" role="form" aria-label="기록 작성 양식">
-            <label htmlFor="story-title" className="sr-only">제목</label>
-            <input 
+            <label htmlFor="story-title" className="sr-only">
+              제목
+            </label>
+            <input
               id="story-title"
-              type="text" 
+              type="text"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="제목을 입력하세요" 
+              placeholder="제목을 입력하세요"
               className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-3xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-outline-variant transition-all duration-300"
             />
             {isPreview ? (
-              <div aria-label="마크다운 미리보기" className="w-full bg-surface-container-lowest rounded-xl p-6 text-on-surface font-sans text-lg leading-relaxed min-h-[200px] mt-4 border border-outline/20 prose prose-lg prose-headings:text-on-surface prose-p:text-on-surface-variant prose-strong:text-primary max-w-none shadow-inner">
+              <div
+                aria-label="마크다운 미리보기"
+                className="w-full bg-surface-container-lowest rounded-xl p-6 text-on-surface font-sans text-lg leading-relaxed min-h-[200px] mt-4 border border-outline/20 prose prose-lg prose-headings:text-on-surface prose-p:text-on-surface-variant prose-strong:text-primary max-w-none shadow-inner"
+              >
                 {newPost.trim() ? (
                   <Markdown>{newPost}</Markdown>
                 ) : (
-                  <span className="text-outline-variant italic font-medium">내용이 없습니다.</span>
+                  <span className="text-outline-variant italic font-medium">
+                    내용이 없습니다.
+                  </span>
                 )}
               </div>
             ) : (
               <>
-                <label htmlFor="story-content" className="sr-only">내용</label>
-                <textarea 
+                <label htmlFor="story-content" className="sr-only">
+                  내용
+                </label>
+                <textarea
                   id="story-content"
                   value={newPost}
                   onChange={(e) => setNewPost(e.target.value)}
-                  placeholder="당신의 이야기를 들려주세요... (마크다운 지원)" 
+                  placeholder="당신의 이야기를 들려주세요... (마크다운 지원)"
                   className="w-full bg-transparent text-on-surface-variant font-sans text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
                 />
               </>
             )}
-            
+
             <div className="flex items-center justify-between pt-6 border-t border-outline/20">
               <div className="flex items-center gap-4">
-                <button className="p-2.5 rounded-lg bg-surface-container hover:bg-primary-light/50 text-primary transition-colors border border-outline/10 shadow-sm" title="이미지 첨부">
+                <button
+                  onClick={() => {
+                    const url = prompt("이미지 URL을 입력하세요:", newImage);
+                    if (url !== null) setNewImage(url);
+                  }}
+                  className={`p-2.5 rounded-lg border shadow-sm transition-colors ${newImage ? "bg-primary-light/50 text-primary border-primary/30" : "bg-surface-container hover:bg-primary-light/50 text-on-surface-variant hover:text-primary border-outline/10"}`}
+                  title="이미지 첨부"
+                >
                   <ImageIcon className="w-5 h-5" />
                 </button>
+                {newImage && (
+                  <span className="text-xs text-primary font-bold truncate max-w-[150px]">
+                    이미지 첨부됨
+                  </span>
+                )}
                 <div className="text-xs text-on-surface-variant font-mono font-semibold flex items-center gap-2 px-3 py-1.5 bg-surface-dim/30 rounded-full border border-outline/10 shadow-inner">
-                  <Save className="w-3.5 h-3.5 text-primary" /> 자동 임시저장
+                  <Save className="w-3.5 h-3.5 text-primary" />{" "}
+                  {editingId ? "수정 중..." : "자동 임시저장"}
                 </div>
               </div>
-              <button onClick={handlePost} className="px-8 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 bg-on-surface text-surface hover:bg-primary hover:shadow-lg shadow-md tracking-wide">
-                <Send className="w-4 h-4" /> 기록하기
-              </button>
+              <div className="flex items-center gap-3">
+                {editingId && (
+                  <button
+                    onClick={() => {
+                      setEditingId(null);
+                      setNewTitle("");
+                      setNewPost("");
+                      setNewImage("");
+                    }}
+                    className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors"
+                  >
+                    취소
+                  </button>
+                )}
+                <button
+                  onClick={handlePost}
+                  disabled={!newPost.trim() || !newTitle.trim()}
+                  className={`px-8 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 tracking-wide ${
+                    !newPost.trim() || !newTitle.trim()
+                      ? "bg-surface-dim text-outline-variant cursor-not-allowed"
+                      : "bg-on-surface text-surface hover:bg-primary hover:shadow-lg shadow-md"
+                  }`}
+                >
+                  <Send className="w-4 h-4" />{" "}
+                  {editingId ? "수정 저장하기" : "저장하기"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Filter */}
         <div className="flex items-center gap-6 py-6 border-b border-outline/20 overflow-x-auto hide-scrollbar">
-           <div className="flex gap-6 px-1">
-             {CATEGORIES.map(cat => (
-               <button
-                 key={cat.id}
-                 onClick={() => setActiveFilter(cat.id)}
-                 className={`text-base font-bold pb-3 border-b-[3px] transition-all whitespace-nowrap -mb-[27px] ${activeFilter === cat.id ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline/40'}`}
-               >
-                 {cat.label}
-               </button>
-             ))}
-           </div>
+          <div className="flex gap-6 px-1">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveFilter(cat.id)}
+                className={`text-base font-bold pb-3 border-b-[3px] transition-all whitespace-nowrap -mb-[27px] ${activeFilter === cat.id ? "border-primary text-primary" : "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline/40"}`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Stories Feed */}
         <div className="space-y-10 pb-20 pt-4">
           <AnimatePresence>
             {filteredFeed.map((post: any) => (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                key={post.id} 
+                key={post.id}
                 className="bg-surface p-8 md:p-12 group/card shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] border border-outline/20 rounded-2xl relative overflow-hidden"
               >
                 {/* Visual Flair */}
@@ -249,45 +364,75 @@ export default function Stories() {
                   <div>
                     <div className="flex items-center justify-between mb-6">
                       <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold flex items-center gap-2 w-fit border border-primary/20 letter-spacing-widest">
-                        {CATEGORIES.find(c => c.id === post.category)?.icon && (() => {
-                            const Icon = CATEGORIES.find(c => c.id === post.category)!.icon;
+                        {CATEGORIES.find((c) => c.id === post.category)?.icon &&
+                          (() => {
+                            const Icon = CATEGORIES.find(
+                              (c) => c.id === post.category,
+                            )!.icon;
                             return <Icon className="w-3.5 h-3.5" />;
-                        })()}
+                          })()}
                         {post.category}
                       </span>
                       <div className="flex items-center gap-4">
-                        <p className="font-mono text-xs text-on-surface-variant font-semibold tracking-wider bg-surface-container-lowest px-3 py-1 rounded border border-outline/20">{post.date}</p>
+                        <p className="font-mono text-xs text-on-surface-variant font-semibold tracking-wider bg-surface-container-lowest px-3 py-1 rounded border border-outline/20">
+                          {post.date}
+                        </p>
                         <div className="relative">
-                          <button 
+                          <button
                             aria-expanded={activeDropdown === post.id}
                             aria-haspopup="true"
                             aria-label={`${post.title} 추가 메뉴`}
-                            onClick={() => setActiveDropdown(activeDropdown === post.id ? null : post.id)}
+                            onClick={() =>
+                              setActiveDropdown(
+                                activeDropdown === post.id ? null : post.id,
+                              )
+                            }
                             className="text-on-surface-variant hover:text-on-surface p-1.5 bg-surface hover:bg-surface-dim rounded-md border border-transparent hover:border-outline/20 transition-all shadow-none hover:shadow-sm"
                           >
-                            <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
+                            <MoreHorizontal
+                              className="w-5 h-5"
+                              aria-hidden="true"
+                            />
                           </button>
                           {activeDropdown === post.id && (
                             <div className="absolute right-0 mt-2 w-36 bg-surface rounded-lg shadow-xl border border-outline/20 py-2 z-10 text-on-surface">
-                              <button 
+                              <button
+                                onClick={() => handleEdit(post)}
+                                className="w-full text-left px-5 py-2.5 text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-dim flex items-center gap-3 font-bold transition-colors"
+                              >
+                                <Edit3 className="w-4 h-4" aria-hidden="true" />{" "}
+                                수정하기
+                              </button>
+                              <button
                                 onClick={() => handleDelete(post.id)}
                                 className="w-full text-left px-5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
                               >
-                                <Trash2 className="w-4 h-4" aria-hidden="true" /> 삭제하기
+                                <Trash2
+                                  className="w-4 h-4"
+                                  aria-hidden="true"
+                                />{" "}
+                                삭제하기
                               </button>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">{post.title}</h2>
+                    <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
+                      {post.title}
+                    </h2>
                   </div>
 
                   {/* Post Content */}
                   <div className="text-on-surface-variant font-medium">
                     {post.image && (
                       <div className="relative rounded-xl overflow-hidden max-h-[500px] border border-outline/20 mb-8 shadow-sm">
-                        <img src={post.image} alt="게시물 표지 이미지" loading="lazy" className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700" />
+                        <img
+                          src={post.image}
+                          alt="게시물 표지 이미지"
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700"
+                        />
                       </div>
                     )}
                     <div className="prose prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
@@ -297,20 +442,30 @@ export default function Stories() {
 
                   {/* Post Actions */}
                   <div className="flex items-center gap-8 pt-8 border-t border-outline/20 text-on-surface-variant font-mono">
-                    <button 
+                    <button
                       aria-label="좋아요"
                       onClick={() => handleLike(post.id)}
                       className="flex items-center gap-2.5 hover:text-[#00C853] transition-colors group"
                     >
                       <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-[#00C853]/10 group-hover:border-[#00C853]/30 transition-colors shadow-sm">
-                        <Heart className="w-5 h-5 group-hover:scale-110 transition-transform group-hover:fill-[#00C853]/20" aria-hidden="true" />
+                        <Heart
+                          className="w-5 h-5 group-hover:scale-110 transition-transform group-hover:fill-[#00C853]/20"
+                          aria-hidden="true"
+                        />
                       </div>
                       <span className="text-sm font-bold">{post.likes}</span>
                     </button>
-                    <button aria-label="공유하기" className="flex items-center gap-2 hover:text-primary transition-colors group">
-                       <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-primary/10 group-hover:border-primary/30 transition-colors shadow-sm">
-                          <Share2 className="w-5 h-5" aria-hidden="true" />
-                       </div>
+                    <button
+                      aria-label="공유하기"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        showToast("링크가 복사되었습니다.");
+                      }}
+                      className="flex items-center gap-2 hover:text-primary transition-colors group"
+                    >
+                      <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-primary/10 group-hover:border-primary/30 transition-colors shadow-sm">
+                        <Share2 className="w-5 h-5" aria-hidden="true" />
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -319,11 +474,13 @@ export default function Stories() {
           </AnimatePresence>
 
           {filteredFeed.length === 0 && (
-             <div className="text-center py-24 text-on-surface-variant bg-surface border border-outline/20 rounded-2xl border-dashed">
-               <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-30" />
-               <p className="text-xl font-display font-bold text-on-surface mb-2">아직 작성된 세계가 없습니다.</p>
-               <p className="text-sm font-medium">새로운 기록을 남겨보세요.</p>
-             </div>
+            <div className="text-center py-24 text-on-surface-variant bg-surface border border-outline/20 rounded-2xl border-dashed">
+              <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-30" />
+              <p className="text-xl font-display font-bold text-on-surface mb-2">
+                아직 작성된 세계가 없습니다.
+              </p>
+              <p className="text-sm font-medium">새로운 기록을 남겨보세요.</p>
+            </div>
           )}
         </div>
       </div>
@@ -331,7 +488,7 @@ export default function Stories() {
       {/* Toasts */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none">
         <AnimatePresence>
-          {toasts.map(toast => (
+          {toasts.map((toast) => (
             <motion.div
               key={toast.id}
               initial={{ opacity: 0, y: 30, scale: 0.9 }}
