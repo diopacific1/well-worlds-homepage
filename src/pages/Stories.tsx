@@ -17,6 +17,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Markdown from "react-markdown";
+import { useClickOutside } from "../hooks/useClickOutside";
 
 const CATEGORIES = [
   { id: "전체", icon: BookOpen, label: "전체 보기" },
@@ -57,6 +58,140 @@ const MOCK_POSTS = [
     likes: 24,
   },
 ];
+
+const PostItem = ({
+  post,
+  handleEdit,
+  handleDelete,
+  handleLike,
+  showToast,
+}: {
+  post: any;
+  handleEdit: (post: any) => void;
+  handleDelete: (id: number) => void;
+  handleLike: (id: number) => void;
+  showToast: (msg: string) => void;
+}) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="bg-surface p-8 md:p-12 group/card shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] border border-outline/20 rounded-2xl relative overflow-hidden"
+    >
+      {/* Visual Flair */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
+
+      <div className="flex flex-col gap-8 relative z-10">
+        {/* Post Header */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold flex items-center gap-2 w-fit border border-primary/20 letter-spacing-widest">
+              {CATEGORIES.find((c) => c.id === post.category)?.icon &&
+                (() => {
+                  const Icon = CATEGORIES.find((c) => c.id === post.category)!.icon;
+                  return <Icon className="w-3.5 h-3.5" />;
+                })()}
+              {post.category}
+            </span>
+            <div className="flex items-center gap-4">
+              <p className="font-mono text-xs text-on-surface-variant font-semibold tracking-wider bg-surface-container-lowest px-3 py-1 rounded border border-outline/20">
+                {post.date}
+              </p>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  aria-expanded={isDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label={`${post.title} 추가 메뉴`}
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="text-on-surface-variant hover:text-on-surface p-1.5 bg-surface hover:bg-surface-dim rounded-md border border-transparent hover:border-outline/20 transition-all shadow-none hover:shadow-sm"
+                >
+                  <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-36 bg-surface rounded-lg shadow-xl border border-outline/20 py-2 z-10 text-on-surface">
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        handleEdit(post);
+                      }}
+                      className="w-full text-left px-5 py-2.5 text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-dim flex items-center gap-3 font-bold transition-colors"
+                    >
+                      <Edit3 className="w-4 h-4" aria-hidden="true" /> 수정하기
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        handleDelete(post.id);
+                      }}
+                      className="w-full text-left px-5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" aria-hidden="true" /> 삭제하기
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
+            {post.title}
+          </h2>
+        </div>
+
+        {/* Post Content */}
+        <div className="text-on-surface-variant font-medium">
+          {post.image && (
+            <div className="relative rounded-xl overflow-hidden max-h-[500px] border border-outline/20 mb-8 shadow-sm">
+              <img
+                src={post.image}
+                alt="게시물 표지 이미지"
+                loading="lazy"
+                className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700"
+              />
+            </div>
+          )}
+          <div className="prose prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
+            <Markdown>{post.content}</Markdown>
+          </div>
+        </div>
+
+        {/* Post Actions */}
+        <div className="flex items-center gap-8 pt-8 border-t border-outline/20 text-on-surface-variant font-mono">
+          <button
+            aria-label="좋아요"
+            onClick={() => handleLike(post.id)}
+            className="flex items-center gap-2.5 hover:text-[#00C853] transition-colors group"
+          >
+            <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-[#00C853]/10 group-hover:border-[#00C853]/30 transition-colors shadow-sm">
+              <Heart
+                className="w-5 h-5 group-hover:scale-110 transition-transform group-hover:fill-[#00C853]/20"
+                aria-hidden="true"
+              />
+            </div>
+            <span className="text-sm font-bold">{post.likes}</span>
+          </button>
+          <button
+            aria-label="공유하기"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              showToast("링크가 복사되었습니다.");
+            }}
+            className="flex items-center gap-2 hover:text-primary transition-colors group"
+          >
+            <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-primary/10 group-hover:border-primary/30 transition-colors shadow-sm">
+              <Share2 className="w-5 h-5" aria-hidden="true" />
+            </div>
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 export default function Stories() {
   const [newTitle, setNewTitle] = useState(
@@ -349,127 +484,14 @@ export default function Stories() {
         <div className="space-y-10 pb-20 pt-4">
           <AnimatePresence>
             {filteredFeed.map((post: any) => (
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                key={post.id}
-                className="bg-surface p-8 md:p-12 group/card shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] border border-outline/20 rounded-2xl relative overflow-hidden"
-              >
-                {/* Visual Flair */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
-
-                <div className="flex flex-col gap-8 relative z-10">
-                  {/* Post Header */}
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold flex items-center gap-2 w-fit border border-primary/20 letter-spacing-widest">
-                        {CATEGORIES.find((c) => c.id === post.category)?.icon &&
-                          (() => {
-                            const Icon = CATEGORIES.find(
-                              (c) => c.id === post.category,
-                            )!.icon;
-                            return <Icon className="w-3.5 h-3.5" />;
-                          })()}
-                        {post.category}
-                      </span>
-                      <div className="flex items-center gap-4">
-                        <p className="font-mono text-xs text-on-surface-variant font-semibold tracking-wider bg-surface-container-lowest px-3 py-1 rounded border border-outline/20">
-                          {post.date}
-                        </p>
-                        <div className="relative">
-                          <button
-                            aria-expanded={activeDropdown === post.id}
-                            aria-haspopup="true"
-                            aria-label={`${post.title} 추가 메뉴`}
-                            onClick={() =>
-                              setActiveDropdown(
-                                activeDropdown === post.id ? null : post.id,
-                              )
-                            }
-                            className="text-on-surface-variant hover:text-on-surface p-1.5 bg-surface hover:bg-surface-dim rounded-md border border-transparent hover:border-outline/20 transition-all shadow-none hover:shadow-sm"
-                          >
-                            <MoreHorizontal
-                              className="w-5 h-5"
-                              aria-hidden="true"
-                            />
-                          </button>
-                          {activeDropdown === post.id && (
-                            <div className="absolute right-0 mt-2 w-36 bg-surface rounded-lg shadow-xl border border-outline/20 py-2 z-10 text-on-surface">
-                              <button
-                                onClick={() => handleEdit(post)}
-                                className="w-full text-left px-5 py-2.5 text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-dim flex items-center gap-3 font-bold transition-colors"
-                              >
-                                <Edit3 className="w-4 h-4" aria-hidden="true" />{" "}
-                                수정하기
-                              </button>
-                              <button
-                                onClick={() => handleDelete(post.id)}
-                                className="w-full text-left px-5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
-                              >
-                                <Trash2
-                                  className="w-4 h-4"
-                                  aria-hidden="true"
-                                />{" "}
-                                삭제하기
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
-                      {post.title}
-                    </h2>
-                  </div>
-
-                  {/* Post Content */}
-                  <div className="text-on-surface-variant font-medium">
-                    {post.image && (
-                      <div className="relative rounded-xl overflow-hidden max-h-[500px] border border-outline/20 mb-8 shadow-sm">
-                        <img
-                          src={post.image}
-                          alt="게시물 표지 이미지"
-                          loading="lazy"
-                          className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700"
-                        />
-                      </div>
-                    )}
-                    <div className="prose prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
-                      <Markdown>{post.content}</Markdown>
-                    </div>
-                  </div>
-
-                  {/* Post Actions */}
-                  <div className="flex items-center gap-8 pt-8 border-t border-outline/20 text-on-surface-variant font-mono">
-                    <button
-                      aria-label="좋아요"
-                      onClick={() => handleLike(post.id)}
-                      className="flex items-center gap-2.5 hover:text-[#00C853] transition-colors group"
-                    >
-                      <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-[#00C853]/10 group-hover:border-[#00C853]/30 transition-colors shadow-sm">
-                        <Heart
-                          className="w-5 h-5 group-hover:scale-110 transition-transform group-hover:fill-[#00C853]/20"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <span className="text-sm font-bold">{post.likes}</span>
-                    </button>
-                    <button
-                      aria-label="공유하기"
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                        showToast("링크가 복사되었습니다.");
-                      }}
-                      className="flex items-center gap-2 hover:text-primary transition-colors group"
-                    >
-                      <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-primary/10 group-hover:border-primary/30 transition-colors shadow-sm">
-                        <Share2 className="w-5 h-5" aria-hidden="true" />
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
+              <PostItem 
+                key={post.id} 
+                post={post} 
+                handleEdit={handleEdit} 
+                handleDelete={handleDelete} 
+                handleLike={handleLike} 
+                showToast={showToast} 
+              />
             ))}
           </AnimatePresence>
 
