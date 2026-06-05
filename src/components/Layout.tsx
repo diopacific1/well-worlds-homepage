@@ -12,14 +12,27 @@ export default function Layout() {
   ]);
 
   useEffect(() => {
-    fetch('/api/news?q=특보')
-      .then(res => res.json())
-      .then(data => {
+    const fetchNews = async () => {
+      try {
+        const res = await fetch('/api/news?q=특보');
+        if (!res.ok) throw new Error('API fetch failed');
+        const data = await res.json();
         if (data.items && data.items.length > 0) {
-          setGlobalNews(data.items.map((item: any) => item.title));
+          setGlobalNews(data.items.map((item: any) => item.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"')));
+        } else {
+          throw new Error('No items');
         }
-      })
-      .catch(err => console.error(err));
+      } catch (err) {
+        console.error(err);
+        setGlobalNews([
+          "비트코인, 글로벌 금융 기관 채택 확대로 상승세 지속 의견 팽팽",
+          "나스닥 및 S&P 500 등 주요 지수 보합권 내 등락 반복",
+          "AI 및 친환경 테마 관련 스타트업 투자 유치 규모 역대 최고치 경신",
+          "글로벌 긴축 기조 완화 기대감에 위험 자산 선호 심리 회복 조짐",
+        ]);
+      }
+    };
+    fetchNews();
   }, []);
 
   useEffect(() => {
