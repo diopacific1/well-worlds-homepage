@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, LineChart, Leaf, MessageSquareHeart, Trophy, Menu, X, Globe } from 'lucide-react';
+import { LayoutDashboard, LineChart, Leaf, MessageSquareHeart, BookOpen, Trophy, Menu, X, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -47,6 +47,7 @@ export default function Layout() {
     { name: '금융 터미널', path: '/crypto', icon: LineChart },
     { name: '디지털 정원', path: '/plants', icon: Leaf },
     { name: '나의 세계', path: '/stories', icon: MessageSquareHeart },
+    { name: '방명록', path: '/guestbook', icon: BookOpen },
   ];
 
   return (
