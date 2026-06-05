@@ -23,6 +23,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  where,
   addDoc,
   updateDoc,
   deleteDoc,
@@ -96,6 +97,7 @@ export default function PlantJournal() {
     }
     const q = query(
       collection(db, "plant_journals"),
+      where("userId", "==", u.uid),
       orderBy("createdAt", "desc"),
     );
     const unsubscribe = onSnapshot(

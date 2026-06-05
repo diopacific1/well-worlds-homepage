@@ -25,6 +25,7 @@ import {
   onSnapshot,
   query,
   orderBy,
+  where,
   addDoc,
   updateDoc,
   deleteDoc,
@@ -238,7 +239,11 @@ export default function Stories() {
       setFeed([]);
       return;
     }
-    const q = query(collection(db, "stories"), orderBy("createdAt", "desc"));
+    const q = query(
+      collection(db, "stories"),
+      where("userId", "==", u.uid),
+      orderBy("createdAt", "desc")
+    );
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
