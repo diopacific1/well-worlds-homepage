@@ -13,11 +13,25 @@ import {
   Eye,
   Edit3,
   Save,
+  LogIn,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Markdown from "react-markdown";
 import { useClickOutside } from "../hooks/useClickOutside";
+import { useAuth } from "../contexts/AuthContext";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 
 const CATEGORIES = [
   { id: "전체", icon: BookOpen, label: "전체 보기" },
@@ -68,8 +82,8 @@ const PostItem = ({
 }: {
   post: any;
   handleEdit: (post: any) => void;
-  handleDelete: (id: number) => void;
-  handleLike: (id: number) => void;
+  handleDelete: (id: string) => void;
+  handleLike: (id: string) => void;
   showToast: (msg: string) => void;
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -96,7 +110,9 @@ const PostItem = ({
             <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold flex items-center gap-2 w-fit border border-primary/20 letter-spacing-widest">
               {CATEGORIES.find((c) => c.id === post.category)?.icon &&
                 (() => {
-                  const Icon = CATEGORIES.find((c) => c.id === post.category)!.icon;
+                  const Icon = CATEGORIES.find(
+                    (c) => c.id === post.category,
+                  )!.icon;
                   return <Icon className="w-3.5 h-3.5" />;
                 })()}
               {post.category}
@@ -196,6 +212,8 @@ const PostItem = ({
 };
 
 export default function Stories() {
+  const { u, signIn } = useAuth();
+
   const [newTitle, setNewTitle] = useState(
     () => localStorage.getItem("story_draft_title") || "",
   );
@@ -208,27 +226,35 @@ export default function Stories() {
   const [toasts, setToasts] = useState<{ id: number; message: string }[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newImage, setNewImage] = useState(
     () => localStorage.getItem("story_draft_image") || "",
   );
 
-  const [feed, setFeed] = useState(() => {
-    const saved = localStorage.getItem("personal_writings");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return MOCK_POSTS;
-      }
-    }
-    return MOCK_POSTS;
-  });
+  const [feed, setFeed] = useState<any[]>([]);
 
-  // Save feed to local storage
   useEffect(() => {
-    localStorage.setItem("personal_writings", JSON.stringify(feed));
-  }, [feed]);
+    if (!u) {
+      setFeed([]);
+      return;
+    }
+    const q = query(collection(db, "stories"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const postsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        // Since we query all, filter by userId locally (rules already prevent reading others, but just in case)
+        setFeed(postsData.filter((d: any) => d.userId === u.uid));
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, "stories");
+      },
+    );
+    return () => unsubscribe();
+  }, [u]);
 
   // Save draft to local storage
   useEffect(() => {
@@ -248,55 +274,62 @@ export default function Stories() {
     }, 3000);
   };
 
-  const handlePost = () => {
+  const handlePost = async () => {
+    if (!u) {
+      showToast("로그인이 필요합니다.");
+      return;
+    }
     if (!newPost.trim() || !newTitle.trim()) {
       showToast("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
-    if (editingId) {
-      setFeed(
-        feed.map((p: any) =>
-          p.id === editingId
-            ? {
-                ...p,
-                title: newTitle,
-                content: newPost,
-                category: selectedCategory,
-                image: newImage,
-              }
-            : p,
-        ),
-      );
-      setEditingId(null);
-      showToast("기록이 수정되었습니다.");
-    } else {
-      const post = {
-        id: Date.now(),
-        category: selectedCategory,
-        title: newTitle,
-        date: new Date()
-          .toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
-          .replace(/-/g, ". "),
-        content: newPost,
-        likes: 0,
-        image: newImage,
-      };
-      setFeed([post, ...feed]);
-      showToast("새로운 세계가 기록되었습니다.");
-    }
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, "stories", editingId), {
+          title: newTitle,
+          content: newPost,
+          category: selectedCategory,
+          image: newImage,
+          updatedAt: serverTimestamp(),
+        });
+        setEditingId(null);
+        showToast("기록이 수정되었습니다.");
+      } else {
+        await addDoc(collection(db, "stories"), {
+          userId: u.uid,
+          category: selectedCategory,
+          title: newTitle,
+          date: new Date()
+            .toLocaleDateString("ko-KR", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+            })
+            .replace(/-/g, ". "),
+          content: newPost,
+          likes: 0,
+          image: newImage,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        showToast("새로운 세계가 기록되었습니다.");
+      }
 
-    setNewTitle("");
-    setNewPost("");
-    setNewImage("");
-    setIsPreview(false);
-    localStorage.removeItem("story_draft_title");
-    localStorage.removeItem("story_draft_content");
-    localStorage.removeItem("story_draft_image");
+      setNewTitle("");
+      setNewPost("");
+      setNewImage("");
+      setIsPreview(false);
+      localStorage.removeItem("story_draft_title");
+      localStorage.removeItem("story_draft_content");
+      localStorage.removeItem("story_draft_image");
+    } catch (e) {
+      handleFirestoreError(
+        e,
+        editingId ? OperationType.UPDATE : OperationType.CREATE,
+        "stories",
+      );
+    }
   };
 
   const handleEdit = (post: any) => {
@@ -310,21 +343,26 @@ export default function Stories() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = (id: number) => {
-    setFeed(feed.filter((p: any) => p.id !== id));
-    setActiveDropdown(null);
-    showToast("기록이 삭제되었습니다.");
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "stories", id));
+      setActiveDropdown(null);
+      showToast("기록이 삭제되었습니다.");
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, `stories/${id}`);
+    }
   };
 
-  const handleLike = (id: number) => {
-    setFeed(
-      feed.map((p: any) => {
-        if (p.id === id) {
-          return { ...p, likes: p.likes + 1 };
-        }
-        return p;
-      }),
-    );
+  const handleLike = async (id: string) => {
+    const post = feed.find((p) => p.id === id);
+    if (!post) return;
+    try {
+      await updateDoc(doc(db, "stories", id), {
+        likes: (post.likes || 0) + 1,
+      });
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, `stories/${id}`);
+    }
   };
 
   const filteredFeed =
@@ -344,170 +382,185 @@ export default function Stories() {
         </p>
       </div>
 
-      <div className="space-y-10">
-        {/* Compose Box */}
-        <div className="bg-surface p-6 md:p-10 rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)] border border-outline/30">
-          <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
-            <div className="flex gap-2">
-              {CATEGORIES.slice(1).map((cat) => (
+      {!u ? (
+        <div className="text-center py-24 bg-surface border border-outline/20 rounded-2xl">
+          <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-30" />
+          <p className="text-xl font-display font-bold text-on-surface mb-4">
+            로그인하여 나만의 세계를 기록해보세요.
+          </p>
+          <button
+            onClick={signIn}
+            className="flex items-center gap-2 mx-auto bg-on-surface text-surface px-8 py-3 rounded-lg font-bold hover:shadow-lg transition-all"
+          >
+            <LogIn className="w-5 h-5" /> Google로 로그인
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-10">
+          {/* Compose Box */}
+          <div className="bg-surface p-6 md:p-10 rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)] border border-outline/30">
+            <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
+              <div className="flex gap-2">
+                {CATEGORIES.slice(1).map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-sm ${selectedCategory === cat.id ? "bg-primary text-white shadow-primary/20" : "bg-surface-container-lowest text-on-surface-variant border border-outline/20 hover:bg-surface-dim hover:text-on-surface hover:border-outline/40"}`}
+                  >
+                    <cat.icon className="w-4 h-4" />
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setIsPreview(!isPreview)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-lg text-on-surface-variant border border-outline/20 bg-surface-container-lowest hover:bg-surface-dim hover:text-on-surface transition-colors shrink-0 shadow-sm"
+              >
+                {isPreview ? (
+                  <Edit3 className="w-4 h-4 text-primary" />
+                ) : (
+                  <Eye className="w-4 h-4 text-primary" />
+                )}
+                {isPreview ? "작성하기" : "미리보기"}
+              </button>
+            </div>
+
+            <div className="space-y-6" role="form" aria-label="기록 작성 양식">
+              <label htmlFor="story-title" className="sr-only">
+                제목
+              </label>
+              <input
+                id="story-title"
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="제목을 입력하세요"
+                className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-3xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-outline-variant transition-all duration-300"
+              />
+              {isPreview ? (
+                <div
+                  aria-label="마크다운 미리보기"
+                  className="w-full bg-surface-container-lowest rounded-xl p-6 text-on-surface font-sans text-lg leading-relaxed min-h-[200px] mt-4 border border-outline/20 prose prose-lg prose-headings:text-on-surface prose-p:text-on-surface-variant prose-strong:text-primary max-w-none shadow-inner"
+                >
+                  {newPost.trim() ? (
+                    <Markdown>{newPost}</Markdown>
+                  ) : (
+                    <span className="text-outline-variant italic font-medium">
+                      내용이 없습니다.
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <label htmlFor="story-content" className="sr-only">
+                    내용
+                  </label>
+                  <textarea
+                    id="story-content"
+                    value={newPost}
+                    onChange={(e) => setNewPost(e.target.value)}
+                    placeholder="당신의 이야기를 들려주세요... (마크다운 지원)"
+                    className="w-full bg-transparent text-on-surface-variant font-sans text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
+                  />
+                </>
+              )}
+
+              <div className="flex items-center justify-between pt-6 border-t border-outline/20">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => {
+                      const url = prompt("이미지 URL을 입력하세요:", newImage);
+                      if (url !== null) setNewImage(url);
+                    }}
+                    className={`p-2.5 rounded-lg border shadow-sm transition-colors ${newImage ? "bg-primary-light/50 text-primary border-primary/30" : "bg-surface-container hover:bg-primary-light/50 text-on-surface-variant hover:text-primary border-outline/10"}`}
+                    title="이미지 첨부"
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                  </button>
+                  {newImage && (
+                    <span className="text-xs text-primary font-bold truncate max-w-[150px]">
+                      이미지 첨부됨
+                    </span>
+                  )}
+                  <div className="text-xs text-on-surface-variant font-mono font-semibold flex items-center gap-2 px-3 py-1.5 bg-surface-dim/30 rounded-full border border-outline/10 shadow-inner">
+                    <Save className="w-3.5 h-3.5 text-primary" />{" "}
+                    {editingId ? "수정 중..." : "자동 임시저장"}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {editingId && (
+                    <button
+                      onClick={() => {
+                        setEditingId(null);
+                        setNewTitle("");
+                        setNewPost("");
+                        setNewImage("");
+                      }}
+                      className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors"
+                    >
+                      취소
+                    </button>
+                  )}
+                  <button
+                    onClick={handlePost}
+                    disabled={!newPost.trim() || !newTitle.trim()}
+                    className={`px-8 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 tracking-wide ${
+                      !newPost.trim() || !newTitle.trim()
+                        ? "bg-surface-dim text-outline-variant cursor-not-allowed"
+                        : "bg-on-surface text-surface hover:bg-primary hover:shadow-lg shadow-md"
+                    }`}
+                  >
+                    <Send className="w-4 h-4" />{" "}
+                    {editingId ? "수정 저장하기" : "저장하기"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter */}
+          <div className="flex items-center gap-6 py-6 border-b border-outline/20 overflow-x-auto hide-scrollbar">
+            <div className="flex gap-6 px-1">
+              {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-sm ${selectedCategory === cat.id ? "bg-primary text-white shadow-primary/20" : "bg-surface-container-lowest text-on-surface-variant border border-outline/20 hover:bg-surface-dim hover:text-on-surface hover:border-outline/40"}`}
+                  onClick={() => setActiveFilter(cat.id)}
+                  className={`text-base font-bold pb-3 border-b-[3px] transition-all whitespace-nowrap -mb-[27px] ${activeFilter === cat.id ? "border-primary text-primary" : "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline/40"}`}
                 >
-                  <cat.icon className="w-4 h-4" />
                   {cat.label}
                 </button>
               ))}
             </div>
-
-            <button
-              onClick={() => setIsPreview(!isPreview)}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-lg text-on-surface-variant border border-outline/20 bg-surface-container-lowest hover:bg-surface-dim hover:text-on-surface transition-colors shrink-0 shadow-sm"
-            >
-              {isPreview ? (
-                <Edit3 className="w-4 h-4 text-primary" />
-              ) : (
-                <Eye className="w-4 h-4 text-primary" />
-              )}
-              {isPreview ? "작성하기" : "미리보기"}
-            </button>
           </div>
 
-          <div className="space-y-6" role="form" aria-label="기록 작성 양식">
-            <label htmlFor="story-title" className="sr-only">
-              제목
-            </label>
-            <input
-              id="story-title"
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="제목을 입력하세요"
-              className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-3xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-outline-variant transition-all duration-300"
-            />
-            {isPreview ? (
-              <div
-                aria-label="마크다운 미리보기"
-                className="w-full bg-surface-container-lowest rounded-xl p-6 text-on-surface font-sans text-lg leading-relaxed min-h-[200px] mt-4 border border-outline/20 prose prose-lg prose-headings:text-on-surface prose-p:text-on-surface-variant prose-strong:text-primary max-w-none shadow-inner"
-              >
-                {newPost.trim() ? (
-                  <Markdown>{newPost}</Markdown>
-                ) : (
-                  <span className="text-outline-variant italic font-medium">
-                    내용이 없습니다.
-                  </span>
-                )}
-              </div>
-            ) : (
-              <>
-                <label htmlFor="story-content" className="sr-only">
-                  내용
-                </label>
-                <textarea
-                  id="story-content"
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                  placeholder="당신의 이야기를 들려주세요... (마크다운 지원)"
-                  className="w-full bg-transparent text-on-surface-variant font-sans text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
+          {/* Stories Feed */}
+          <div className="space-y-10 pb-20 pt-4">
+            <AnimatePresence>
+              {filteredFeed.map((post: any) => (
+                <PostItem
+                  key={post.id}
+                  post={post}
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                  handleLike={handleLike}
+                  showToast={showToast}
                 />
-              </>
+              ))}
+            </AnimatePresence>
+
+            {filteredFeed.length === 0 && (
+              <div className="text-center py-24 text-on-surface-variant bg-surface border border-outline/20 rounded-2xl border-dashed">
+                <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-30" />
+                <p className="text-xl font-display font-bold text-on-surface mb-2">
+                  아직 작성된 세계가 없습니다.
+                </p>
+                <p className="text-sm font-medium">새로운 기록을 남겨보세요.</p>
+              </div>
             )}
-
-            <div className="flex items-center justify-between pt-6 border-t border-outline/20">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => {
-                    const url = prompt("이미지 URL을 입력하세요:", newImage);
-                    if (url !== null) setNewImage(url);
-                  }}
-                  className={`p-2.5 rounded-lg border shadow-sm transition-colors ${newImage ? "bg-primary-light/50 text-primary border-primary/30" : "bg-surface-container hover:bg-primary-light/50 text-on-surface-variant hover:text-primary border-outline/10"}`}
-                  title="이미지 첨부"
-                >
-                  <ImageIcon className="w-5 h-5" />
-                </button>
-                {newImage && (
-                  <span className="text-xs text-primary font-bold truncate max-w-[150px]">
-                    이미지 첨부됨
-                  </span>
-                )}
-                <div className="text-xs text-on-surface-variant font-mono font-semibold flex items-center gap-2 px-3 py-1.5 bg-surface-dim/30 rounded-full border border-outline/10 shadow-inner">
-                  <Save className="w-3.5 h-3.5 text-primary" />{" "}
-                  {editingId ? "수정 중..." : "자동 임시저장"}
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {editingId && (
-                  <button
-                    onClick={() => {
-                      setEditingId(null);
-                      setNewTitle("");
-                      setNewPost("");
-                      setNewImage("");
-                    }}
-                    className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors"
-                  >
-                    취소
-                  </button>
-                )}
-                <button
-                  onClick={handlePost}
-                  disabled={!newPost.trim() || !newTitle.trim()}
-                  className={`px-8 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 tracking-wide ${
-                    !newPost.trim() || !newTitle.trim()
-                      ? "bg-surface-dim text-outline-variant cursor-not-allowed"
-                      : "bg-on-surface text-surface hover:bg-primary hover:shadow-lg shadow-md"
-                  }`}
-                >
-                  <Send className="w-4 h-4" />{" "}
-                  {editingId ? "수정 저장하기" : "저장하기"}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
-
-        {/* Filter */}
-        <div className="flex items-center gap-6 py-6 border-b border-outline/20 overflow-x-auto hide-scrollbar">
-          <div className="flex gap-6 px-1">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveFilter(cat.id)}
-                className={`text-base font-bold pb-3 border-b-[3px] transition-all whitespace-nowrap -mb-[27px] ${activeFilter === cat.id ? "border-primary text-primary" : "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline/40"}`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Stories Feed */}
-        <div className="space-y-10 pb-20 pt-4">
-          <AnimatePresence>
-            {filteredFeed.map((post: any) => (
-              <PostItem 
-                key={post.id} 
-                post={post} 
-                handleEdit={handleEdit} 
-                handleDelete={handleDelete} 
-                handleLike={handleLike} 
-                showToast={showToast} 
-              />
-            ))}
-          </AnimatePresence>
-
-          {filteredFeed.length === 0 && (
-            <div className="text-center py-24 text-on-surface-variant bg-surface border border-outline/20 rounded-2xl border-dashed">
-              <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-30" />
-              <p className="text-xl font-display font-bold text-on-surface mb-2">
-                아직 작성된 세계가 없습니다.
-              </p>
-              <p className="text-sm font-medium">새로운 기록을 남겨보세요.</p>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Toasts */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none">
