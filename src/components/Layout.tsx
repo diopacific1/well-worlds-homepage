@@ -1,15 +1,30 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, LineChart, Leaf, MessageSquareHeart, BookOpen, Trophy, Menu, X, Globe } from 'lucide-react';
+import { LayoutDashboard, LineChart, Leaf, MessageSquareHeart, BookOpen, Settings, Info, Menu, X, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../../firebase';
 
 export default function Layout() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [newsIndex, setNewsIndex] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [globalNews, setGlobalNews] = useState<string[]>([
     "최신 뉴스를 불러오는 중입니다..."
   ]);
+
+  useEffect(() => {
+    if (!auth) {
+      setIsAdmin(false);
+      return;
+    }
+    // Firebase 인증 상태 리스너: 로그인된 관리자인지 확인
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAdmin(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -42,13 +57,18 @@ export default function Layout() {
     return () => clearInterval(interval);
   }, [globalNews]);
 
-  const navItems = [
+  const baseNavItems = [
     { name: '홈', path: '/', icon: LayoutDashboard },
     { name: '금융 터미널', path: '/crypto', icon: LineChart },
     { name: '디지털 정원', path: '/plants', icon: Leaf },
     { name: '나의 세계', path: '/stories', icon: MessageSquareHeart },
-    { name: '방명록', path: '/guestbook', icon: BookOpen },
+    { name: '게시판', path: '/board', icon: BookOpen },
   ];
+
+  // 관리자일 때만 관리자 메뉴 추가
+  const navItems = isAdmin 
+    ? [...baseNavItems, { name: '관리자', path: '/admin/dashboard', icon: Settings }]
+    : baseNavItems;
 
   return (
     <div className="min-h-screen flex flex-col font-sans">

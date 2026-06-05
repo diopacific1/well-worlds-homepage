@@ -7,7 +7,12 @@ const Home = lazy(() => import("./pages/Home"));
 const CryptoDashboard = lazy(() => import("./pages/CryptoDashboard"));
 const PlantJournal = lazy(() => import("./pages/PlantJournal"));
 const Stories = lazy(() => import("./pages/Stories"));
-const Guestbook = lazy(() => import("./pages/Guestbook"));
+const BoardList = lazy(() => import("./pages/BoardList"));
+const BoardWrite = lazy(() => import("./pages/BoardWrite"));
+const BoardDetail = lazy(() => import("./pages/BoardDetail"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Loading fallback component
 const PageLoader = () => (
@@ -41,11 +46,36 @@ export default function App() {
               <Stories />
             </Suspense>
           } />
-          <Route path="guestbook" element={
+          <Route path="board" element={
             <Suspense fallback={<PageLoader />}>
-              <Guestbook />
+              <BoardList />
             </Suspense>
           } />
+          <Route path="board/new" element={
+            <Suspense fallback={<PageLoader />}>
+              <BoardWrite />
+            </Suspense>
+          } />
+          <Route path="board/:id" element={
+            <Suspense fallback={<PageLoader />}>
+              <BoardDetail />
+            </Suspense>
+          } />
+          
+          <Route path="admin/login" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminLogin />
+            </Suspense>
+          } />
+
+          {/* 관리자 전용 보호된 라우트 */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="admin/dashboard" element={
+              <Suspense fallback={<PageLoader />}>
+                <AdminDashboard />
+              </Suspense>
+            } />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

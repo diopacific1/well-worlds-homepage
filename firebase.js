@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // 데이터베이스를 쓸 거라면
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -10,5 +11,20 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app); // 다른 곳에서 가져다 쓸 수 있게 내보냄
+let app;
+let db = null;
+let auth = null;
+
+try {
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== 'undefined' && firebaseConfig.apiKey !== "your-api-key-here") {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+  } else {
+    console.warn("⚠️ Firebase is not configured! Please provide proper API keys via environment variables.");
+  }
+} catch (error) {
+  console.error("Firebase init error:", error);
+}
+
+export { db, auth };
