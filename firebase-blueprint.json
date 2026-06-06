@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "PortfolioItem": {
+      "title": "Portfolio Item",
+      "description": "An item in the portfolio collection",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["title", "description"]
+    },
+    "PlantJournalEntry": {
+      "title": "Plant Journal Entry",
+      "description": "An entry for garden plant tracking",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "tags": { "type": "array" },
+        "type": { "type": "string" },
+        "date": { "type": "string" },
+        "weather": { "type": "string" },
+        "activity": { "type": "string" }
+      },
+      "required": ["title", "content"]
+    },
+    "BoardPost": {
+      "title": "Board Post",
+      "description": "A community discussion post",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "authorName": { "type": "string" }
+      },
+      "required": ["title", "content", "authorName"]
+    },
+    "StoryPost": {
+      "title": "Story Post",
+      "description": "A story, diary, column or novel writing piece",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "likes": { "type": "number" },
+        "image": { "type": "string" }
+      },
+      "required": ["category", "title", "content", "likes"]
+    }
+  },
+  "firestore": {
+    "/portfolio/{portfolioId}": {
+      "schema": "PortfolioItem",
+      "description": "Admin portfolio items"
+    },
+    "/plant_journal/{entryId}": {
+      "schema": "PlantJournalEntry",
+      "description": "Community garden journal entries"
+    },
+    "/board/{boardId}": {
+      "schema": "BoardPost",
+      "description": "Community bulletin board posts"
+    },
+    "/stories/{storyId}": {
+      "schema": "StoryPost",
+      "description": "Creative writings (diary, novels, columns)"
+    }
+  }
+}

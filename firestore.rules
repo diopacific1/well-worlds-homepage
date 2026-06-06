@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default catch-all to secure any other unspecified paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Auth helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 1. Board Posts (Community Bulletin Board)
+    // Anyone can read and write posts. Deletion is strictly reserved for authenticated Admins.
+    match /board/{boardId} {
+      allow read, create: if true;
+      allow update: if true;
+      allow delete: if isSignedIn();
+    }
+
+    // 2. Personal Stories & Column writings
+    // Public readers can view, write, love/like, and modify.
+    match /stories/{storyId} {
+      allow read, write: if true;
+    }
+
+    // 3. Plant garden journal entries
+    // Public gardeners can view, create notes, and modify plant states.
+    match /plant_journal/{entryId} {
+      allow read, write: if true;
+    }
+
+    // 4. Admin Portfolio (Exclusive content)
+    // Only authenticated admins can access or modify these settings.
+    match /portfolio/{portfolioId} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}
