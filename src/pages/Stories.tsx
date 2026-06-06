@@ -184,7 +184,7 @@ export default function Stories() {
   );
 
   const [feed, setFeed] = useState(() => {
-    const saved = localStorage.getItem("personal_writings");
+    const saved = localStorage.getItem("personal_writings_v3");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -197,7 +197,7 @@ export default function Stories() {
 
   // Save feed to local storage
   useEffect(() => {
-    localStorage.setItem("personal_writings", JSON.stringify(feed));
+    localStorage.setItem("personal_writings_v3", JSON.stringify(feed));
   }, [feed]);
 
   // Save draft to local storage

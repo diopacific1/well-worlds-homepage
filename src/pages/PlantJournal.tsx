@@ -41,7 +41,7 @@ const ACTIVITY_OPTIONS = [
 
 export default function PlantJournal() {
   const [entries, setEntries] = useState(() => {
-    const saved = localStorage.getItem("plant_journal_entries");
+    const saved = localStorage.getItem("plant_journal_entries_v3");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -58,7 +58,7 @@ export default function PlantJournal() {
 
   // Save to localStorage whenever entries change
   useEffect(() => {
-    localStorage.setItem("plant_journal_entries", JSON.stringify(entries));
+    localStorage.setItem("plant_journal_entries_v3", JSON.stringify(entries));
   }, [entries]);
 
   const [formParams, setFormParams] = useState({
