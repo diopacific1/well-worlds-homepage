@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Lazy-loaded pages
 const Home = lazy(() => import("./pages/Home"));
@@ -12,7 +13,6 @@ const BoardWrite = lazy(() => import("./pages/BoardWrite"));
 const BoardDetail = lazy(() => import("./pages/BoardDetail"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-import ProtectedRoute from "./components/ProtectedRoute";
 
 // Loading fallback component
 const PageLoader = () => (

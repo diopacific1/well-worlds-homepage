@@ -15,6 +15,17 @@ export default function Layout() {
   ]);
 
   useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
     if (!auth) {
       setIsAdmin(false);
       return;
@@ -38,7 +49,7 @@ export default function Layout() {
           throw new Error('No items');
         }
       } catch (err) {
-        console.error(err);
+        // Fallback static strings
         setGlobalNews([
           "비트코인, 글로벌 금융 기관 채택 확대로 상승세 지속 의견 팽팽",
           "나스닥 및 S&P 500 등 주요 지수 보합권 내 등락 반복",
