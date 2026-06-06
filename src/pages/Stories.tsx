@@ -280,7 +280,7 @@ export default function Stories() {
     }, 3000);
   };
 
-  // Direct file upload handler via Firebase Storage
+  // Direct file upload handler via Firebase Storage with 10s Timeout & Base64 Fallback
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -294,13 +294,37 @@ export default function Stories() {
     showToast("이미지를 파일 업로드 중입니다...");
     try {
       const storageRef = ref(storage, `stories/${Date.now()}_${file.name}`);
-      const snapshot = await uploadBytes(storageRef, file);
+      
+      // 10-second timeout promise
+      const uploadPromise = uploadBytes(storageRef, file);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout (10 seconds Limit exceeded)")), 10000)
+      );
+
+      // Race them!
+      const snapshot = await Promise.race([uploadPromise, timeoutPromise]);
       const downloadURL = await getDownloadURL(snapshot.ref);
       setNewImage(downloadURL);
       showToast("이미지가 성공적으로 업로드되었습니다!");
     } catch (err: any) {
-      console.error("Storage upload error: ", err);
-      showToast("업로드 실패: " + err.message);
+      console.warn("Storage upload failed/timed out, falling back to local Base64. Error:", err);
+      
+      // Read file as Base64 data URL fallback
+      try {
+        const base64Url = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (e) => reject(e);
+        });
+        setNewImage(base64Url);
+        alert(
+          "안내: 파이어베이스 스토리지 업로드(CORS 또는 버킷 주소 불일치 등)가 실패하여, 브라우저 로컬 이미지(Base64) 데이터로 임시 자동 전환하여 적용했습니다.\n\n" +
+          "💡 세팅하신 스토리지 버킷 '" + ((import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || "미지정") + "' 주소가 파이어베이스 콘솔 Storage 탭의 실제 주소(예: home-page-1-b923f.appspot.com 또는 home-page-1-b923f.firebasestorage.app)와 100% 일치하는지 꼭 확인하고, Secrets 탭에서 다시 저장 후 'Apply changes' 해주세요!"
+        );
+      } catch (fallbackErr) {
+        showToast("이미지 처리 실패: " + err.message);
+      }
     } finally {
       setIsUploading(false);
     }
