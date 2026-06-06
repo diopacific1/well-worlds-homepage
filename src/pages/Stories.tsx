@@ -13,6 +13,7 @@ import {
   Eye,
   Edit3,
   Save,
+  X,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -182,6 +183,7 @@ export default function Stories() {
   const [newImage, setNewImage] = useState(
     () => localStorage.getItem("story_draft_image") || "",
   );
+  const [showImageInput, setShowImageInput] = useState(false);
 
   const [feed, setFeed] = useState(() => {
     const saved = localStorage.getItem("personal_writings_v3");
@@ -264,6 +266,7 @@ export default function Stories() {
     setNewPost("");
     setNewImage("");
     setIsPreview(false);
+    setShowImageInput(false);
     localStorage.removeItem("story_draft_title");
     localStorage.removeItem("story_draft_content");
     localStorage.removeItem("story_draft_image");
@@ -384,19 +387,41 @@ export default function Stories() {
               </>
             )}
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-6 border-t border-outline/20 gap-4">
+            {showImageInput && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={newImage}
+                    onChange={(e) => setNewImage(e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                    className="flex-1 bg-surface-container-lowest border border-outline/20 rounded-lg px-4 py-2 focus:outline-none focus:border-primary text-sm font-sans"
+                  />
+                  <button 
+                    onClick={() => setShowImageInput(false)}
+                    className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-6 border-t border-outline/20 gap-4 mt-6">
               <div className="flex items-center justify-between sm:justify-start gap-4">
                 <button
-                  onClick={() => {
-                    const url = prompt("이미지 URL을 입력하세요:", newImage);
-                    if (url !== null) setNewImage(url);
-                  }}
+                  onClick={() => setShowImageInput(!showImageInput)}
                   className={`p-2.5 rounded-lg border shadow-sm transition-colors ${newImage ? "bg-primary-light/50 text-primary border-primary/30" : "bg-surface-container hover:bg-primary-light/50 text-on-surface-variant hover:text-primary border-outline/10"}`}
                   title="이미지 첨부"
                 >
                   <ImageIcon className="w-5 h-5" />
                 </button>
-                {newImage && (
+                {newImage && !showImageInput && (
                   <span className="text-xs text-primary font-bold truncate max-w-[150px]">
                     이미지 첨부됨
                   </span>
@@ -414,6 +439,7 @@ export default function Stories() {
                       setNewTitle("");
                       setNewPost("");
                       setNewImage("");
+                      setShowImageInput(false);
                     }}
                     className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors"
                   >

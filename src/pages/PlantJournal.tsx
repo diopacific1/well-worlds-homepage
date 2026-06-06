@@ -317,22 +317,16 @@ export default function PlantJournal() {
                       >
                         <Upload className="w-4 h-4" /> 샘플 바꾸기
                       </button>
-                      <button
-                        onClick={() =>
-                          setFormParams({
-                            ...formParams,
-                            image:
-                              prompt(
-                                "이미지 URL을 입력하세요:",
-                                formParams.image,
-                              ) || formParams.image,
-                          })
-                        }
-                        className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg"
-                      >
-                        URL 링크
-                      </button>
                     </div>
+                  </div>
+                  <div className="mt-3">
+                    <input
+                      type="url"
+                      value={formParams.image}
+                      onChange={(e) => setFormParams({...formParams, image: e.target.value})}
+                      placeholder="첨부할 이미지 URL을 직접 입력하세요 (예: https://example.com/image.jpg)"
+                      className="w-full input-field text-sm font-medium"
+                    />
                   </div>
                 </div>
 

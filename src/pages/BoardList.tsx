@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase";
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import { Loader2, PenSquare } from "lucide-react";
+import { Loader2, PenSquare, Trash2 } from "lucide-react";
 
 interface Post {
   id: string;
@@ -15,7 +16,16 @@ export default function BoardList() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAdmin(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!db) {
@@ -37,6 +47,19 @@ export default function BoardList() {
 
     return () => unsubscribe();
   }, []);
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
+    if (!db) return;
+    
+    try {
+      await deleteDoc(doc(db, "board", id));
+    } catch (err) {
+      console.error(err);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-8 w-full animate-in fade-in duration-700 pb-12">
@@ -63,18 +86,19 @@ export default function BoardList() {
                 <th className="p-3 md:p-4 font-bold whitespace-nowrap min-w-[200px]">제목</th>
                 <th className="p-3 md:p-4 font-bold w-24 md:w-32 text-center whitespace-nowrap">작성자</th>
                 <th className="p-3 md:p-4 font-bold w-20 md:w-32 text-center whitespace-nowrap hidden sm:table-cell">작성일</th>
+                {isAdmin && <th className="p-3 md:p-4 font-bold w-16 text-center whitespace-nowrap">관리</th>}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="p-12 text-center text-primary">
+                  <td colSpan={isAdmin ? 5 : 4} className="p-12 text-center text-primary">
                     <Loader2 className="w-8 h-8 animate-spin mx-auto" />
                   </td>
                 </tr>
               ) : posts.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-16 text-center text-on-surface-variant font-medium">
+                  <td colSpan={isAdmin ? 5 : 4} className="p-16 text-center text-on-surface-variant font-medium">
                     등록된 게시글이 없습니다. 첫 번째 글을 작성해보세요!
                   </td>
                 </tr>
@@ -97,6 +121,17 @@ export default function BoardList() {
                     <td className="p-3 md:p-4 text-center text-xs md:text-sm text-on-surface-variant hidden sm:table-cell">
                       {post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString() : '방금 전'}
                     </td>
+                    {isAdmin && (
+                      <td className="p-3 md:p-4 text-center">
+                        <button
+                          onClick={(e) => handleDelete(e, post.id)}
+                          className="p-2 text-error/70 hover:text-error hover:bg-error/10 rounded-lg transition-colors"
+                          title="삭제"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

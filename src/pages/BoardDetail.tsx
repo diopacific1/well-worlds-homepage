@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { doc, getDoc, deleteDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../../firebase";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, UserCircle2, Clock } from "lucide-react";
+import { ArrowLeft, Loader2, UserCircle2, Clock, Trash2 } from "lucide-react";
 
 export default function BoardDetail() {
   const { id } = useParams();
@@ -10,6 +11,15 @@ export default function BoardDetail() {
   const [post, setPost] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAdmin(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -32,15 +42,39 @@ export default function BoardDetail() {
     fetchPost();
   }, [id]);
 
+  const handleDelete = async () => {
+    if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
+    if (!db || !id) return;
+    
+    try {
+      await deleteDoc(doc(db, "board", id));
+      navigate("/board");
+    } catch (err) {
+      console.error(err);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6 w-full animate-in fade-in pb-12">
-      <button 
-        onClick={() => navigate("/board")} 
-        className="self-start flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl transition-colors font-medium"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        목록으로
-      </button>
+      <div className="flex justify-between items-center">
+        <button 
+          onClick={() => navigate("/board")} 
+          className="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl transition-colors font-medium"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          목록으로
+        </button>
+        {isAdmin && post && (
+          <button 
+            onClick={handleDelete}
+            className="flex items-center gap-2 px-4 py-2 text-error hover:bg-error/10 rounded-xl transition-colors font-medium"
+          >
+            <Trash2 className="w-5 h-5" />
+            삭제
+          </button>
+        )}
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center py-20">
