@@ -1,3 +1,5 @@
+
+
 import {
   PenSquare,
   Image as ImageIcon,
@@ -14,11 +16,25 @@ import {
   Edit3,
   Save,
   X,
+  Upload,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Markdown from "react-markdown";
 import { useClickOutside } from "../hooks/useClickOutside";
+import { db, storage } from "../../firebase";
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  orderBy, 
+  onSnapshot, 
+  serverTimestamp 
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const CATEGORIES = [
   { id: "전체", icon: BookOpen, label: "전체 보기" },
@@ -179,27 +195,67 @@ export default function Stories() {
   const [toasts, setToasts] = useState<{ id: number; message: string }[]>([]);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<any>(null);
   const [newImage, setNewImage] = useState(
     () => localStorage.getItem("story_draft_image") || "",
   );
   const [showImageInput, setShowImageInput] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const [feed, setFeed] = useState(() => {
-    const saved = localStorage.getItem("personal_writings_v3");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return MOCK_POSTS;
-      }
-    }
-    return MOCK_POSTS;
-  });
+  // Firestore Feed Integration
+  const [feed, setFeed] = useState<any[]>([]);
+  const [isLoadingFeed, setIsLoadingFeed] = useState(true);
 
-  // Save feed to local storage
   useEffect(() => {
-    localStorage.setItem("personal_writings_v3", JSON.stringify(feed));
+    if (!db) {
+      // Offline fallback / Config missing fallback
+      const saved = localStorage.getItem("personal_writings_v3");
+      if (saved) {
+        try {
+          setFeed(JSON.parse(saved));
+        } catch (e) {
+          setFeed([]);
+        }
+      }
+      setIsLoadingFeed(false);
+      return;
+    }
+
+    const q = query(collection(db, "stories"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const postsData = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            date: data.createdAt?.toDate 
+              ? data.createdAt.toDate().toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                }).replace(/-/g, ". ")
+              : data.date || "방금 전",
+          };
+        });
+        setFeed(postsData);
+        setIsLoadingFeed(false);
+      },
+      (error) => {
+        console.error("Firestore onSnapshot error:", error);
+        setIsLoadingFeed(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Save feed to local storage as fallback/cache if offline
+  useEffect(() => {
+    if (feed.length > 0) {
+      localStorage.setItem("personal_writings_v3", JSON.stringify(feed));
+    }
   }, [feed]);
 
   // Save draft to local storage
@@ -220,56 +276,110 @@ export default function Stories() {
     }, 3000);
   };
 
-  const handlePost = () => {
+  // Direct file upload handler via Firebase Storage
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!storage) {
+      showToast("Firebase Storage 설정이 되지 않았습니다.");
+      return;
+    }
+
+    setIsUploading(true);
+    showToast("이미지를 파일 업로드 중입니다...");
+    try {
+      const storageRef = ref(storage, `stories/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      setNewImage(downloadURL);
+      showToast("이미지가 성공적으로 업로드되었습니다!");
+    } catch (err: any) {
+      console.error("Storage upload error: ", err);
+      showToast("업로드 실패: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handlePost = async () => {
     if (!newPost.trim() || !newTitle.trim()) {
       showToast("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
-    if (editingId) {
-      setFeed(
-        feed.map((p: any) =>
-          p.id === editingId
-            ? {
-                ...p,
-                title: newTitle,
-                content: newPost,
-                category: selectedCategory,
-                image: newImage,
-              }
-            : p,
-        ),
-      );
-      setEditingId(null);
-      showToast("기록이 수정되었습니다.");
-    } else {
-      const post = {
-        id: Date.now(),
-        category: selectedCategory,
-        title: newTitle,
-        date: new Date()
-          .toLocaleDateString("ko-KR", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
-          .replace(/-/g, ". "),
-        content: newPost,
-        likes: 0,
-        image: newImage,
-      };
-      setFeed([post, ...feed]);
-      showToast("새로운 세계가 기록되었습니다.");
-    }
+    setIsUploading(true);
+    try {
+      if (editingId) {
+        if (db) {
+          const postRef = doc(db, "stories", String(editingId));
+          await updateDoc(postRef, {
+            title: newTitle,
+            content: newPost,
+            category: selectedCategory,
+            image: newImage,
+            updatedAt: serverTimestamp(),
+          });
+        } else {
+          setFeed(
+            feed.map((p: any) =>
+              p.id === editingId
+                ? {
+                    ...p,
+                    title: newTitle,
+                    content: newPost,
+                    category: selectedCategory,
+                    image: newImage,
+                  }
+                : p
+            )
+          );
+        }
+        setEditingId(null);
+        showToast("기록이 수정되었습니다.");
+      } else {
+        const postData = {
+          category: selectedCategory,
+          title: newTitle,
+          content: newPost,
+          likes: 0,
+          image: newImage,
+          createdAt: serverTimestamp(),
+        };
 
-    setNewTitle("");
-    setNewPost("");
-    setNewImage("");
-    setIsPreview(false);
-    setShowImageInput(false);
-    localStorage.removeItem("story_draft_title");
-    localStorage.removeItem("story_draft_content");
-    localStorage.removeItem("story_draft_image");
+        if (db) {
+          await addDoc(collection(db, "stories"), postData);
+        } else {
+          const localPost = {
+            id: Date.now(),
+            ...postData,
+            date: new Date()
+              .toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              })
+              .replace(/-/g, ". "),
+          };
+          setFeed([localPost, ...feed]);
+        }
+        showToast("새로운 세계가 기록되었습니다.");
+      }
+
+      setNewTitle("");
+      setNewPost("");
+      setNewImage("");
+      setIsPreview(false);
+      setShowImageInput(false);
+      localStorage.removeItem("story_draft_title");
+      localStorage.removeItem("story_draft_content");
+      localStorage.removeItem("story_draft_image");
+    } catch (err: any) {
+      console.error("Post writing error:", err);
+      showToast("글 등록에 실패했습니다: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleEdit = (post: any) => {
@@ -283,21 +393,45 @@ export default function Stories() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = (id: number) => {
-    setFeed(feed.filter((p: any) => p.id !== id));
-    setActiveDropdown(null);
-    showToast("기록이 삭제되었습니다.");
+  const handleDelete = async (id: any) => {
+    if (!window.confirm("정말로 이 기록을 삭제하시겠습니까?")) return;
+    try {
+      if (db && typeof id === "string") {
+        await deleteDoc(doc(db, "stories", id));
+      } else {
+        setFeed(feed.filter((p: any) => p.id !== id));
+      }
+      setActiveDropdown(null);
+      showToast("기록이 삭제되었습니다.");
+    } catch (err: any) {
+      console.error(err);
+      showToast("삭제 에러가 발생했습니다.");
+    }
   };
 
-  const handleLike = (id: number) => {
-    setFeed(
-      feed.map((p: any) => {
-        if (p.id === id) {
-          return { ...p, likes: p.likes + 1 };
-        }
-        return p;
-      }),
-    );
+  const handleLike = async (id: any) => {
+    const postToLike = feed.find((p) => p.id === id);
+    if (!postToLike) return;
+
+    try {
+      if (db && typeof id === "string") {
+        const postRef = doc(db, "stories", id);
+        await updateDoc(postRef, {
+          likes: (postToLike.likes || 0) + 1,
+        });
+      } else {
+        setFeed(
+          feed.map((p: any) => {
+            if (p.id === id) {
+              return { ...p, likes: p.likes + 1 };
+            }
+            return p;
+          })
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const filteredFeed =
@@ -392,23 +526,71 @@ export default function Stories() {
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
                 animate={{ opacity: 1, height: "auto", marginTop: 16 }}
                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                className="overflow-hidden"
+                className="overflow-hidden bg-surface-container-lowest border border-outline/20 p-5 rounded-2xl space-y-4 shadow-inner"
               >
-                <div className="flex items-center gap-2">
-                  <input
-                    type="url"
-                    value={newImage}
-                    onChange={(e) => setNewImage(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                    className="flex-1 bg-surface-container-lowest border border-outline/20 rounded-lg px-4 py-2 focus:outline-none focus:border-primary text-sm font-sans"
-                  />
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">이미지 첨부 수단 선택</span>
                   <button 
                     onClick={() => setShowImageInput(false)}
-                    className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 rounded-lg transition-colors"
+                    className="p-1.5 hover:bg-surface-dim rounded-lg transition-colors text-on-surface-variant"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* File Upload Zone */}
+                  <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-outline/30 rounded-xl hover:bg-primary/5 hover:border-primary/50 cursor-pointer transition-all gap-2 group min-h-[140px]">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange} 
+                      className="hidden" 
+                      disabled={isUploading}
+                    />
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-2 justify-center">
+                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-xs font-bold text-primary animate-pulse">업로드 중...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-6 h-6 text-on-surface-variant group-hover:text-primary transition-colors" />
+                        <span className="text-xs font-bold text-on-surface-variant group-hover:text-on-surface transition-colors text-center">컴퓨터 / 스마트폰 사진 선택</span>
+                      </>
+                    )}
+                  </label>
+
+                  {/* URL Input Zone */}
+                  <div className="flex flex-col justify-center gap-2">
+                    <span className="text-xs font-semibold text-on-surface-variant">이미지 인터넷 주소(URL) 입력</span>
+                    <input
+                      type="url"
+                      value={newImage}
+                      onChange={(e) => setNewImage(e.target.value)}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full bg-surface border border-outline/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary text-xs font-sans font-medium"
+                    />
+                  </div>
+                </div>
+
+                {newImage && (
+                  <div className="relative rounded-xl overflow-hidden h-36 border border-outline/20 max-w-sm mx-auto shadow-inner">
+                    <img 
+                      src={newImage} 
+                      alt="첨부된 이미지 미리보기" 
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover" 
+                    />
+                    <button 
+                      onClick={() => setNewImage("")}
+                      className="absolute top-2.5 right-2.5 p-1.5 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors"
+                      title="이미지 제거"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
 

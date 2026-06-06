@@ -16,6 +16,19 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { db, storage } from "../../firebase";
+import { 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  orderBy, 
+  onSnapshot, 
+  serverTimestamp 
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const INITIAL_ENTRIES: any[] = [];
 
@@ -40,25 +53,61 @@ const ACTIVITY_OPTIONS = [
 ];
 
 export default function PlantJournal() {
-  const [entries, setEntries] = useState(() => {
-    const saved = localStorage.getItem("plant_journal_entries_v3");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return INITIAL_ENTRIES;
-      }
-    }
-    return INITIAL_ENTRIES;
-  });
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterActivity, setFilterActivity] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Save to localStorage whenever entries change
+  // Firestore Feed Integration for Plants
+  const [entries, setEntries] = useState<any[]>([]);
+  const [isLoadingEntries, setIsLoadingEntries] = useState(true);
+
   useEffect(() => {
-    localStorage.setItem("plant_journal_entries_v3", JSON.stringify(entries));
+    if (!db) {
+      const saved = localStorage.getItem("plant_journal_entries_v3");
+      if (saved) {
+        try {
+          setEntries(JSON.parse(saved));
+        } catch (e) {
+          setEntries([]);
+        }
+      }
+      setIsLoadingEntries(false);
+      return;
+    }
+
+    const q = query(collection(db, "plant_journal"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const postsData = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            date: data.date || (data.createdAt?.toDate 
+              ? data.createdAt.toDate().toISOString().split("T")[0]
+              : new Date().toISOString().split("T")[0]),
+          };
+        });
+        setEntries(postsData);
+        setIsLoadingEntries(false);
+      },
+      (error) => {
+        console.error("Firestore plant_journal error: ", error);
+        setIsLoadingEntries(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Save to localStorage as backup/cache
+  useEffect(() => {
+    if (entries.length > 0) {
+      localStorage.setItem("plant_journal_entries_v3", JSON.stringify(entries));
+    }
   }, [entries]);
 
   const [formParams, setFormParams] = useState({
@@ -103,7 +152,31 @@ export default function PlantJournal() {
 
   const closeForm = () => setIsFormOpen(false);
 
-  const handleSave = () => {
+  // Direct file upload handler via Firebase Storage
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!storage) {
+      alert("Firebase Storage 설정이 완료되지 않았습니다.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const storageRef = ref(storage, `plants/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      setFormParams({ ...formParams, image: downloadURL });
+    } catch (err: any) {
+      console.error(err);
+      alert("업로드 중 오류 발생: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
     if (!formParams.title.trim()) {
       alert("제목을 입력해주세요.");
       return;
@@ -118,47 +191,68 @@ export default function PlantJournal() {
       .map((t) => t.trim())
       .filter(Boolean);
 
-    if (editingId) {
-      setEntries(
-        entries.map((e: any) =>
-          e.id === editingId
-            ? {
-                ...e,
-                title: formParams.title,
-                content: formParams.content,
-                image: formParams.image || PRESET_IMAGES[2],
-                tags: newTags,
-                type: formParams.type,
-                date: formParams.date,
-                weather: formParams.weather,
-                activity: formParams.activity,
-              }
-            : e,
-        ),
-      );
-    } else {
-      setEntries([
-        {
-          id: Date.now(),
-          title: formParams.title,
-          date: formParams.date,
-          content: formParams.content,
-          image:
-            formParams.image ||
-            PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)],
-          tags: newTags,
-          type: formParams.type,
-          weather: formParams.weather,
-          activity: formParams.activity,
-        },
-        ...entries,
-      ]);
+    const dataToSave = {
+      title: formParams.title,
+      content: formParams.content,
+      image: formParams.image || PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)],
+      tags: newTags,
+      type: formParams.type,
+      date: formParams.date,
+      weather: formParams.weather,
+      activity: formParams.activity,
+      updatedAt: serverTimestamp(),
+    };
+
+    try {
+      if (editingId) {
+        if (db) {
+          await updateDoc(doc(db, "plant_journal", String(editingId)), dataToSave);
+        } else {
+          setEntries(
+            entries.map((e: any) =>
+              e.id === editingId
+                ? {
+                    ...e,
+                    ...dataToSave,
+                  }
+                : e
+            )
+          );
+        }
+      } else {
+        const newData = {
+          ...dataToSave,
+          createdAt: serverTimestamp(),
+        };
+        if (db) {
+          await addDoc(collection(db, "plant_journal"), newData);
+        } else {
+          const localEntry = {
+            id: Date.now(),
+            ...newData,
+          };
+          setEntries([localEntry, ...entries]);
+        }
+      }
+      closeForm();
+    } catch (error: any) {
+      console.error("Error saving plant journal entry: ", error);
+      alert("작성 실패: " + error.message);
     }
-    closeForm();
   };
 
-  const handleDelete = (id: number) => {
-    setEntries(entries.filter((e: any) => e.id !== id));
+  const handleDelete = async (id: any) => {
+    if (!window.confirm("정말로 이 정원 일지를 삭제하시겠습니까?")) return;
+    try {
+      if (db && typeof id === "string") {
+        await deleteDoc(doc(db, "plant_journal", id));
+      } else {
+        setEntries(entries.filter((e: any) => e.id !== id));
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert("삭제 실패!");
+    }
   };
 
   const handleImageRandomize = () => {
@@ -300,6 +394,7 @@ export default function PlantJournal() {
                         src={formParams.image}
                         alt="커버 이미지 미리보기"
                         loading="lazy"
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
@@ -310,22 +405,44 @@ export default function PlantJournal() {
                         </span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-on-surface/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-on-surface/50 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-white z-20">
+                        <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-xs font-bold tracking-wider animate-pulse">이미지 업로드 중...</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-on-surface/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm z-10">
                       <button
+                        type="button"
                         onClick={handleImageRandomize}
-                        className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg"
+                        className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg text-xs"
                       >
                         <Upload className="w-4 h-4" /> 샘플 바꾸기
                       </button>
                     </div>
                   </div>
-                  <div className="mt-3">
+
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Device Upload */}
+                    <label className="flex items-center justify-center p-3 border border-dashed border-outline/30 rounded-xl hover:bg-[#5D7964]/5 hover:border-[#5D7964]/50 cursor-pointer transition-all gap-2 text-xs font-bold text-on-surface-variant hover:text-[#5D7964]">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileChange} 
+                        className="hidden" 
+                        disabled={isUploading}
+                      />
+                      <Upload className="w-4 h-4" />
+                      <span>컴퓨터 / 스마트폰 사진 올리기</span>
+                    </label>
+
+                    {/* Image URL Manual input */}
                     <input
                       type="url"
                       value={formParams.image}
                       onChange={(e) => setFormParams({...formParams, image: e.target.value})}
-                      placeholder="첨부할 이미지 URL을 직접 입력하세요 (예: https://example.com/image.jpg)"
-                      className="w-full input-field text-sm font-medium"
+                      placeholder="이미지 주소(URL)를 직접 입력하셔도 됩니다"
+                      className="w-full input-field text-xs font-medium"
                     />
                   </div>
                 </div>
