@@ -10,17 +10,17 @@ let auth = null;
 let storage = null;
 
 try {
-  // Prefer the provisioned firebase applet config if available
-  const config = firebaseAppletConfig.apiKey && firebaseAppletConfig.apiKey !== "your-api-key-here"
-    ? firebaseAppletConfig
-    : {
-        apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-        authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-        storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-        appId: import.meta.env.VITE_FIREBASE_APP_ID
-      };
+  // Prefer environment variables if they are set, otherwise fall back to the provisioned applet config.
+  // This allows the user to easily override fields (like storageBucket) via environment variables.
+  const config = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseAppletConfig.apiKey,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseAppletConfig.authDomain,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseAppletConfig.projectId,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseAppletConfig.storageBucket,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseAppletConfig.messagingSenderId,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseAppletConfig.appId,
+    firestoreDatabaseId: firebaseAppletConfig.firestoreDatabaseId
+  };
 
   if (config.apiKey && config.apiKey !== 'undefined' && config.apiKey !== "your-api-key-here") {
     app = initializeApp(config);
@@ -29,6 +29,7 @@ try {
     auth = getAuth(app);
     storage = getStorage(app);
     console.log("🔥 Firebase initialized successfully with database id:", config.firestoreDatabaseId || "(default)");
+    console.log("📦 Active storage bucket config:", config.storageBucket);
   } else {
     console.warn("⚠️ Firebase is not configured! Please provide proper API keys via env or firebase-applet-config.json.");
   }
@@ -37,3 +38,34 @@ try {
 }
 
 export { db, auth, storage };
+
+export const OperationType = {
+  CREATE: "create",
+  UPDATE: "update",
+  DELETE: "delete",
+  LIST: "list",
+  GET: "get",
+  WRITE: "write",
+};
+
+export function handleFirestoreError(error, operationType, path) {
+  const errInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth?.currentUser?.uid || null,
+      email: auth?.currentUser?.email || null,
+      emailVerified: auth?.currentUser?.emailVerified || null,
+      isAnonymous: auth?.currentUser?.isAnonymous || null,
+      tenantId: auth?.currentUser?.tenantId || null,
+      providerInfo: auth?.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error("Firestore Error: ", JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+

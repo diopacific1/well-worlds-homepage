@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { db, storage } from "../../firebase";
+import { db, storage, handleFirestoreError, OperationType } from "../../firebase";
 import { 
   collection, 
   addDoc, 
@@ -95,8 +95,12 @@ export default function PlantJournal() {
         setIsLoadingEntries(false);
       },
       (error) => {
-        console.error("Firestore plant_journal error: ", error);
         setIsLoadingEntries(false);
+        try {
+          handleFirestoreError(error, OperationType.LIST, "plant_journal");
+        } catch (err) {
+          console.error("Firestore plant_journal error: ", err);
+        }
       }
     );
 
@@ -206,7 +210,11 @@ export default function PlantJournal() {
     try {
       if (editingId) {
         if (db) {
-          await updateDoc(doc(db, "plant_journal", String(editingId)), dataToSave);
+          try {
+            await updateDoc(doc(db, "plant_journal", String(editingId)), dataToSave);
+          } catch (dbErr) {
+            handleFirestoreError(dbErr, OperationType.UPDATE, `plant_journal/${editingId}`);
+          }
         } else {
           setEntries(
             entries.map((e: any) =>
@@ -225,7 +233,11 @@ export default function PlantJournal() {
           createdAt: serverTimestamp(),
         };
         if (db) {
-          await addDoc(collection(db, "plant_journal"), newData);
+          try {
+            await addDoc(collection(db, "plant_journal"), newData);
+          } catch (dbErr) {
+            handleFirestoreError(dbErr, OperationType.CREATE, "plant_journal");
+          }
         } else {
           const localEntry = {
             id: Date.now(),
@@ -245,7 +257,11 @@ export default function PlantJournal() {
     if (!window.confirm("정말로 이 정원 일지를 삭제하시겠습니까?")) return;
     try {
       if (db && typeof id === "string") {
-        await deleteDoc(doc(db, "plant_journal", id));
+        try {
+          await deleteDoc(doc(db, "plant_journal", id));
+        } catch (dbErr) {
+          handleFirestoreError(dbErr, OperationType.DELETE, `plant_journal/${id}`);
+        }
       } else {
         setEntries(entries.filter((e: any) => e.id !== id));
       }

@@ -22,7 +22,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Markdown from "react-markdown";
 import { useClickOutside } from "../hooks/useClickOutside";
-import { db, storage } from "../../firebase";
+import { db, storage, handleFirestoreError, OperationType } from "../../firebase";
 import { 
   collection, 
   addDoc, 
@@ -243,8 +243,12 @@ export default function Stories() {
         setIsLoadingFeed(false);
       },
       (error) => {
-        console.error("Firestore onSnapshot error:", error);
         setIsLoadingFeed(false);
+        try {
+          handleFirestoreError(error, OperationType.LIST, "stories");
+        } catch (err) {
+          console.error("Firestore onSnapshot error:", err);
+        }
       }
     );
 
@@ -313,13 +317,17 @@ export default function Stories() {
       if (editingId) {
         if (db) {
           const postRef = doc(db, "stories", String(editingId));
-          await updateDoc(postRef, {
-            title: newTitle,
-            content: newPost,
-            category: selectedCategory,
-            image: newImage,
-            updatedAt: serverTimestamp(),
-          });
+          try {
+            await updateDoc(postRef, {
+              title: newTitle,
+              content: newPost,
+              category: selectedCategory,
+              image: newImage,
+              updatedAt: serverTimestamp(),
+            });
+          } catch (dbErr) {
+            handleFirestoreError(dbErr, OperationType.UPDATE, `stories/${editingId}`);
+          }
         } else {
           setFeed(
             feed.map((p: any) =>
@@ -348,7 +356,11 @@ export default function Stories() {
         };
 
         if (db) {
-          await addDoc(collection(db, "stories"), postData);
+          try {
+            await addDoc(collection(db, "stories"), postData);
+          } catch (dbErr) {
+            handleFirestoreError(dbErr, OperationType.CREATE, "stories");
+          }
         } else {
           const localPost = {
             id: Date.now(),
@@ -397,7 +409,11 @@ export default function Stories() {
     if (!window.confirm("정말로 이 기록을 삭제하시겠습니까?")) return;
     try {
       if (db && typeof id === "string") {
-        await deleteDoc(doc(db, "stories", id));
+        try {
+          await deleteDoc(doc(db, "stories", id));
+        } catch (dbErr) {
+          handleFirestoreError(dbErr, OperationType.DELETE, `stories/${id}`);
+        }
       } else {
         setFeed(feed.filter((p: any) => p.id !== id));
       }
@@ -416,9 +432,13 @@ export default function Stories() {
     try {
       if (db && typeof id === "string") {
         const postRef = doc(db, "stories", id);
-        await updateDoc(postRef, {
-          likes: (postToLike.likes || 0) + 1,
-        });
+        try {
+          await updateDoc(postRef, {
+            likes: (postToLike.likes || 0) + 1,
+          });
+        } catch (dbErr) {
+          handleFirestoreError(dbErr, OperationType.UPDATE, `stories/${id}`);
+        }
       } else {
         setFeed(
           feed.map((p: any) => {
