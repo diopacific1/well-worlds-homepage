@@ -51,7 +51,7 @@ export default function BoardDetail() {
           {error || "데이터가 없습니다."}
         </div>
       ) : (
-        <article className="bg-surface border border-outline/20 rounded-3xl p-6 md:p-10 shadow-sm flex flex-col gap-8">
+        <article className="bg-surface border border-outline/20 rounded-3xl p-5 md:p-10 shadow-sm flex flex-col gap-6 md:gap-8">
           <header className="flex flex-col gap-4 border-b border-outline/20 pb-6">
             <h1 className="text-2xl md:text-3xl font-bold text-on-surface break-all leading-snug">
               {post.title}
@@ -68,7 +68,7 @@ export default function BoardDetail() {
               </div>
             </div>
           </header>
-          <div className="text-on-surface font-medium leading-loose whitespace-pre-wrap rounded-xl min-h-[300px]">
+          <div className="text-on-surface text-sm md:text-base font-medium leading-loose whitespace-pre-wrap rounded-xl min-h-[300px]">
             {post.content}
           </div>
         </article>

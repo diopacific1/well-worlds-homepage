@@ -24,7 +24,7 @@ const HeroSection = () => (
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="text-5xl md:text-7xl font-display font-bold text-on-surface mb-6 tracking-tight leading-[1.1]"
+      className="text-4xl sm:text-5xl md:text-7xl font-display font-bold text-on-surface mb-6 tracking-tight leading-[1.2] md:leading-[1.1]"
     >
       다양한 데이터를 <br className="hidden md:block" />
       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
@@ -62,11 +62,11 @@ const BentoCard = ({ to, label, className = "", children }: { to: string; label:
     transition={{ type: "spring", stiffness: 300 }}
     className={className}
   >
-    <Link
-      to={to}
-      aria-label={label}
-      className="group relative flex flex-col h-full card overflow-hidden"
-    >
+      <Link
+        to={to}
+        aria-label={label}
+        className="group relative flex flex-col h-full card overflow-hidden"
+      >
       {children}
     </Link>
   </motion.div>
@@ -89,13 +89,13 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-dim/30 -z-10" />
           <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-700 pointer-events-none" />
 
-          <div className="flex flex-col h-full p-8 relative z-10 w-full">
+          <div className="flex flex-col h-full p-6 md:p-8 relative z-10 w-full">
             <div className="w-14 h-14 bg-surface shadow-sm text-primary rounded-2xl flex items-center justify-center mb-auto border border-outline/10 group-hover:scale-105 transition-transform duration-500" aria-hidden="true">
               <LineChart className="w-7 h-7" />
             </div>
 
             <div className="mt-12">
-              <h2 className="text-3xl font-display font-bold text-on-surface mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-3">
                 금융 터미널
               </h2>
               <p className="text-base text-on-surface-variant leading-relaxed max-w-md">
@@ -117,13 +117,13 @@ export default function Home() {
         >
           <div className="absolute inset-0 bg-gradient-to-b from-[#5D7964]/5 to-transparent -z-10" />
 
-          <div className="flex flex-col h-full p-8 relative z-10 w-full">
+          <div className="flex flex-col h-full p-6 md:p-8 relative z-10 w-full">
             <div className="w-14 h-14 bg-surface shadow-sm text-[#5D7964] rounded-2xl flex items-center justify-center mb-auto border border-[#5D7964]/10 group-hover:rotate-6 transition-transform duration-500" aria-hidden="true">
               <Leaf className="w-7 h-7" />
             </div>
 
             <div className="mt-12">
-              <h2 className="text-3xl font-display font-bold text-on-surface mb-3 tracking-tight">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-3 tracking-tight">
                 디지털 정원
               </h2>
               <p className="text-base text-on-surface-variant leading-relaxed">
@@ -145,13 +145,13 @@ export default function Home() {
         >
           <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-secondary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-          <div className="w-full md:w-1/2 flex flex-col justify-between h-full p-8 relative z-10">
+          <div className="w-full md:w-1/2 flex flex-col justify-between h-full p-6 md:p-8 relative z-10">
             <div className="w-14 h-14 bg-surface shadow-sm text-secondary rounded-2xl border border-secondary/10 flex items-center justify-center mb-8 md:mb-auto group-hover:scale-105 transition-transform duration-500" aria-hidden="true">
               <MessageSquareHeart className="w-7 h-7" />
             </div>
 
             <div className="mt-auto">
-              <h2 className="text-3xl font-display font-bold text-on-surface mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-3">
                 나의 이야기
               </h2>
               <p className="text-base text-on-surface-variant leading-relaxed max-w-md">

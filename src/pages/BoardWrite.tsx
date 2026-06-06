@@ -46,7 +46,7 @@ export default function BoardWrite() {
 
       <form 
         onSubmit={handleSubmit} 
-        className="bg-surface border border-outline/20 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col gap-6"
+        className="bg-surface border border-outline/20 rounded-3xl p-5 md:p-8 shadow-sm flex flex-col gap-5 md:gap-6"
       >
         <div className="border-b border-outline/20 pb-4 mb-2 flex items-center gap-3">
           <div className="p-2 bg-primary/10 text-primary rounded-xl">
@@ -65,7 +65,7 @@ export default function BoardWrite() {
               onChange={(e) => setAuthorName(e.target.value)} 
               required 
               maxLength={20} 
-              className="px-4 py-3 bg-surface-container-lowest border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all w-full font-medium" 
+              className="px-4 py-3 bg-surface-container-lowest border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all w-full text-sm md:text-base font-medium" 
             />
           </div>
           <div className="flex flex-col gap-2 w-full md:w-2/3">
@@ -77,7 +77,7 @@ export default function BoardWrite() {
               onChange={(e) => setTitle(e.target.value)} 
               required 
               maxLength={100} 
-              className="px-4 py-3 bg-surface-container-lowest border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all w-full font-medium" 
+              className="px-4 py-3 bg-surface-container-lowest border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all w-full text-sm md:text-base font-medium" 
             />
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function BoardWrite() {
             onChange={(e) => setContent(e.target.value)} 
             required 
             maxLength={2000} 
-            className="px-4 py-3 bg-surface-container-lowest border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all min-h-[300px] resize-y font-medium leading-relaxed" 
+            className="px-4 py-3 bg-surface-container-lowest border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all min-h-[300px] resize-y text-sm md:text-base font-medium leading-relaxed" 
           />
         </div>
 
@@ -102,7 +102,7 @@ export default function BoardWrite() {
           <button 
             type="submit" 
             disabled={isSubmitting || !title.trim() || !content.trim() || !authorName.trim()} 
-            className="px-8 py-3.5 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-all shadow-md text-lg"
+            className="px-6 md:px-8 py-3 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-all shadow-md text-base md:text-lg w-full sm:w-auto"
           >
             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "등록 완료"}
           </button>

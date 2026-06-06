@@ -17,34 +17,7 @@ import {
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
-const INITIAL_ENTRIES = [
-  {
-    id: 1,
-    title: "베란다 정원의 소중한 첫 만남",
-    date: "2026-05-12",
-    content:
-      "상추와 고추, 그리고 대파는 우리 집 작은 베란다 정원에서 함께 자라나는 단짝 친구들입니다.\n\n먼저 상추는 이 화분의 평화주의자입니다. 연둣빛 잎사귀를 보들보들하게 펼치고 있는 모습은 마치 누구든 안아줄 준비가 된 포근한 성격임을 말해주는 것 같습니다.\n\n대파는 이 정원의 든든한 파수꾼 같은 존재입니다. 꼿꼿하게 서서 위로 뻗어나가는 모습이 꽤나 멋집니다.\n\n이 세 단짝이 어떻게 자라날지 매일 물을 주며 지켜보려고 합니다.",
-    image:
-      "https://images.unsplash.com/photo-1453904300235-0f2f60b15b5d?q=80&w=2574&auto=format&fit=crop",
-    tags: ["상추", "고추", "대파"],
-    type: "Balcony Garden",
-    weather: "sun",
-    activity: "observation",
-  },
-  {
-    id: 2,
-    title: "새싹이 돋아나다",
-    date: "2026-05-18",
-    content:
-      "아침에 일어나보니 고추 싹이 흙을 뚫고 올라왔습니다! 생명의 신비란 정말 놀랍습니다. 물만 줬을 뿐인데 저렇게 혼자 힘으로 빛을 향해 뻗어나오다니요. 주말에는 영양제도 조금 챙겨줘야겠습니다.",
-    image:
-      "https://images.unsplash.com/photo-1599598425947-33002629fb10?w=800&auto=format&fit=crop",
-    tags: ["고추", "새싹", "생명의신비"],
-    type: "Balcony Garden",
-    weather: "cloud",
-    activity: "watering",
-  },
-];
+const INITIAL_ENTRIES: any[] = [];
 
 const PRESET_IMAGES = [
   "https://images.unsplash.com/photo-1466692476877-396416fd8b22?w=800&auto=format&fit=crop",
@@ -295,7 +268,7 @@ export default function PlantJournal() {
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-surface border border-outline/20 w-full max-w-2xl rounded-2xl p-6 md:p-8 shadow-2xl relative my-auto box-border"
+              className="bg-surface border border-outline/20 w-full max-w-2xl rounded-2xl p-5 md:p-8 shadow-2xl relative my-auto box-border"
             >
               <button
                 onClick={closeForm}
@@ -304,7 +277,7 @@ export default function PlantJournal() {
                 <X className="w-5 h-5" />
               </button>
 
-              <h3 className="text-3xl font-display font-bold text-on-surface mb-8 flex items-center gap-3">
+              <h3 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-8 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#5D7964]/10 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20">
                   {editingId ? (
                     <Edit3 className="w-5 h-5" />
@@ -569,7 +542,7 @@ export default function PlantJournal() {
               layout
               className="card bg-surface p-0 relative overflow-hidden group border border-outline/20 flex flex-col md:flex-row gap-0"
             >
-              <div className="relative z-10 w-full md:w-3/5 p-8 md:p-10 flex flex-col justify-between order-2 md:order-1">
+              <div className="relative z-10 w-full md:w-3/5 p-6 md:p-10 flex flex-col justify-between order-2 md:order-1">
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-3 py-1 rounded-full border border-[#5D7964]/20">
@@ -593,7 +566,7 @@ export default function PlantJournal() {
                     </div>
                   </div>
 
-                  <h3 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-6 leading-tight max-w-[95%] break-words tracking-tight">
+                  <h3 className="text-2xl md:text-4xl font-display font-bold text-on-surface mb-6 leading-tight max-w-[95%] break-words tracking-tight">
                     {entry.title}
                   </h3>
 

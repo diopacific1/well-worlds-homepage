@@ -40,14 +40,14 @@ export default function BoardList() {
 
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-8 w-full animate-in fade-in duration-700 pb-12">
-      <header className="flex justify-between items-end border-b border-outline/20 pb-8">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-outline/20 pb-6 md:pb-8">
         <div>
-          <h1 className="text-3xl font-display font-black tracking-tight text-on-surface">자유 게시판</h1>
-          <p className="text-on-surface-variant font-medium mt-2">자유롭게 이야기를 나누는 공간입니다.</p>
+          <h1 className="text-2xl md:text-3xl font-display font-black tracking-tight text-on-surface">자유 게시판</h1>
+          <p className="text-on-surface-variant font-medium mt-2 text-sm md:text-base">자유롭게 이야기를 나누는 공간입니다.</p>
         </div>
         <button 
           onClick={() => navigate("/board/new")} 
-          className="px-5 py-2.5 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md"
+          className="px-4 md:px-5 py-2 md:py-2.5 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md text-sm md:text-base w-full sm:w-auto justify-center"
         >
           <PenSquare className="w-4 h-4" />
           글쓰기
@@ -59,10 +59,10 @@ export default function BoardList() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-lowest border-b border-outline/20 text-on-surface-variant text-sm">
-                <th className="p-4 font-bold w-20 text-center whitespace-nowrap">번호</th>
-                <th className="p-4 font-bold whitespace-nowrap min-w-[200px]">제목</th>
-                <th className="p-4 font-bold w-32 text-center whitespace-nowrap">작성자</th>
-                <th className="p-4 font-bold w-32 text-center whitespace-nowrap">작성일</th>
+                <th className="p-3 md:p-4 font-bold w-12 md:w-20 text-center whitespace-nowrap">번호</th>
+                <th className="p-3 md:p-4 font-bold whitespace-nowrap min-w-[200px]">제목</th>
+                <th className="p-3 md:p-4 font-bold w-24 md:w-32 text-center whitespace-nowrap">작성자</th>
+                <th className="p-3 md:p-4 font-bold w-20 md:w-32 text-center whitespace-nowrap hidden sm:table-cell">작성일</th>
               </tr>
             </thead>
             <tbody>
@@ -85,16 +85,16 @@ export default function BoardList() {
                     onClick={() => navigate(`/board/${post.id}`)} 
                     className="border-b border-outline/10 hover:bg-surface-container-lowest transition-colors cursor-pointer group"
                   >
-                    <td className="p-4 text-center text-sm text-on-surface-variant font-medium">
+                    <td className="p-3 md:p-4 text-center text-xs md:text-sm text-on-surface-variant font-medium">
                       {posts.length - index}
                     </td>
-                    <td className="p-4 font-medium text-on-surface group-hover:text-primary transition-colors pr-8">
+                    <td className="p-3 md:p-4 text-sm md:text-base font-medium text-on-surface group-hover:text-primary transition-colors pr-4 md:pr-8">
                       {post.title}
                     </td>
-                    <td className="p-4 text-center text-sm text-on-surface-variant">
+                    <td className="p-3 md:p-4 text-center text-xs md:text-sm text-on-surface-variant">
                       {post.authorName}
                     </td>
-                    <td className="p-4 text-center text-sm text-on-surface-variant">
+                    <td className="p-3 md:p-4 text-center text-xs md:text-sm text-on-surface-variant hidden sm:table-cell">
                       {post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString() : '방금 전'}
                     </td>
                   </tr>

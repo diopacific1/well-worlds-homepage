@@ -27,37 +27,7 @@ const CATEGORIES = [
   { id: "이야기", icon: Feather, label: "이야기" },
 ];
 
-const MOCK_POSTS = [
-  {
-    id: 1,
-    category: "칼럼",
-    title: "미니멀리즘과 삶의 속도",
-    date: "2026. 05. 24",
-    content:
-      "우리는 항상 더 많은 것을 원하도록 설계된 사회에 살고 있다. 하지만 가끔은 멈춰 서서 내 주변을 둘러볼 필요가 있다.\n\n불필요한 것들을 비워낼 때, 비로소 내가 진정으로 원하는 것이 무엇인지 명확해진다. **디지털 디톡스**를 시작한 지 일주일 째, 생각보다 내 머릿속이 훨씬 더 맑아진 것을 느낀다.",
-    image:
-      "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2670&auto=format&fit=crop",
-    likes: 12,
-  },
-  {
-    id: 2,
-    category: "일기",
-    title: "조용한 주말 아침",
-    date: "2026. 05. 20",
-    content:
-      "오랜만에 알람 없이 일어났다. 창문 틈으로 들어오는 햇살이 기분 좋다.\n\n- 따뜻한 커피 한 잔\n- 좋아하는 음악 플레이리스트\n\n오늘은 아무런 계획 없이 그저 이 여유를 즐겨야겠다.",
-    likes: 8,
-  },
-  {
-    id: 3,
-    category: "소설",
-    title: "별 먼지의 기억 - 1화",
-    date: "2026. 05. 15",
-    content:
-      "서기 2154년, 지구의 궤도 정거장 '오리온'.\n\n창밖으로 보이는 푸른 별은 예전의 그 아름다움을 간직한 채 조용히 돌고 있었다. 엘리는 커피 잔을 만지작거리며 낡은 홀로그램 사진을 쳐다보았다.\n\n> \"이제 며칠 안 남았네...\"",
-    likes: 24,
-  },
-];
+const MOCK_POSTS: any[] = [];
 
 const PostItem = ({
   post,
@@ -84,7 +54,7 @@ const PostItem = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="bg-surface p-8 md:p-12 group/card shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] border border-outline/20 rounded-2xl relative overflow-hidden"
+      className="bg-surface p-6 md:p-12 group/card shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] border border-outline/20 rounded-2xl relative overflow-hidden"
     >
       {/* Visual Flair */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
@@ -140,7 +110,7 @@ const PostItem = ({
               </div>
             </div>
           </div>
-          <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
+          <h2 className="text-2xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
             {post.title}
           </h2>
         </div>
@@ -157,7 +127,7 @@ const PostItem = ({
               />
             </div>
           )}
-          <div className="prose prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
+          <div className="prose prose-base md:prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
             <Markdown>{post.content}</Markdown>
           </div>
         </div>
@@ -346,7 +316,7 @@ export default function Stories() {
 
       <div className="space-y-10">
         {/* Compose Box */}
-        <div className="bg-surface p-6 md:p-10 rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)] border border-outline/30">
+        <div className="bg-surface p-5 md:p-10 rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)] border border-outline/30">
           <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
             <div className="flex gap-2">
               {CATEGORIES.slice(1).map((cat) => (
@@ -384,7 +354,7 @@ export default function Stories() {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="제목을 입력하세요"
-              className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-3xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-outline-variant transition-all duration-300"
+              className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-2xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-outline-variant transition-all duration-300"
             />
             {isPreview ? (
               <div
@@ -409,13 +379,13 @@ export default function Stories() {
                   value={newPost}
                   onChange={(e) => setNewPost(e.target.value)}
                   placeholder="당신의 이야기를 들려주세요... (마크다운 지원)"
-                  className="w-full bg-transparent text-on-surface-variant font-sans text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
+                  className="w-full bg-transparent text-on-surface-variant font-sans text-base md:text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
                 />
               </>
             )}
 
-            <div className="flex items-center justify-between pt-6 border-t border-outline/20">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-6 border-t border-outline/20 gap-4">
+              <div className="flex items-center justify-between sm:justify-start gap-4">
                 <button
                   onClick={() => {
                     const url = prompt("이미지 URL을 입력하세요:", newImage);

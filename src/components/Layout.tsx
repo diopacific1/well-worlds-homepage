@@ -201,7 +201,7 @@ export default function Layout() {
         </AnimatePresence>
       </header>
 
-      <main className="flex-1 w-full max-w-[1280px] mx-auto px-6 py-12 md:py-16">
+      <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16">
         <Outlet />
       </main>
     </div>

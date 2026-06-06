@@ -240,7 +240,7 @@ export default function CryptoDashboard() {
           {/* Search Header */}
           <form
             onSubmit={handleSearch}
-            className="card p-6 flex flex-col sm:flex-row items-center justify-between gap-6 transition-none"
+            className="card p-5 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-5 md:gap-6 transition-none"
             aria-label="가상자산 검색"
           >
             <div className="flex items-center gap-4">
@@ -319,7 +319,7 @@ export default function CryptoDashboard() {
                   : coin.trendUp
               }
             />
-            <div className="card min-w-[280px] p-6 relative overflow-hidden flex flex-col justify-between">
+            <div className="card min-w-[280px] p-5 md:p-6 relative overflow-hidden flex flex-col justify-between">
               <p className="text-[11px] font-mono font-bold text-on-surface-variant uppercase tracking-widest mb-2">
                 24시간 변동성
               </p>
@@ -369,10 +369,10 @@ export default function CryptoDashboard() {
             {/* Main Column */}
             <div className="lg:col-span-2 space-y-6">
               {/* Price Chart */}
-              <div className="card p-8 min-h-[450px] relative flex flex-col">
-                <div className="flex justify-between items-center mb-8">
+              <div className="card p-5 md:p-8 min-h-[450px] relative flex flex-col">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 md:mb-8">
                   <div>
-                    <h3 className="text-2xl md:text-3xl font-display font-bold text-on-surface flex items-center gap-2">
+                    <h3 className="text-xl md:text-2xl lg:text-3xl font-display font-bold text-on-surface flex items-center gap-2">
                       가격 시각화{" "}
                       <span className="text-primary font-mono text-sm uppercase">
                         / 7일 실시간 시세
@@ -505,7 +505,7 @@ export default function CryptoDashboard() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Sentiment */}
-              <div className="card p-8 text-center flex items-center justify-center flex-col min-h-[300px]">
+              <div className="card p-5 md:p-8 text-center flex items-center justify-center flex-col min-h-[300px]">
                 <h3 className="text-xs font-semibold uppercase tracking-widest mb-8 text-on-surface-variant px-4 py-1.5 border border-outline/20 rounded-full">
                   공포 / 탐욕 지수
                 </h3>
@@ -563,17 +563,17 @@ export default function CryptoDashboard() {
           </div>
 
           {/* Report Section */}
-          <section className="card p-8 md:p-12 mt-12 bg-surface border border-primary/20">
+          <section className="card p-5 md:p-12 mt-10 md:mt-12 bg-surface border border-primary/20">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center gap-4 mb-10 pb-6 border-b border-outline/20">
-                <span className="h-2 w-12 bg-primary rounded-full"></span>
-                <h2 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-on-surface">
+              <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-10 pb-4 md:pb-6 border-b border-outline/20">
+                <span className="h-2 w-8 md:w-12 bg-primary rounded-full"></span>
+                <h2 className="text-2xl md:text-4xl font-display font-bold tracking-tight text-on-surface">
                   시장 및 기술 분석 보고서
                 </h2>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-8 mb-12">
-                <div className="bg-primary/5 border border-primary/10 p-8 rounded-2xl">
+              <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-10 md:mb-12">
+                <div className="bg-primary/5 border border-primary/10 p-6 md:p-8 rounded-2xl">
                   <h3 className="text-primary font-display font-bold text-xl mb-6 flex items-center gap-3">
                     <BarChart2 className="w-6 h-6" /> 주요 핵심 요약
                   </h3>
@@ -592,7 +592,7 @@ export default function CryptoDashboard() {
                     </li>
                   </ul>
                 </div>
-                <div className="bg-surface border border-outline/20 p-8 rounded-2xl shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] flex flex-col justify-between">
+                <div className="bg-surface border border-outline/20 p-6 md:p-8 rounded-2xl shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] flex flex-col justify-between">
                   <div>
                     <h3 className="font-display font-bold text-xl mb-6 text-on-surface flex items-center gap-3">
                       <Activity className="w-6 h-6 text-on-surface-variant" />{" "}
