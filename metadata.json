@@ -1,6 +1,6 @@
 {
   "name": "우물 그리고 세계 (Well and the World)",
-  "description": "다양한 데이터를 하나의 일관된 디자인 시스템으로 모아보는 웹 플랫폼",
+  "description": "나만의 우물 속 세계를 기록하다",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

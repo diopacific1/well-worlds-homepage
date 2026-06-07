@@ -70,9 +70,9 @@ export default function Layout() {
 
   const baseNavItems = [
     { name: '홈', path: '/', icon: LayoutDashboard },
-    { name: '금융 터미널', path: '/crypto', icon: LineChart },
     { name: '디지털 정원', path: '/plants', icon: Leaf },
     { name: '나의 세계', path: '/stories', icon: MessageSquareHeart },
+    { name: '크립토 월드', path: '/crypto', icon: LineChart },
     { name: '게시판', path: '/board', icon: BookOpen },
   ];
 
