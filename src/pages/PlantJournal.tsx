@@ -58,6 +58,7 @@ export default function PlantJournal() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterActivity, setFilterActivity] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Firestore Feed Integration for Plants
   const [entries, setEntries] = useState<any[]>([]);
@@ -232,6 +233,7 @@ export default function PlantJournal() {
       updatedAt: serverTimestamp(),
     };
 
+    setIsSaving(true);
     try {
       if (editingId) {
         if (db) {
@@ -275,6 +277,8 @@ export default function PlantJournal() {
     } catch (error: any) {
       console.error("Error saving plant journal entry: ", error);
       alert("작성 실패: " + error.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -650,14 +654,21 @@ export default function PlantJournal() {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={!formParams.title.trim() || !formParams.content.trim()}
-                  className={`px-8 py-3 rounded-lg font-bold transition-all shadow-md ${
-                    !formParams.title.trim() || !formParams.content.trim()
+                  disabled={isSaving || isUploading || !formParams.title.trim() || !formParams.content.trim()}
+                  className={`px-8 py-3 rounded-lg font-bold transition-all shadow-md flex items-center justify-center gap-2 ${
+                    isSaving || isUploading || !formParams.title.trim() || !formParams.content.trim()
                       ? "bg-surface-dim text-outline-variant cursor-not-allowed"
                       : "bg-[#5D7964] text-white hover:brightness-110"
                   }`}
                 >
-                  저장하기
+                  {isSaving || isUploading ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : null}
+                  {isUploading 
+                    ? "이미지 업로드 중..." 
+                    : isSaving 
+                      ? (editingId ? "수정 중..." : "저장 중...") 
+                      : (editingId ? "수정 완료" : "저장하기")}
                 </button>
               </div>
             </motion.div>

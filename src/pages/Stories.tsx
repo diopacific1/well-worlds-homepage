@@ -201,6 +201,7 @@ export default function Stories() {
   );
   const [showImageInput, setShowImageInput] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Firestore Feed Integration
   const [feed, setFeed] = useState<any[]>([]);
@@ -336,7 +337,7 @@ export default function Stories() {
       return;
     }
 
-    setIsUploading(true);
+    setIsSaving(true);
     try {
       if (editingId) {
         if (db) {
@@ -414,7 +415,7 @@ export default function Stories() {
       console.error("Post writing error:", err);
       showToast("글 등록에 실패했습니다: " + err.message);
     } finally {
-      setIsUploading(false);
+      setIsSaving(false);
     }
   };
 
@@ -674,15 +675,23 @@ export default function Stories() {
                 )}
                 <button
                   onClick={handlePost}
-                  disabled={!newPost.trim() || !newTitle.trim()}
+                  disabled={isSaving || isUploading || !newPost.trim() || !newTitle.trim()}
                   className={`px-8 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 tracking-wide ${
-                    !newPost.trim() || !newTitle.trim()
+                    isSaving || isUploading || !newPost.trim() || !newTitle.trim()
                       ? "bg-surface-dim text-outline-variant cursor-not-allowed"
                       : "bg-on-surface text-surface hover:bg-primary hover:shadow-lg shadow-md"
                   }`}
                 >
-                  <Send className="w-4 h-4" />{" "}
-                  {editingId ? "수정 저장하기" : "저장하기"}
+                  {isSaving || isUploading ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  {isUploading 
+                    ? "이미지 업로드 중..." 
+                    : isSaving 
+                      ? (editingId ? "수정 중..." : "저장 중...") 
+                      : (editingId ? "수정 저장하기" : "저장하기")}
                 </button>
               </div>
             </div>
