@@ -219,10 +219,10 @@ export default function Home() {
             </div>
           </BentoCard>
 
-          {/* Board */}
+          {/* Guestbook */}
           <BentoCard 
-            to="/board" 
-            label="게시판으로 이동" 
+            to="/guestbook" 
+            label="방명록으로 이동" 
             className="md:col-span-7 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/60 transition-colors shadow-sm hover:shadow-xl hover:shadow-outline/5"
           >
             <div className="absolute inset-0 bg-gradient-to-tl from-surface-variant/30 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
@@ -239,13 +239,13 @@ export default function Home() {
 
               <div className="mt-12 max-w-md">
                 <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4">
-                  자유 게시판
+                  방명록
                 </h2>
                 <p className="text-lg text-on-surface-variant/90 leading-relaxed font-medium">
-                  다른 세계의 기록자들과 연결되는 공간. 통찰을 공유하고 새로운 영감을 발견해보세요.
+                  다른 세계의 탐험가들이 남긴 발자취를 확인하고, 여러분의 기록도 남겨보세요.
                 </p>
                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-on-surface-variant bg-surface border border-outline/10 shadow-sm w-fit px-4 py-2 rounded-full group-hover:bg-surface-variant/30 transition-colors">
-                  게시판 둘러보기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  흔적 둘러보기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>
