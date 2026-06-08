@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -49,6 +49,8 @@ export default function App() {
               <Guestbook />
             </Suspense>
           } />
+          
+          <Route path="admin" element={<Navigate to="/admin/dashboard" replace />} />
           
           <Route path="admin/login" element={
             <Suspense fallback={<PageLoader />}>
