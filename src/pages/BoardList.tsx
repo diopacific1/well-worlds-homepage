@@ -29,23 +29,66 @@ export default function BoardList() {
 
   useEffect(() => {
     if (!db) {
-      setError("Firebase가 연결되지 않았습니다.");
+      setError("Firebase가 연결되지 않았습니다. API 키를 확인해주세요.");
       setIsLoading(false);
       return;
     }
 
-    const q = query(collection(db, "board"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
-      setPosts(fetchedPosts);
-      setIsLoading(false);
-    }, (err) => {
-      console.error(err);
-      setError("데이터를 불러올 수 없습니다. 시스템 오류이거나 권한이 없습니다.");
-      setIsLoading(false);
-    });
+    let unsubscribe: () => void;
+    let isMounted = true;
 
-    return () => unsubscribe();
+    const fetchManualFallback = async (q: any) => {
+      try {
+        const { getDocs } = await import("firebase/firestore");
+        const snapshot = await getDocs(q);
+        if (isMounted) {
+          const fetchedPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+          setPosts(fetchedPosts);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error("Fallback getDocs error:", err);
+        if (isMounted) {
+          setError("데이터를 불러올 수 없습니다. 권한이나 네트워크 상태를 확인해주세요.");
+          setIsLoading(false);
+        }
+      }
+    };
+
+    try {
+      const q = query(collection(db, "board"), orderBy("createdAt", "desc"));
+      
+      // Fallback: If onSnapshot doesn't fire within 3 seconds, force manual fetch
+      const fallbackTimer = setTimeout(() => {
+        if (isMounted && isLoading) {
+           console.warn("onSnapshot didn't resolve in 3 seconds, fetching manually...");
+           fetchManualFallback(q);
+        }
+      }, 3000);
+
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        clearTimeout(fallbackTimer);
+        if (!isMounted) return;
+        const fetchedPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Post));
+        setPosts(fetchedPosts);
+        setIsLoading(false);
+      }, (err) => {
+        clearTimeout(fallbackTimer);
+        if (!isMounted) return;
+        console.error("BoardList onSnapshot error:", err);
+        setError("데이터를 불러올 수 없습니다. 시스템 오류이거나 권한이 없습니다.");
+        setIsLoading(false);
+      });
+    } catch (err) {
+      console.error("BoardList query initialization error:", err);
+      setError("게시판 데이터를 초기화하는 중 오류가 발생했습니다.");
+      setIsLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {

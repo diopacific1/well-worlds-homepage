@@ -40,7 +40,7 @@ export default function Layout() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const res = await fetch('/api/news?q=특보');
+        const res = await fetch('/api/news?q=속보+when:1d');
         if (!res.ok) throw new Error('API fetch failed');
         const data = await res.json();
         if (data.items && data.items.length > 0) {

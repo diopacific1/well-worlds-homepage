@@ -38,7 +38,7 @@ export default function BoardWrite() {
     <div className="max-w-4xl mx-auto flex flex-col gap-6 w-full animate-in fade-in pb-12">
       <button 
         onClick={() => navigate("/board")} 
-        className="self-start flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-xl transition-colors font-medium"
+        className="self-start flex items-center gap-2 px-6 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full transition-all duration-300 ease-out font-semibold text-sm hover:scale-105 active:scale-95 border border-transparent hover:border-gray-200"
       >
         <ArrowLeft className="w-5 h-5" />
         글쓰기 취소
@@ -102,9 +102,13 @@ export default function BoardWrite() {
           <button 
             type="submit" 
             disabled={isSubmitting || !title.trim() || !content.trim() || !authorName.trim()} 
-            className="px-6 md:px-8 py-3 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-all shadow-md text-base md:text-lg w-full sm:w-auto"
+            className={`px-8 py-4 rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 ease-out flex items-center justify-center gap-2 shadow-sm border w-full sm:w-auto ${
+              isSubmitting || !title.trim() || !content.trim() || !authorName.trim()
+                ? "bg-surface-dim text-outline-variant cursor-not-allowed border-outline/20"
+                : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 border-outline/20 hover:border-blue-200 hover:shadow-md"
+            }`}
           >
-            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "등록 완료"}
+            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "등록하기"}
           </button>
         </div>
       </form>

@@ -71,16 +71,16 @@ const PostItem = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="bg-surface p-6 md:p-12 group/card shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] border border-outline/20 rounded-2xl relative overflow-hidden"
+      className="bg-surface p-8 md:p-12 group/card shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-500 border border-outline/10 rounded-[2rem] relative overflow-hidden"
     >
       {/* Visual Flair */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none transition-all duration-700 group-hover/card:bg-primary/10 group-hover/card:scale-150" />
 
       <div className="flex flex-col gap-8 relative z-10">
         {/* Post Header */}
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-3 py-1.5 rounded-md font-bold flex items-center gap-2 w-fit border border-primary/20 letter-spacing-widest">
+          <div className="flex items-center justify-between mb-8">
+            <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-4 py-1.5 rounded-full font-bold flex items-center gap-2 w-fit border border-primary/20 backdrop-blur-sm tracking-widest">
               {CATEGORIES.find((c) => c.id === post.category)?.icon &&
                 (() => {
                   const Icon = CATEGORIES.find((c) => c.id === post.category)!.icon;
@@ -88,8 +88,8 @@ const PostItem = ({
                 })()}
               {post.category}
             </span>
-            <div className="flex items-center gap-4">
-              <p className="font-mono text-xs text-on-surface-variant font-semibold tracking-wider bg-surface-container-lowest px-3 py-1 rounded border border-outline/20">
+            <div className="flex items-center gap-4 opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform md:translate-x-4 group-hover/card:translate-x-0">
+              <p className="font-mono text-sm text-on-surface-variant font-bold tracking-wider mr-2">
                 {post.date}
               </p>
               <div className="relative" ref={dropdownRef}>
@@ -98,18 +98,18 @@ const PostItem = ({
                   aria-haspopup="true"
                   aria-label={`${post.title} 추가 메뉴`}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="text-on-surface-variant hover:text-on-surface p-1.5 bg-surface hover:bg-surface-dim rounded-md border border-transparent hover:border-outline/20 transition-all shadow-none hover:shadow-sm"
+                  className="text-on-surface-variant hover:text-primary p-2.5 bg-surface hover:bg-surface-dim rounded-full border border-outline/10 transition-colors shadow-sm hover:shadow-md"
                 >
                   <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-36 bg-surface rounded-lg shadow-xl border border-outline/20 py-2 z-10 text-on-surface">
+                  <div className="absolute right-0 mt-2 w-36 bg-surface rounded-xl shadow-xl border border-outline/10 py-2 z-10 text-on-surface overflow-hidden">
                     <button
                       onClick={() => {
                         setIsDropdownOpen(false);
                         handleEdit(post);
                       }}
-                      className="w-full text-left px-5 py-2.5 text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-dim flex items-center gap-3 font-bold transition-colors"
+                      className="w-full text-left px-5 py-3 text-sm text-on-surface-variant hover:text-on-surface hover:bg-primary/5 flex items-center gap-3 font-bold transition-colors"
                     >
                       <Edit3 className="w-4 h-4" aria-hidden="true" /> 수정하기
                     </button>
@@ -118,7 +118,7 @@ const PostItem = ({
                         setIsDropdownOpen(false);
                         handleDelete(post.id);
                       }}
-                      className="w-full text-left px-5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
+                      className="w-full text-left px-5 py-3 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" /> 삭제하기
                     </button>
@@ -127,7 +127,7 @@ const PostItem = ({
               </div>
             </div>
           </div>
-          <h2 className="text-2xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-display font-extrabold text-on-surface mb-4 tracking-tight leading-tight">
             {post.title}
           </h2>
         </div>
@@ -135,13 +135,14 @@ const PostItem = ({
         {/* Post Content */}
         <div className="text-on-surface-variant font-medium">
           {post.image && (
-            <div className="relative rounded-xl overflow-hidden max-h-[500px] border border-outline/20 mb-8 shadow-sm">
+            <div className="relative rounded-2xl overflow-hidden max-h-[500px] border border-outline/10 mb-8 shadow-sm group-hover/card:shadow-md transition-shadow duration-500">
               <img
                 src={post.image}
                 alt="게시물 표지 이미지"
                 loading="lazy"
-                className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover group-hover/card:scale-105 group-hover/card:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover/card:brightness-105"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-transparent pointer-events-none opacity-50 group-hover/card:opacity-0 transition-opacity duration-500" />
             </div>
           )}
           <div className="prose prose-base md:prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
@@ -487,18 +488,41 @@ export default function Stories() {
   return (
     <div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
       {/* Cinematic Header */}
-      <div className="flex flex-col gap-4 pb-10 mb-10 border-b border-outline/20">
-        <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-on-surface flex items-center gap-4">
-          나의 세계
-        </h1>
-        <p className="text-lg md:text-xl text-on-surface-variant font-sans max-w-2xl font-medium">
-          나만의 일상, 생각, 그리고 상상의 나래를 기록하는 공간입니다.
-        </p>
-      </div>
+      <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto border-b border-outline/10 mb-10">
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center border border-primary/20 shadow-sm shadow-primary/10 mb-6"
+        >
+          <Book className="w-8 h-8 md:w-10 md:h-10" />
+        </motion.div>
+        
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+          className="text-4xl md:text-6xl font-display font-extrabold tracking-tight text-on-surface mb-6 leading-tight"
+        >
+          기억의 조각들이 <br className="md:hidden" /> 모이는 곳
+        </motion.h1>
+        
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          className="text-lg md:text-xl text-on-surface-variant/90 font-medium max-w-2xl leading-relaxed mb-4"
+        >
+          나만의 일상, 생각, 그리고 상상의 나래.<br className="hidden md:block" />
+          흘러가는 시간 속 의미 있는 순간들을 하나의 세계로 엮어냅니다.
+        </motion.p>
+      </section>
 
       <div className="space-y-10">
         {/* Compose Box */}
-        <div className="bg-surface p-5 md:p-10 rounded-2xl shadow-[0_4px_12px_-2px_rgba(70,72,212,0.05)] border border-outline/30">
+        <div className="bg-surface p-6 md:p-12 rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow duration-500 relative overflow-hidden border border-outline/10">
           <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
             <div className="flex gap-2">
               {CATEGORIES.slice(1).map((cat) => (
@@ -643,18 +667,18 @@ export default function Stories() {
               <div className="flex items-center justify-between sm:justify-start gap-4">
                 <button
                   onClick={() => setShowImageInput(!showImageInput)}
-                  className={`p-2.5 rounded-lg border shadow-sm transition-colors ${newImage ? "bg-primary-light/50 text-primary border-primary/30" : "bg-surface-container hover:bg-primary-light/50 text-on-surface-variant hover:text-primary border-outline/10"}`}
+                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${newImage ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 border-outline/20 hover:border-blue-200 hover:shadow-md"}`}
                   title="이미지 첨부"
                 >
                   <ImageIcon className="w-5 h-5" />
                 </button>
                 {newImage && !showImageInput && (
-                  <span className="text-xs text-primary font-bold truncate max-w-[150px]">
+                  <span className="text-xs text-blue-600 font-bold truncate max-w-[150px]">
                     이미지 첨부됨
                   </span>
                 )}
-                <div className="text-xs text-on-surface-variant font-mono font-semibold flex items-center gap-2 px-3 py-1.5 bg-surface-dim/30 rounded-full border border-outline/10 shadow-inner">
-                  <Save className="w-3.5 h-3.5 text-primary" />{" "}
+                <div className="text-sm text-on-surface-variant font-semibold flex items-center gap-2 px-4 py-3 bg-white hover:bg-blue-50 hover:text-blue-600 rounded-full border border-outline/20 hover:border-blue-200 shadow-sm transition-all duration-300 ease-out hover:shadow-md cursor-default">
+                  <Save className="w-4 h-4 text-blue-600" />{" "}
                   {editingId ? "수정 중..." : "자동 임시저장"}
                 </div>
               </div>
@@ -668,7 +692,7 @@ export default function Stories() {
                       setNewImage("");
                       setShowImageInput(false);
                     }}
-                    className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors"
+                    className="px-6 py-4 rounded-full font-semibold text-lg transition-all duration-300 ease-out hover:bg-gray-100 hover:scale-105 active:scale-95 border border-transparent hover:border-gray-200 text-on-surface-variant hover:text-on-surface"
                   >
                     취소
                   </button>
@@ -676,10 +700,10 @@ export default function Stories() {
                 <button
                   onClick={handlePost}
                   disabled={isSaving || isUploading || !newPost.trim() || !newTitle.trim()}
-                  className={`px-8 py-3 rounded-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 tracking-wide ${
+                  className={`px-8 py-4 rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 ease-out flex items-center justify-center gap-2 shadow-sm border w-full sm:w-auto ${
                     isSaving || isUploading || !newPost.trim() || !newTitle.trim()
-                      ? "bg-surface-dim text-outline-variant cursor-not-allowed"
-                      : "bg-on-surface text-surface hover:bg-primary hover:shadow-lg shadow-md"
+                      ? "bg-surface-dim text-outline-variant cursor-not-allowed border-outline/20"
+                      : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 border-outline/20 hover:border-blue-200 hover:shadow-md"
                   }`}
                 >
                   {isSaving || isUploading ? (
@@ -729,13 +753,22 @@ export default function Stories() {
           </AnimatePresence>
 
           {filteredFeed.length === 0 && (
-            <div className="text-center py-24 text-on-surface-variant bg-surface border border-outline/20 rounded-2xl border-dashed">
-              <BookOpen className="w-16 h-16 mx-auto mb-6 opacity-30" />
-              <p className="text-xl font-display font-bold text-on-surface mb-2">
-                아직 작성된 세계가 없습니다.
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-32 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+              <BookOpen className="w-20 h-20 text-primary/30 mx-auto mb-6 relative z-10 animate-pulse" />
+              <p className="text-on-surface font-display font-extrabold text-3xl relative z-10 tracking-tight mb-4">
+                기록의 공간이 비어있습니다
               </p>
-              <p className="text-sm font-medium">새로운 기록을 남겨보세요.</p>
-            </div>
+              <p className="text-on-surface-variant font-medium text-lg relative z-10 max-w-md mx-auto">
+                첫 번째 문장을 시도해볼 시간입니다. 
+                당신만의 특별한 세계를 자유롭게 스케치해보세요.
+              </p>
+            </motion.div>
           )}
         </div>
       </div>

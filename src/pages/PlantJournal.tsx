@@ -339,59 +339,82 @@ export default function PlantJournal() {
   };
 
   return (
-    <div className="p-4 lg:p-6 space-y-8 animate-in fade-in duration-700 max-w-5xl mx-auto min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-outline/20 pb-6 mt-4">
-        <div className="space-y-4 w-full">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-on-surface flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-[#5D7964]/10 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20 shadow-sm md:w-14 md:h-14">
-                <Sprout className="w-6 h-6 md:w-8 md:h-8" />
-              </div>
-              디지털 정원
-            </h1>
-            <p className="text-on-surface-variant font-medium mt-3">
-              나만의 정원 스토리를 자유롭게 기록하고 관리하세요.
-            </p>
-          </div>
+    <div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
+      {/* Hero Header */}
+      <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto">
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#5D7964]/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-[#5D7964]/20 to-[#5D7964]/5 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20 shadow-sm shadow-[#5D7964]/10 mb-6"
+        >
+          <Sprout className="w-8 h-8 md:w-10 md:h-10" />
+        </motion.div>
+        
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+          className="text-4xl md:text-6xl font-display font-extrabold tracking-tight text-on-surface mb-6 leading-tight"
+        >
+          마음이 머무는 <br className="md:hidden" /> 푸른 아카이브
+        </motion.h1>
+        
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          className="text-lg md:text-xl text-on-surface-variant/90 font-medium max-w-2xl leading-relaxed mb-10"
+        >
+          조용히 피어나는 일상 속 반려 식물의 숨결.<br className="hidden md:block" />
+          시간의 흐름에 따라 변화하는 나만의 관찰 일지를 기록하세요.
+        </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-center w-full max-w-2xl mt-4">
-            <div className="relative w-full">
-              <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
-              <input
-                type="text"
-                placeholder="일지 내용, 태그 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full input-field !pl-12 font-medium"
-              />
-            </div>
-            <div className="flex items-center gap-2 overflow-x-auto w-full pb-2 sm:pb-0 hide-scrollbar scroll-smooth p-1">
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+          onClick={() => openForm()}
+          className="bg-[#5D7964] text-white px-8 py-5 rounded-full font-bold hover:bg-[#4a6351] transition-all flex items-center justify-center gap-3 shadow-[0_8px_24px_rgba(93,121,100,0.3)] hover:shadow-[0_12px_32px_rgba(93,121,100,0.4)] hover:-translate-y-1 w-full sm:w-auto min-w-[240px] text-lg"
+        >
+          <PenSquare className="w-5 h-5" /> 새 추억 기록하기
+        </motion.button>
+      </section>
+
+      {/* Sticky Tool & Filter Bar */}
+      <div className="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-y border-outline/10 shadow-sm py-4 px-4 lg:px-8 mb-8 mt-4 transition-all w-full">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+            <input
+              type="text"
+              placeholder="일지 내용, 태그 검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-surface-container-lowest border border-outline/20 focus:border-[#5D7964]/50 focus:ring-2 focus:ring-[#5D7964]/20 rounded-full py-2.5 pl-12 pr-4 text-sm font-medium transition-all"
+            />
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 hide-scrollbar scroll-smooth">
+            <button
+              onClick={() => setFilterActivity(null)}
+              className={`px-5 py-2.5 whitespace-nowrap rounded-full text-sm font-bold transition-all ${!filterActivity ? "bg-[#5D7964] text-white shadow-md shadow-[#5D7964]/20" : "bg-transparent text-on-surface-variant hover:bg-surface-dim border border-outline/10"}`}
+            >
+              전체 보기
+            </button>
+            {ACTIVITY_OPTIONS.map((opt) => (
               <button
-                onClick={() => setFilterActivity(null)}
-                className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-bold transition-all shadow-sm ${!filterActivity ? "bg-[#5D7964] text-white" : "bg-surface border border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
+                key={opt.id}
+                onClick={() => setFilterActivity(opt.id)}
+                className={`px-5 py-2.5 whitespace-nowrap flex items-center gap-2 rounded-full text-sm font-bold transition-all ${filterActivity === opt.id ? "bg-[#5D7964] text-white shadow-md shadow-[#5D7964]/20" : "bg-transparent text-on-surface-variant hover:bg-surface-dim border border-outline/10"}`}
               >
-                전체
+                <opt.icon className="w-4 h-4" />
+                {opt.label}
               </button>
-              {ACTIVITY_OPTIONS.map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => setFilterActivity(opt.id)}
-                  className={`px-4 py-2 whitespace-nowrap flex items-center gap-2 rounded-lg text-sm font-bold transition-all shadow-sm ${filterActivity === opt.id ? "bg-[#5D7964] text-white" : "bg-surface border border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
-                >
-                  <opt.icon className="w-4 h-4" />
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
-        <button
-          onClick={() => openForm()}
-          className="bg-[#5D7964] text-white px-8 py-3 rounded-lg font-bold hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(93,121,100,0.3)] shrink-0 w-full sm:w-auto h-12"
-        >
-          <PenSquare className="w-4 h-4" />새 일기 작성
-        </button>
       </div>
 
       {/* Editor Modal */}
@@ -460,7 +483,7 @@ export default function PlantJournal() {
                       <button
                         type="button"
                         onClick={handleImageRandomize}
-                        className="px-5 py-2.5 bg-surface hover:bg-surface-dim text-on-surface rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg text-xs"
+                        className="px-6 py-3 bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 rounded-full font-semibold flex items-center gap-2 transition-all duration-300 shadow-lg text-sm hover:scale-105 active:scale-95 border border-transparent"
                       >
                         <Upload className="w-4 h-4" /> 샘플 바꾸기
                       </button>
@@ -469,7 +492,7 @@ export default function PlantJournal() {
 
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Device Upload */}
-                    <label className="flex items-center justify-center p-3 border border-dashed border-outline/30 rounded-xl hover:bg-[#5D7964]/5 hover:border-[#5D7964]/50 cursor-pointer transition-all gap-2 text-xs font-bold text-on-surface-variant hover:text-[#5D7964]">
+                    <label className="flex items-center justify-center p-4 border border-outline/20 bg-white rounded-2xl hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer transition-all duration-300 ease-out hover:shadow-md hover:scale-[1.02] active:scale-[0.98] gap-3 text-sm font-semibold text-on-surface-variant shadow-sm w-full">
                       <input 
                         type="file" 
                         accept="image/*" 
@@ -477,7 +500,7 @@ export default function PlantJournal() {
                         className="hidden" 
                         disabled={isUploading}
                       />
-                      <Upload className="w-4 h-4" />
+                      <Upload className="w-5 h-5" />
                       <span>컴퓨터 / 스마트폰 사진 올리기</span>
                     </label>
 
@@ -648,17 +671,17 @@ export default function PlantJournal() {
               <div className="mt-10 pt-6 border-t border-outline/20 flex justify-end gap-3">
                 <button
                   onClick={closeForm}
-                  className="px-6 py-3 rounded-lg font-bold text-on-surface-variant hover:text-on-surface hover:bg-surface-dim/30 transition-colors"
+                  className="px-6 py-4 rounded-full font-semibold text-lg transition-all duration-300 ease-out hover:bg-gray-100 hover:scale-105 active:scale-95 border border-transparent hover:border-gray-200 text-on-surface-variant hover:text-on-surface"
                 >
                   취소
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={isSaving || isUploading || !formParams.title.trim() || !formParams.content.trim()}
-                  className={`px-8 py-3 rounded-lg font-bold transition-all shadow-md flex items-center justify-center gap-2 ${
+                  className={`px-8 py-4 rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 ease-out flex items-center justify-center gap-2 shadow-sm border w-full sm:w-auto ${
                     isSaving || isUploading || !formParams.title.trim() || !formParams.content.trim()
-                      ? "bg-surface-dim text-outline-variant cursor-not-allowed"
-                      : "bg-[#5D7964] text-white hover:brightness-110"
+                      ? "bg-surface-dim text-outline-variant cursor-not-allowed border-outline/20"
+                      : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 border-outline/20 hover:border-blue-200 hover:shadow-md"
                   }`}
                 >
                   {isSaving || isUploading ? (
@@ -668,7 +691,7 @@ export default function PlantJournal() {
                     ? "이미지 업로드 중..." 
                     : isSaving 
                       ? (editingId ? "수정 중..." : "저장 중...") 
-                      : (editingId ? "수정 완료" : "저장하기")}
+                      : (editingId ? "수정 저장하기" : "저장하기")}
                 </button>
               </div>
             </motion.div>
@@ -677,21 +700,23 @@ export default function PlantJournal() {
       </AnimatePresence>
 
       {/* Feed Area */}
-      <div className="space-y-12 mt-8">
+      <div className="max-w-5xl mx-auto px-4 lg:px-8 space-y-12 mt-8 relative">
         <AnimatePresence>
           {filteredEntries.length === 0 && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="text-center py-20 bg-surface border border-outline/20 rounded-2xl border-dashed"
+              className="text-center py-32 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
             >
-              <Sprout className="w-16 h-16 text-[#5D7964]/40 mx-auto mb-6" />
-              <p className="text-on-surface font-display font-bold text-2xl">
-                해당 조건에 맞는 일지가 없습니다.
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#5D7964]/5 rounded-full blur-3xl pointer-events-none" />
+              <Sprout className="w-20 h-20 text-[#5D7964]/30 mx-auto mb-6 relative z-10 animate-bounce" />
+              <p className="text-on-surface font-display font-extrabold text-3xl relative z-10 tracking-tight mb-4">
+                기다림의 공간이 비어있습니다
               </p>
-              <p className="text-on-surface-variant font-medium text-lg mt-3">
-                새로운 생명의 성장을 기록하거나 검색 조건을 변경해보세요.
+              <p className="text-on-surface-variant font-medium text-lg relative z-10 max-w-md mx-auto">
+                첫 번째 잎사귀가 돋아날 시간입니다. 
+                당신의 정원에 새로운 생명의 흔적을 남겨주세요.
               </p>
             </motion.div>
           )}
@@ -703,25 +728,25 @@ export default function PlantJournal() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               layout
-              className="card bg-surface p-0 relative overflow-hidden group border border-outline/20 flex flex-col md:flex-row gap-0"
+              className="bg-surface rounded-[2rem] relative overflow-hidden group border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm hover:shadow-2xl hover:shadow-[#5D7964]/10 hover:-translate-y-1 transition-all duration-500"
             >
-              <div className="relative z-10 w-full md:w-3/5 p-6 md:p-10 flex flex-col justify-between order-2 md:order-1">
+              <div className="relative z-10 w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between order-2 md:order-1">
                 <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-3 py-1 rounded-full border border-[#5D7964]/20">
+                  <div className="flex items-center justify-between mb-8">
+                    <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-4 py-1.5 rounded-full border border-[#5D7964]/20 backdrop-blur-sm">
                       {entry.date.replace(/-/g, ". ")}
                     </span>
-                    <div className="flex items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 lg:translate-x-4 group-hover:translate-x-0">
                       <button
                         onClick={() => openForm(entry)}
-                        className="p-2.5 bg-surface-container-lowest hover:bg-surface-dim border border-outline/20 text-on-surface-variant rounded-lg transition-colors shadow-sm"
+                        className="p-3 bg-surface hover:bg-surface-dim border border-outline/10 text-on-surface-variant hover:text-[#5D7964] transition-colors rounded-full shadow-sm hover:shadow-md"
                         title="수정"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(entry.id)}
-                        className="p-2.5 bg-surface-container-lowest hover:bg-[#ba1a1a]/10 border border-outline/20 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 rounded-lg transition-colors shadow-sm"
+                        className="p-3 bg-surface hover:bg-[#ba1a1a]/10 border border-outline/10 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 transition-colors rounded-full shadow-sm hover:shadow-md"
                         title="삭제"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -729,7 +754,7 @@ export default function PlantJournal() {
                     </div>
                   </div>
 
-                  <h3 className="text-2xl md:text-4xl font-display font-bold text-on-surface mb-6 leading-tight max-w-[95%] break-words tracking-tight">
+                  <h3 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold text-on-surface mb-6 leading-tight max-w-[95%] break-words tracking-tight">
                     {entry.title}
                   </h3>
 
@@ -785,15 +810,15 @@ export default function PlantJournal() {
               </div>
 
               {/* Hero Image */}
-              <div className="w-full md:w-2/5 order-1 md:order-2 bg-surface-container-lowest border-b md:border-b-0 md:border-l border-outline/20">
-                <div className="relative w-full h-[300px] md:h-full md:min-h-[400px] overflow-hidden">
+              <div className="w-full md:w-2/5 order-1 md:order-2 bg-surface-container-lowest border-b md:border-b-0 md:border-l border-outline/10 relative">
+                <div className="relative w-full h-[300px] md:h-full md:min-h-[420px] overflow-hidden">
                   <img
                     src={entry.image}
                     alt={`${entry.title} 이미지`}
                     loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-700 brightness-95 group-hover:brightness-100"
+                    className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover:brightness-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none md:hidden" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none opacity-80 md:opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
               </div>
             </motion.div>
