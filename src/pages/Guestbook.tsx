@@ -80,9 +80,9 @@ export default function Guestbook() {
       setMessage("");
       setSubmitSuccess(true);
       setTimeout(() => setSubmitSuccess(false), 5000);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("방명록 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      alert(`방명록 등록 중 오류가 발생했습니다: ${err.message || '알 수 없는 오류'}`);
     } finally {
       setIsSubmitting(false);
     }
