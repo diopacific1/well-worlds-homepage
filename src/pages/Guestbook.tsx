@@ -33,12 +33,16 @@ export default function Guestbook() {
     // 일반 방문자는 승인된 내역만 볼 수 있음
     const q = query(
       collection(db, "guestbook"), 
-      where("status", "==", "approved"),
-      orderBy("createdAt", "desc")
+      where("status", "==", "approved")
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GuestbookEntry));
+      fetched.sort((a, b) => {
+        const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return bTime - aTime;
+      });
       setEntries(fetched);
       setIsLoading(false);
     }, (err) => {
