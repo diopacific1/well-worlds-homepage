@@ -73,7 +73,7 @@ export default function Layout() {
     { name: '디지털 정원', path: '/plants', icon: Leaf },
     { name: '나의 세계', path: '/stories', icon: MessageSquareHeart },
     { name: '크립토 월드', path: '/crypto', icon: LineChart },
-    { name: '게시판', path: '/board', icon: BookOpen },
+    { name: '방명록', path: '/guestbook', icon: BookOpen },
   ];
 
   // 관리자일 때만 관리자 메뉴 추가

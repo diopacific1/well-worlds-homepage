@@ -8,9 +8,7 @@ const Home = lazy(() => import("./pages/Home"));
 const CryptoDashboard = lazy(() => import("./pages/CryptoDashboard"));
 const PlantJournal = lazy(() => import("./pages/PlantJournal"));
 const Stories = lazy(() => import("./pages/Stories"));
-const BoardList = lazy(() => import("./pages/BoardList"));
-const BoardWrite = lazy(() => import("./pages/BoardWrite"));
-const BoardDetail = lazy(() => import("./pages/BoardDetail"));
+const Guestbook = lazy(() => import("./pages/Guestbook"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
@@ -46,19 +44,9 @@ export default function App() {
               <Stories />
             </Suspense>
           } />
-          <Route path="board" element={
+          <Route path="guestbook" element={
             <Suspense fallback={<PageLoader />}>
-              <BoardList />
-            </Suspense>
-          } />
-          <Route path="board/new" element={
-            <Suspense fallback={<PageLoader />}>
-              <BoardWrite />
-            </Suspense>
-          } />
-          <Route path="board/:id" element={
-            <Suspense fallback={<PageLoader />}>
-              <BoardDetail />
+              <Guestbook />
             </Suspense>
           } />
           

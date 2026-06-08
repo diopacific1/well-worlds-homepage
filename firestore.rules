@@ -2,40 +2,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default catch-all to secure any other unspecified paths
+    function isAdmin() {
+      // w02kvOK1b0SiPGgmQRX3g34ArSt2 is the explicit Admin UID discovered in code
+      return request.auth != null && request.auth.uid == 'w02kvOK1b0SiPGgmQRX3g34ArSt2';
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Auth helpers
-    function isSignedIn() {
-      return request.auth != null;
+    // Guestbook (방명록 - 관리자 승인제)
+    match /guestbook/{entryId} {
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow create: if request.resource.data.keys().hasAll(['nickname', 'message', 'createdAt', 'status'])
+                    && request.resource.data.nickname is string
+                    && request.resource.data.nickname.size() > 0
+                    && request.resource.data.nickname.size() <= 20
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() <= 500
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
     }
 
-    // 1. Board Posts (Community Bulletin Board)
-    // Anyone can read and write posts. Deletion is strictly reserved for authenticated Admins.
+    // 1. Board Posts (Community Bulletin Board) - DEPRECATED
     match /board/{boardId} {
-      allow read, create: if true;
-      allow update: if true;
-      allow delete: if isSignedIn();
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['title', 'content', 'authorName'])
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 0
+                    && request.resource.data.content is string
+                    && request.resource.data.content.size() > 0
+                    && request.resource.data.authorName is string;
+      allow update, delete: if isAdmin();
     }
 
     // 2. Personal Stories & Column writings
-    // Public readers can view, write, love/like, and modify.
     match /stories/{storyId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
     }
 
     // 3. Plant garden journal entries
-    // Public gardeners can view, create notes, and modify plant states.
     match /plant_journal/{entryId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
     }
 
     // 4. Admin Portfolio (Exclusive content)
-    // Only authenticated admins can access or modify these settings.
     match /portfolio/{portfolioId} {
-      allow read, write: if isSignedIn();
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
