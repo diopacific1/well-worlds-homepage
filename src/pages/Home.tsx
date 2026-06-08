@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   LineChart,
@@ -34,64 +35,140 @@ const itemVariants: Variants = {
 
 const HeroSection = () => {
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 500], [0, 150]);
-  const y2 = useTransform(scrollY, [0, 500], [0, -100]);
+  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
+  const y2 = useTransform(scrollY, [0, 500], [0, -150]);
+
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 30, // Max 15px movement
+        y: (e.clientY / window.innerHeight - 0.5) * 30,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Generate stable particle arrays
+  const [particles] = useState(() => 
+    Array.from({ length: 20 }).map(() => ({
+      width: Math.random() * 6 + 2,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      duration: Math.random() * 10 + 10,
+      delay: Math.random() * 10,
+    }))
+  );
 
   return (
-    <header className="relative pt-16 md:pt-32 pb-16 md:pb-24 flex flex-col items-center text-center">
-      {/* Abstract Background Elements */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[400px] overflow-hidden -z-10 pointer-events-none fade-out-bottom">
-        <motion.div style={{ y: y1 }} className="absolute top-[-10%] left-[20%] w-72 h-72 bg-primary/20 rounded-full blur-[100px] opacity-60 mix-blend-multiply" />
-        <motion.div style={{ y: y2 }} className="absolute top-[20%] right-[10%] w-96 h-96 bg-secondary/20 rounded-full blur-[100px] opacity-60 mix-blend-multiply" />
+    <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[85vh] overflow-hidden">
+      {/* Abstract Background Deep World Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 bg-background">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background/80 via-background to-surface" />
+        
+        {/* Floating Particles simulating deep well / underwater focus */}
+        {particles.map((p, i) => (
+          <motion.div
+            key={i}
+            className="absolute bg-primary/30 rounded-full blur-[1px]"
+            style={{
+              width: p.width,
+              height: p.width,
+              left: `${p.left}%`,
+              top: `${p.top}%`,
+            }}
+            animate={{
+              y: [0, -150],
+              opacity: [0, 1, 0],
+              scale: [0.8, 1.2, 0.8]
+            }}
+            transition={{
+              duration: p.duration,
+              repeat: Infinity,
+              ease: "linear",
+              delay: p.delay,
+            }}
+          />
+        ))}
+
+        {/* Deep well ambient lights with Mouse Parallax */}
+        <motion.div 
+          style={{ y: y1 }}
+          animate={{ x: mousePosition.x * -1.5, y: mousePosition.y * -1.5 }}
+          transition={{ type: "spring", stiffness: 50, damping: 20 }}
+          className="absolute top-[10%] left-[15%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/20 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse" 
+        />
+        <motion.div 
+          style={{ y: y2 }}
+          animate={{ x: mousePosition.x * 1.5, y: mousePosition.y * 1.5 }}
+          transition={{ type: "spring", stiffness: 50, damping: 20 }}
+          className="absolute bottom-[20%] right-[10%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-secondary/15 rounded-full blur-[120px] md:blur-[150px] mix-blend-multiply animate-glow-pulse [animation-delay:4s]" 
+        />
+        <motion.div 
+          animate={{ x: mousePosition.x * 0.5, y: mousePosition.y * 0.5 }}
+          transition={{ type: "spring", stiffness: 50, damping: 20 }}
+          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[500px] h-[400px] bg-blue-300/10 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse [animation-delay:2s]" 
+        />
+        
+        {/* Subtle top glow simulating surface light */}
+        <div className="absolute top-0 inset-x-0 h-[300px] bg-gradient-to-b from-primary/5 to-transparent blur-[80px]" />
       </div>
 
-      <motion.h1 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="text-5xl sm:text-6xl md:text-8xl font-display font-extrabold text-on-surface mb-8 tracking-tighter leading-[1.1]"
-    >
-      나만의 우물 속 세계를 <br className="hidden md:block" />
-      <span className="relative inline-block mt-2 md:mt-4">
-        <span className="absolute -inset-2 bg-gradient-to-r from-primary/20 to-secondary/20 blur-2xl rounded-full opacity-50" />
-        <span className="relative text-transparent bg-clip-text bg-gradient-to-br from-primary via-secondary to-primary drop-shadow-sm">
-          기록하다
-        </span>
-      </span>
-    </motion.h1>
-    
-    <motion.p 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-      className="text-lg md:text-2xl text-on-surface-variant/80 max-w-2xl leading-relaxed font-medium tracking-tight mb-12"
-    >
-      수면 아래 감춰진 나만의 아카이브에 <br className="block md:hidden" />
-      오신 것을 환영합니다
-    </motion.p>
-    
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6"
-    >
-      <Link to="/plants" className="relative group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-on-surface rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 ease-out hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 shadow-sm border border-outline/20 hover:border-blue-200 hover:shadow-md">
-        디지털 정원 가꾸기 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-      </Link>
-      <Link to="/stories" className="relative group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-on-surface rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 ease-out hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 shadow-sm border border-outline/20 hover:border-blue-200 hover:shadow-md">
-        나의 세계 기록하기 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-      </Link>
-    </motion.div>
+      <div
+        className="relative z-10 w-full max-w-5xl mx-auto space-y-10 flex flex-col items-center px-4"
+      >
+        <div className="space-y-6 md:space-y-8 flex flex-col items-center opacity-0 animate-fade-in-up">
+          <h1 className="text-[3.5rem] sm:text-6xl md:text-[5.5rem] lg:text-[6.5rem] font-display font-black tracking-tighter text-on-surface leading-[1.05]">
+            우물 속 세계로 <br className="hidden md:block" />
+            <span className="relative inline-block mt-2">
+              <span className="relative z-10 text-transparent bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text drop-shadow-sm">
+                빠져들다
+              </span>
+              <div className="absolute inset-x-0 bottom-2 md:bottom-4 h-4 md:h-8 bg-primary/20 -z-10 -rotate-2 skew-x-12 blur-[2px]" />
+            </span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-on-surface-variant/90 font-medium max-w-2xl mx-auto mt-8 leading-relaxed tracking-wide break-keep">
+            수면 아래 감춰진 고요한 심연.<br />
+            나만의 기록과 상상이 부유하는 세계.
+          </p>
+        </div>
 
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1, delay: 1 }}
-      className="mt-20 text-on-surface-variant/40 animate-bounce"
-    >
-      <ChevronDown className="w-6 h-6" />
-    </motion.div>
+        <div 
+          className="flex flex-col sm:flex-row items-center gap-5 pt-8 md:pt-12 w-full sm:w-auto opacity-0 animate-fade-in-up [animation-delay:200ms]"
+        >
+          <Link 
+            to="/plants" 
+            className="group relative overflow-hidden w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-full font-bold text-lg transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(var(--color-primary),0.3)]"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-[150%] group-hover:animate-[shimmer_1.5s_infinite]" />
+            <span className="relative z-10 flex items-center gap-2">
+              정원 가꾸기 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
+          
+          <Link 
+            to="/stories" 
+            className="group relative w-full sm:w-auto px-8 py-4 bg-surface/50 backdrop-blur-md text-on-surface border border-outline/20 rounded-full font-bold text-lg hover:border-primary/40 hover:bg-surface-variant/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+          >
+            기록 펼치기
+          </Link>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5, duration: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-on-surface-variant/40 hover:text-on-surface-variant/80 flex flex-col items-center gap-3 transition-colors cursor-pointer"
+        onClick={() => window.scrollTo({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
+      >
+        <span className="text-xs font-semibold tracking-[0.2em] uppercase">Scroll</span>
+        <ChevronDown className="w-5 h-5 animate-bounce" />
+      </motion.div>
     </header>
   );
 };
