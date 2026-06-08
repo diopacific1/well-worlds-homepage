@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -66,6 +66,16 @@ export default function App() {
               </Suspense>
             } />
           </Route>
+
+          <Route path="*" element={
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+              <h2 className="text-6xl font-display font-bold text-on-surface mb-6">404</h2>
+              <p className="text-xl text-on-surface-variant font-medium mb-8">찾으시는 페이지가 존재하지 않습니다.</p>
+              <Link to="/" className="px-6 py-3 bg-primary text-white rounded-full font-bold shadow-sm hover:bg-primary/90 transition-colors">
+                홈으로 돌아가기
+              </Link>
+            </div>
+          } />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -5,10 +5,10 @@ import {
   ArrowRight,
   MessageSquareHeart,
   BookOpen,
-  Sparkles,
   ChevronDown
 } from "lucide-react";
 import { motion, Variants, useScroll, useTransform } from "motion/react";
+import { Helmet } from "react-helmet-async";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -108,8 +108,23 @@ const BentoCard = ({ to, label, className = "", children }: { to: string; label:
 );
 
 export default function Home() {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "우물 그리고 세계들",
+    "url": window.location.href,
+    "description": "다양한 데이터를 탐색하고 기록을 남기는 웹 공간. 가상자산 터미널, 반려식물 저널, 개인 기록실을 제공합니다."
+  };
+
   return (
     <div className="space-y-12 md:space-y-24 pb-24 overflow-hidden relative">
+      <Helmet>
+        <title>디지털 정원과 가상자산 터미널 | 우물 그리고 세계들</title>
+        <meta name="description" content="가상자산 동향, 반려식물 기록, 방명록이 함께하는 나만의 디지털 아카이브. 우물 속 다채로운 세계를 탐험하세요." />
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      </Helmet>
       <HeroSection />
 
       {/* Bento Grid Layer */}
@@ -175,7 +190,7 @@ export default function Home() {
 
               <div className="mt-12">
                 <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4">
-                  나의 이야기
+                  나의 세계
                 </h2>
                 <p className="text-lg text-on-surface-variant/90 leading-relaxed font-medium">
                   온전히 나에게만 집중하는 시간. 내면의 목소리를 아카이브에 안전하게 기록합니다.

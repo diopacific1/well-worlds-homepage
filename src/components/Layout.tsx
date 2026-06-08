@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase';
+import { Helmet } from 'react-helmet-async';
 
 export default function Layout() {
   const location = useLocation();
@@ -83,6 +84,17 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
+      <Helmet>
+        <title>우물 그리고 세계들 | 통합 데이터 대시보드</title>
+        <meta name="description" content="우물 그리고 세계들 - 다양한 데이터를 탐색하고 기록을 남기는 웹 공간. 가상자산 터미널, 반려식물 저널, 개인 기록실을 제공합니다." />
+        <meta property="og:title" content="우물 그리고 세계들 | 통합 데이터 대시보드" />
+        <meta property="og:description" content="다양한 데이터를 탐색하고 기록을 남기는 웹 공간. 가상자산 터미널, 반려식물 저널, 개인 기록실을 제공합니다." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="우물 그리고 세계들" />
+        <meta name="twitter:description" content="다양한 데이터를 탐색하고 기록을 남기는 웹 공간." />
+      </Helmet>
       <header className="sticky top-0 z-50 w-full border-b border-outline/20 bg-surface/80 backdrop-blur-[20px] flex flex-col">
         {/* Main Header Bar */}
         <div className="max-w-[1280px] mx-auto px-6 h-20 flex items-center justify-between w-full">
