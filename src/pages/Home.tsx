@@ -8,7 +8,7 @@ import {
   BookOpen,
   ChevronDown
 } from "lucide-react";
-import { motion, Variants, useScroll, useTransform } from "motion/react";
+import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 import { Helmet } from "react-helmet-async";
 
 const containerVariants: Variants = {
@@ -38,18 +38,36 @@ const HeroSection = () => {
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
   const y2 = useTransform(scrollY, [0, 500], [0, -150]);
 
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  // Performance-optimized low-overhead mouse parallax using Framer Motion values
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth springs for mouse parallax updates
+  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+
+  // Map mouse coordinates to deep light parallax coordinate styles directly
+  const glow1X = useTransform(springX, (val) => val * -1.5);
+  const glow1Y = useTransform(springY, (val) => val * -1.5);
+
+  const glow2X = useTransform(springX, (val) => val * 1.5);
+  const glow2Y = useTransform(springY, (val) => val * 1.5);
+
+  const glow3X = useTransform(springX, (val) => val * 0.5);
+  const glow3Y = useTransform(springY, (val) => val * 0.5);
+
+  // Combine scroll offsets and mouse movements for perfectly smooth GPU-accelerated calculations
+  const glow1CombinedY = useTransform([y1, glow1Y], ([latestY1, latestGlowY]) => (latestY1 as number) + (latestGlowY as number));
+  const glow2CombinedY = useTransform([y2, glow2Y], ([latestY2, latestGlowY]) => (latestY2 as number) + (latestGlowY as number));
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 30, // Max 15px movement
-        y: (e.clientY / window.innerHeight - 0.5) * 30,
-      });
+      mouseX.set((e.clientX / window.innerWidth - 0.5) * 30);
+      mouseY.set((e.clientY / window.innerHeight - 0.5) * 30);
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [mouseX, mouseY]);
 
   // Generate stable particle arrays
   const [particles] = useState(() => 
@@ -93,22 +111,17 @@ const HeroSection = () => {
           />
         ))}
 
-        {/* Deep well ambient lights with Mouse Parallax */}
+        {/* Deep well ambient lights with Mouse Parallax (Optimized to skip React re-renders) */}
         <motion.div 
-          style={{ y: y1 }}
-          animate={{ x: mousePosition.x * -1.5, y: mousePosition.y * -1.5 }}
-          transition={{ type: "spring", stiffness: 50, damping: 20 }}
+          style={{ x: glow1X, y: glow1CombinedY }}
           className="absolute top-[10%] left-[15%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/20 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse" 
         />
         <motion.div 
-          style={{ y: y2 }}
-          animate={{ x: mousePosition.x * 1.5, y: mousePosition.y * 1.5 }}
-          transition={{ type: "spring", stiffness: 50, damping: 20 }}
+          style={{ x: glow2X, y: glow2CombinedY }}
           className="absolute bottom-[20%] right-[10%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-secondary/15 rounded-full blur-[120px] md:blur-[150px] mix-blend-multiply animate-glow-pulse [animation-delay:4s]" 
         />
         <motion.div 
-          animate={{ x: mousePosition.x * 0.5, y: mousePosition.y * 0.5 }}
-          transition={{ type: "spring", stiffness: 50, damping: 20 }}
+          style={{ x: glow3X, y: glow3Y }}
           className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[500px] h-[400px] bg-blue-300/10 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse [animation-delay:2s]" 
         />
         
