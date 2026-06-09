@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import { ShieldAlert, Loader2, Info } from "lucide-react";
@@ -10,6 +10,7 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loginMethod, setLoginMethod] = useState<'google' | 'email'>('google');
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
@@ -47,15 +48,30 @@ export default function AdminLogin() {
     setIsLoading(true);
     setError("");
 
+    const targetEmail = email.trim();
+    if (targetEmail.toLowerCase() !== "diopacific1@gmail.com") {
+      setError("보안 설정상 diopacific1@gmail.com 계정만 계정 생성 및 로그인이 허용됩니다.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      if (isSignUp) {
+        await createUserWithEmailAndPassword(auth, targetEmail, password);
+      } else {
+        await signInWithEmailAndPassword(auth, targetEmail, password);
+      }
       navigate("/admin/dashboard");
     } catch (err: any) {
       console.error(err);
       if (err.code === "auth/operation-not-allowed") {
         setError("이메일 로그인이 비활성화되어 있습니다.\n\n해결방법: Firebase 콘솔에 접속하여 Authentication > Sign-in method 메뉴에서 '이메일/비밀번호'를 사용 설정(활성화) 해주셔야 합니다.");
+      } else if (err.code === "auth/email-already-in-use") {
+        setError("이미 가입된 관리자 계정입니다.\n\n비밀번호가 맞지 않으시거나 새로 가입하시려면 아래 방법 중 하나를 선택해주세요:\n1. Firebase 콘솔 Authentication > 사용자(Users) 탭에서 diopacific1@gmail.com 계정을 삭제하고 새로 가입해주세요.\n2. 비밀번호를 정확히 입력하신 뒤 '이메일 로그인'을 시도해주세요.");
+      } else if (err.code === "auth/weak-password") {
+        setError("비밀번호가 지나치게 취약합니다. 최소 6자 이상의 비밀번호를 지정해 주세요.");
       } else if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        setError("잘못된 아이디 이거나 비밀번호 입니다.");
+        setError("가입되지 않은 계정이거나, 이메일 주소 또는 비밀번호가 일치하지 않습니다.\n\n💡 처음이신 경우 하단의 '처음이신가요? 관리자 계정 신규 생성하기 (가입)' 단추를 눌러 먼저 계정을 생성해주세요!");
       } else {
         setError("이메일 로그인에 실패했습니다: " + err.message);
       }
@@ -138,30 +154,56 @@ export default function AdminLogin() {
           </div>
         ) : (
           <form onSubmit={handleEmailLogin} className="flex flex-col gap-4 mt-2">
-            <input
-              type="email"
-              placeholder="관리자 이메일 (diopacific1@gmail.com)"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="px-4 py-3 bg-surface-container border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-              required
-            />
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="px-4 py-3 bg-surface-container border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-              required
-            />
+            <div>
+              <label className="text-xs font-semibold text-on-surface-variant block mb-1">
+                관리자 이메일
+              </label>
+              <input
+                type="email"
+                placeholder="diopacific1@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 bg-surface-container border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-on-surface-variant block mb-1">
+                {isSignUp ? "신규 가입할 비밀번호" : "비밀번호"}
+              </label>
+              <input
+                type="password"
+                placeholder={isSignUp ? "최소 6자 이상 지정" : "비밀번호"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-surface-container border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm"
+                required
+              />
+            </div>
             
             <button
               type="submit"
               disabled={isLoading || !email || !password}
-              className="mt-2 px-4 py-4 bg-primary text-white rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-sm"
+              className="mt-2 px-4 py-4 bg-primary text-white rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-sm text-sm"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "이메일 로그인"}
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : isSignUp ? (
+                "관리자 계정 신규 가입하기"
+              ) : (
+                "이메일 로그인"
+              )}
             </button>
+
+            <div className="text-center mt-2 border-t border-outline/10 pt-4">
+              <button
+                type="button"
+                onClick={() => { setIsSignUp(!isSignUp); setError(""); }}
+                className="text-xs text-primary hover:underline font-bold"
+              >
+                {isSignUp ? "이미 관리자 계정이 있어요! 로그인하기" : "처음이신가요? 관리자 계정 신규 생성하기 (가입)"}
+              </button>
+            </div>
           </form>
         )}
       </div>
