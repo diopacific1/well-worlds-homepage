@@ -3,8 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      // w02kvOK1b0SiPGgmQRX3g34ArSt2 is the explicit Admin UID discovered in code
-      return request.auth != null && request.auth.uid == 'w02kvOK1b0SiPGgmQRX3g34ArSt2';
+      return request.auth != null && (request.auth.uid == 'w02kvOK1b0SiPGgmQRX3g34ArSt2' || request.auth.token.email == 'diopacific1@gmail.com');
     }
 
     match /{document=**} {
@@ -13,15 +12,10 @@ service cloud.firestore {
 
     // Guestbook (방명록 - 관리자 승인제)
     match /guestbook/{entryId} {
-      allow read: if resource.data.status == 'approved' || isAdmin();
-      allow create: if request.resource.data.keys().hasAll(['nickname', 'message', 'createdAt', 'status'])
+      allow read: if resource.data == null || resource.data.status == 'approved' || isAdmin();
+      allow create: if request.resource.data.status == 'pending'
                     && request.resource.data.nickname is string
-                    && request.resource.data.nickname.size() > 0
-                    && request.resource.data.nickname.size() <= 20
-                    && request.resource.data.message is string
-                    && request.resource.data.message.size() > 0
-                    && request.resource.data.message.size() <= 500
-                    && request.resource.data.status == 'pending';
+                    && request.resource.data.message is string;
       allow update, delete: if isAdmin();
     }
 

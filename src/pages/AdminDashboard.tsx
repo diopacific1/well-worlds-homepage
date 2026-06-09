@@ -13,34 +13,42 @@ export default function AdminDashboard() {
 
   // 데이터 로드
   useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        if (!db) return;
+    if (!auth) return;
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
         setIsLoading(true);
-        // 1. 포트폴리오
-        const pq = query(collection(db, "portfolio"));
-        const pSnap = await getDocs(pq);
-        setAdminData(pSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-
-        // 2. 승인 대기중인 방명록 조회
-        const gq = query(collection(db, "guestbook"), where("status", "==", "pending"));
-        const gSnap = await getDocs(gq);
-        const entries = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // 클라이언트에서 정렬 (단순화를 위해)
-        entries.sort((a: any, b: any) => {
-          const aTime = a.createdAt?.toMillis() || 0;
-          const bTime = b.createdAt?.toMillis() || 0;
-          return bTime - aTime;
-        });
-        setPendingGuestbook(entries);
-      } catch (err) {
-        console.error("데이터 불러오기 싪패:", err);
-      } finally {
+        try {
+          if (!db) return;
+          // 1. 포트폴리오
+          const pq = query(collection(db, "portfolio"));
+          const pSnap = await getDocs(pq);
+          setAdminData(pSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  
+          // 2. 승인 대기중인 방명록 조회
+          const gq = query(collection(db, "guestbook"), where("status", "==", "pending"));
+          const gSnap = await getDocs(gq);
+          const entries = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          // 클라이언트에서 정렬 (단순화를 위해)
+          entries.sort((a: any, b: any) => {
+            const aTime = a.createdAt?.toMillis() || 0;
+            const bTime = b.createdAt?.toMillis() || 0;
+            return bTime - aTime;
+          });
+          setPendingGuestbook(entries);
+        } catch (err) {
+          console.error("데이터 불러오기 싪패:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // Not logged in -> handle logout or stop loading
         setIsLoading(false);
+        navigate("/admin/login");
       }
-    };
-    fetchAdminData();
-  }, []);
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogout = async () => {
     if (auth) await signOut(auth);

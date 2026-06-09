@@ -22,6 +22,7 @@ export default function Guestbook() {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     if (!db) {
@@ -59,30 +60,47 @@ export default function Guestbook() {
     if (!nickname.trim() || !message.trim()) return;
     
     // Client-side validation matches rules
+    setSubmitError("");
     if (nickname.trim().length > 20) {
-      alert("닉네임은 20자 이내로 입력해주세요.");
+      setSubmitError("닉네임은 20자 이내로 입력해주세요.");
       return;
     }
     if (message.trim().length > 500) {
-      alert("메시지는 500자 이내로 입력해주세요.");
+      setSubmitError("메시지는 500자 이내로 입력해주세요.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "guestbook"), {
+      if (!db) throw new Error("Firebase DB가 초기화되지 않았습니다.");
+      
+      const docData = {
         nickname: nickname.trim(),
         message: message.trim(),
         createdAt: serverTimestamp(),
         status: "pending"
+      };
+      
+      // 타임아웃을 설정하여 무한 대기를 방지합니다.
+      const addDocPromise = addDoc(collection(db, "guestbook"), docData);
+      
+      let timeoutId: any;
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error("서버 연동 지연: 방명록 작성 권한이나 네트워크 연결을 확인해주세요."));
+        }, 12000);
       });
+      
+      await Promise.race([addDocPromise, timeoutPromise]);
+      clearTimeout(timeoutId);
+      
       setNickname("");
       setMessage("");
       setSubmitSuccess(true);
       setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (err: any) {
       console.error(err);
-      alert(`방명록 등록 중 오류가 발생했습니다: ${err.message || '알 수 없는 오류'}`);
+      setSubmitError(`방명록 등록 중 오류가 발생했습니다: ${err.message || '알 수 없는 오류'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +163,8 @@ export default function Guestbook() {
                 className="w-full bg-surface-container-lowest border border-outline/20 p-4 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-on-surface resize-none"
               />
             </div>
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 items-center gap-4">
+              {submitError && <span className="text-error text-sm font-semibold">{submitError}</span>}
               <button
                 type="submit"
                 disabled={isSubmitting || !nickname.trim() || !message.trim()}
