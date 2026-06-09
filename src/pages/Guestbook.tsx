@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where } from "firebase/firestore";
-import { db } from "../../firebase";
-import { Loader2, Send } from "lucide-react";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, doc, deleteDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { Loader2, Send, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 
 interface GuestbookEntry {
@@ -16,6 +17,7 @@ export default function Guestbook() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Form states
   const [nickname, setNickname] = useState("");
@@ -23,6 +25,31 @@ export default function Guestbook() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  // Check admin login status
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && (user.uid === "w02kvOK1b0SiPGgmQRX3g34ArSt2" || user.email === "diopacific1@gmail.com")) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("정말로 이 흔적을 우물가에서 지우시겠습니까?")) return;
+    try {
+      if (!db) throw new Error("Firebase DB가 초기화되지 않았습니다.");
+      await deleteDoc(doc(db, "guestbook", id));
+      alert("지워졌습니다.");
+    } catch (err: any) {
+      console.error("Delete guestbook entry error:", err);
+      alert(`삭제하는 동안 오류가 발생했습니다: ${err.message}`);
+    }
+  };
 
   useEffect(() => {
     if (!db) {
@@ -196,9 +223,20 @@ export default function Guestbook() {
               >
                 <div className="flex justify-between items-start mb-3">
                   <span className="font-bold text-primary">{entry.nickname}</span>
-                  <span className="text-xs text-on-surface-variant">
-                    {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '방금 전')}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-on-surface-variant">
+                      {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '방금 전')}
+                    </span>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(entry.id)}
+                        className="text-[#ba1a1a] hover:bg-[#ba1a1a]/10 p-1.5 rounded-lg transition-colors"
+                        title="기록 지우기"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-on-surface font-medium leading-relaxed whitespace-pre-wrap word-break-all">
                   {entry.message}
