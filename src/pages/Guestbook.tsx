@@ -40,8 +40,8 @@ export default function Guestbook() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetched = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as GuestbookEntry));
       fetched.sort((a, b) => {
-        const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt).getTime() || 0);
+        const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt).getTime() || 0);
         return bTime - aTime;
       });
       setEntries(fetched);
@@ -77,22 +77,11 @@ export default function Guestbook() {
       const docData = {
         nickname: nickname.trim(),
         message: message.trim(),
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
         status: "pending"
       };
       
-      // 타임아웃을 설정하여 무한 대기를 방지합니다.
-      const addDocPromise = addDoc(collection(db, "guestbook"), docData);
-      
-      let timeoutId: any;
-      const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new Error("서버 연동 지연: 방명록 작성 권한이나 네트워크 연결을 확인해주세요."));
-        }, 12000);
-      });
-      
-      await Promise.race([addDocPromise, timeoutPromise]);
-      clearTimeout(timeoutId);
+      await addDoc(collection(db, "guestbook"), docData);
       
       setNickname("");
       setMessage("");
@@ -202,7 +191,7 @@ export default function Guestbook() {
                 <div className="flex justify-between items-start mb-3">
                   <span className="font-bold text-primary">{entry.nickname}</span>
                   <span className="text-xs text-on-surface-variant">
-                    {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : '방금 전'}
+                    {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '방금 전')}
                   </span>
                 </div>
                 <p className="text-on-surface font-medium leading-relaxed whitespace-pre-wrap word-break-all">

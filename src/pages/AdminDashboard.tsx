@@ -30,8 +30,8 @@ export default function AdminDashboard() {
           const entries = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           // 클라이언트에서 정렬 (단순화를 위해)
           entries.sort((a: any, b: any) => {
-            const aTime = a.createdAt?.toMillis() || 0;
-            const bTime = b.createdAt?.toMillis() || 0;
+            const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt).getTime() || 0);
+            const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt).getTime() || 0);
             return bTime - aTime;
           });
           setPendingGuestbook(entries);
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-start">
                     <span className="font-bold text-primary truncate pr-2">{entry.nickname}</span>
                     <span className="text-[10px] text-on-surface-variant">
-                      {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : ''}
+                      {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '')}
                     </span>
                   </div>
                   <p className="text-sm text-on-surface font-medium whitespace-pre-wrap break-all flex-1 line-clamp-4">
