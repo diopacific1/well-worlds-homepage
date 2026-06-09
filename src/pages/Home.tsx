@@ -120,30 +120,40 @@ const HeroSection = () => {
         className="relative z-10 w-full max-w-5xl mx-auto space-y-10 flex flex-col items-center px-4"
       >
         <div className="space-y-6 md:space-y-8 flex flex-col items-center opacity-0 animate-fade-in-up">
-          <h1 className="text-[3.5rem] sm:text-6xl md:text-[5.5rem] lg:text-[6.5rem] font-display font-black tracking-tighter text-on-surface leading-[1.05]">
-            우물 속 세계로 <br className="hidden md:block" />
-            <span className="relative inline-block mt-2">
-              <span className="relative z-10 text-transparent bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text drop-shadow-sm">
-                빠져들다
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-variant/30 border border-outline/10 text-on-surface-variant text-xs sm:text-sm font-medium backdrop-blur-md mb-2"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            가상자산 · 반려식물 · 개인 아카이브
+          </motion.div>
+
+          <h1 className="text-[3.5rem] sm:text-6xl md:text-[5.5rem] lg:text-[7rem] font-display font-black tracking-tight text-on-surface leading-[1.1]">
+            우물 속 깊은 곳, <br className="hidden md:block" />
+            나만의 <span className="relative inline-block mt-2 md:mt-0 xl:ml-2">
+              <span className="relative z-10 text-transparent bg-gradient-to-r from-primary via-primary/90 to-secondary bg-clip-text drop-shadow-sm">
+                세계
               </span>
-              <div className="absolute inset-x-0 bottom-2 md:bottom-4 h-4 md:h-8 bg-primary/20 -z-10 -rotate-2 skew-x-12 blur-[2px]" />
-            </span>
+              <div className="absolute inset-x-0 bottom-1 md:bottom-3 h-3 md:h-6 bg-primary/20 -z-10 -rotate-1 skew-x-12 blur-[1px] md:blur-[2px]" />
+            </span>를 만나다
           </h1>
           
-          <p className="text-xl md:text-2xl text-on-surface-variant/90 font-medium max-w-2xl mx-auto mt-8 leading-relaxed tracking-wide break-keep">
+          <p className="text-xl md:text-2xl text-on-surface-variant/80 font-medium max-w-2xl mx-auto mt-8 leading-relaxed tracking-wide break-keep">
             수면 아래 감춰진 고요한 심연.<br />
-            나만의 기록과 상상이 부유하는 세계.
+            오롯이 나만의 기록과 상상이 부유하는 비밀스러운 공간.
           </p>
         </div>
 
         <div 
-          className="flex flex-col sm:flex-row items-center gap-5 pt-8 md:pt-12 w-full sm:w-auto opacity-0 animate-fade-in-up [animation-delay:200ms]"
+          className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-10 md:pt-14 w-full sm:w-auto opacity-0 animate-fade-in-up [animation-delay:400ms]"
         >
           <Link 
             to="/plants" 
-            className="group relative overflow-hidden w-full sm:w-auto px-8 py-4 bg-primary text-white rounded-full font-bold text-lg transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgba(var(--color-primary),0.3)]"
+            className="group relative overflow-hidden w-full sm:w-auto px-10 py-4 md:py-5 bg-on-surface text-surface rounded-full font-bold text-lg md:text-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)]"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-[150%] group-hover:animate-[shimmer_1.5s_infinite]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-[150%] group-hover:animate-[shimmer_1.5s_infinite]" />
             <span className="relative z-10 flex items-center gap-2">
               정원 가꾸기 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </span>
@@ -151,9 +161,11 @@ const HeroSection = () => {
           
           <Link 
             to="/stories" 
-            className="group relative w-full sm:w-auto px-8 py-4 bg-surface/50 backdrop-blur-md text-on-surface border border-outline/20 rounded-full font-bold text-lg hover:border-primary/40 hover:bg-surface-variant/50 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+            className="group relative w-full sm:w-auto px-10 py-4 md:py-5 bg-surface/40 backdrop-blur-xl text-on-surface border border-outline/30 rounded-full font-bold text-lg md:text-xl hover:border-primary/50 hover:bg-surface-variant/50 transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md"
           >
-            기록 펼치기
+            <span className="relative z-10 flex items-center gap-2">
+              기록 펼치기
+            </span>
           </Link>
         </div>
       </div>
@@ -282,30 +294,43 @@ export default function Home() {
           {/* Crypto Dashboard */}
           <BentoCard 
             to="/crypto" 
-            label="크립토 월드로 이동" 
-            className="md:col-span-5 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/60 transition-colors shadow-sm hover:shadow-xl hover:shadow-primary/5"
+            label="시장의 심연으로 이동" 
+            className="md:col-span-5 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/60 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
             
-            <div className="absolute right-[-10%] bottom-[-10%] opacity-[0.03] group-hover:opacity-[0.06] transition-all duration-700 group-hover:-translate-y-4 group-hover:rotate-[-5deg] pointer-events-none">
-              <LineChart className="w-80 h-80 text-on-surface" />
+            {/* Simulated Live Data Visuals (Glassmorphic Window) */}
+            <div className="absolute right-[-5%] top-[15%] w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] border border-outline/20 bg-surface/40 backdrop-blur-3xl rounded-2xl p-4 opacity-30 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2 group-hover:-translate-x-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex flex-col gap-3 rotate-[5deg] group-hover:rotate-[-2deg] pointer-events-none">
+              <div className="flex justify-between items-center border-b border-outline/10 pb-2">
+                <span className="text-xs font-mono text-on-surface-variant font-bold">ETH/KRW</span>
+                <span className="text-xs font-mono text-green-500 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> +2.4%
+                </span>
+              </div>
+              <div className="flex-1 relative overflow-hidden flex items-end gap-1.5">
+                 {/* Fake Bar Chart */}
+                 {[40, 70, 45, 90, 65, 85, 100, 75, 50, 80].map((h, i) => (
+                    <div key={i} className="flex-1 bg-gradient-to-t from-primary/30 to-primary/80 rounded-t-sm transition-all duration-700" style={{ height: `${h}%` }} />
+                 ))}
+                 <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-surface to-transparent" />
+              </div>
             </div>
 
             <div className="flex flex-col h-full p-8 md:p-10 relative z-10 w-full justify-between">
-              <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-all duration-500 shadow-inner">
+              <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center border border-primary/20 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500 shadow-inner">
                 <LineChart className="w-8 h-8" />
               </div>
 
-              <div className="mt-12">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4">
-                  크립토 월드
+              <div className="mt-20 md:mt-12 md:max-w-[90%]">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 group-hover:text-primary transition-colors duration-300">
+                  시장의 심연
                 </h2>
-                <p className="text-lg text-on-surface-variant/90 leading-relaxed font-medium">
-                  실시간 가상자산 모니터링 및 흐름 파악. 데이터를 통해 시장의 깊이를 탐색하세요.
+                <p className="text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep">
+                  실시간 가상자산의 파동을 관측합니다. 차가운 데이터 속에서 시장의 깊이를 탐색하세요.
                 </p>
                 
-                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 w-fit px-4 py-2 rounded-full group-hover:bg-primary/20 transition-colors">
-                  대시보드 열기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 w-fit px-4 py-2 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-primary),0)] group-hover:shadow-[0_4px_15px_rgba(var(--color-primary),0.3)]">
+                  관측소 접속 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>

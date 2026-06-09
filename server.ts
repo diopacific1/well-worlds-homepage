@@ -70,26 +70,57 @@ async function startServer() {
       const timeframe = (req.query.timeframe as string || '1D').toUpperCase().trim();
       
       // Map common searches to Binance/CoinGecko symbols
+      const coinSymbolMap: Record<string, { ticker: string, label: string }> = {
+        bitcoin: { ticker: "BTC", label: "비트코인" },
+        ethereum: { ticker: "ETH", label: "이더리움" },
+        solana: { ticker: "SOL", label: "솔라나" },
+        wormhole: { ticker: "W", label: "웜홀" },
+        ripple: { ticker: "XRP", label: "리플" },
+        dogecoin: { ticker: "DOGE", label: "도지코인" },
+        stacks: { ticker: "STX", label: "스택스" },
+        stellar: { ticker: "XLM", label: "스텔라루멘" },
+        pyth: { ticker: "PYTH", label: "피스네트워크" },
+        sui: { ticker: "SUI", label: "수이" },
+        aptos: { ticker: "APT", label: "앱토스" },
+        arbitrum: { ticker: "ARB", label: "아비트럼" },
+        optimism: { ticker: "OP", label: "옵티미즘" },
+        polygon: { ticker: "MATIC", label: "폴리곤" },
+        chainlink: { ticker: "LINK", label: "체인링크" },
+        near: { ticker: "NEAR", label: "니어프로토콜" },
+        avalanche: { ticker: "AVAX", label: "아발란체" },
+        cardano: { ticker: "ADA", label: "에이다" },
+        tron: { ticker: "TRX", label: "트론" },
+        shiba: { ticker: "SHIB", label: "시바이누" },
+        bch: { ticker: "BCH", label: "비트코인캐시" },
+        etc: { ticker: "ETC", label: "이더리움클래식" },
+        eos: { ticker: "EOS", label: "이오스" },
+        theta: { ticker: "THETA", label: "쎄타토큰" },
+        sand: { ticker: "SAND", label: "샌드박스" },
+        mana: { ticker: "MANA", label: "디센트럴랜드" },
+        axs: { ticker: "AXS", label: "엑시인피니티" },
+        neo: { ticker: "NEO", label: "네오" },
+        vet: { ticker: "VET", label: "비체인" },
+        chz: { ticker: "CHZ", label: "칠리즈" },
+        mkr: { ticker: "MKR", label: "메이커" },
+        aave: { ticker: "AAVE", label: "에이브" },
+        qtum: { ticker: "QTUM", label: "퀀텀" },
+        algo: { ticker: "ALGO", label: "알고랜드" },
+        hbar: { ticker: "HBAR", label: "헤데라" },
+        sei: { ticker: "SEI", label: "세이" },
+        mina: { ticker: "MINA", label: "미나" },
+        blur: { ticker: "BLUR", label: "블러" },
+        pepe: { ticker: "PEPE", label: "페페" },
+        wld: { ticker: "WLD", label: "월드코인" },
+        tia: { ticker: "TIA", label: "셀레스티아" },
+      };
+
       let binanceSymbol = "";
       let coinLabelName = coinId;
-      if (coinId === "bitcoin" || coinId === "btc") {
-        binanceSymbol = "BTCUSDT";
-        coinLabelName = "비트코인";
-      } else if (coinId === "ethereum" || coinId === "eth") {
-        binanceSymbol = "ETHUSDT";
-        coinLabelName = "이더리움";
-      } else if (coinId === "solana" || coinId === "sol") {
-        binanceSymbol = "SOLUSDT";
-        coinLabelName = "솔라나";
-      } else if (coinId === "wormhole" || coinId === "w") {
-        binanceSymbol = "WUSDT";
-        coinLabelName = "웜홀";
-      } else if (coinId === "ripple" || coinId === "xrp") {
-        binanceSymbol = "XRPUSDT";
-        coinLabelName = "리플";
-      } else if (coinId === "dogecoin" || coinId === "doge") {
-        binanceSymbol = "DOGEUSDT";
-        coinLabelName = "도지코인";
+
+      const mapping = coinSymbolMap[coinId];
+      if (mapping) {
+        binanceSymbol = `${mapping.ticker}USDT`;
+        coinLabelName = mapping.label;
       } else {
         binanceSymbol = `${coinId.toUpperCase()}USDT`;
       }

@@ -274,13 +274,22 @@ export default function CryptoDashboard() {
 
   useEffect(() => {
     const coinName = MOCK_COINS[activeCoinId]?.name || activeCoinId;
-    fetch(`/api/news?q=${encodeURIComponent("가상화폐 " + coinName)}`)
+    fetch(`/api/news?q=${encodeURIComponent("가상화폐 " + coinName + " when:7d")}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.items) {
+          const timeAgo = (dateStr: string) => {
+            if (!dateStr) return "최신";
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+            if (diffHours < 1) return "방금 전";
+            if (diffHours < 24) return `${diffHours}시간 전`;
+            return `${Math.floor(diffHours/24)}일 전`;
+          };
           setInsights(
             data.items.slice(0, 8).map((item: any) => ({
-              date: "최신 관련 뉴스",
+              date: timeAgo(item.pubDate),
               label: item.title,
               color: "cyber",
               link: item.link,
@@ -311,54 +320,63 @@ export default function CryptoDashboard() {
       });
   }, [activeCoinId, refreshCount, timeframe]);
 
+  const SEARCH_MAPPINGS: Record<string, string[]> = {
+    bitcoin: ["btc", "bitcoin", "비트코인", "비트"],
+    ethereum: ["eth", "ethereum", "이더리움", "이더"],
+    solana: ["sol", "solana", "솔라나", "솔"],
+    wormhole: ["w", "wormhole", "웜홀"],
+    ripple: ["xrp", "ripple", "리플"],
+    dogecoin: ["doge", "dogecoin", "도지코인", "도지"],
+    stacks: ["stx", "stacks", "스택스"],
+    stellar: ["xlm", "stellar", "스텔라루멘", "스텔라"],
+    pyth: ["pyth", "피스네트워크", "피스"],
+    sui: ["sui", "수이"],
+    aptos: ["apt", "aptos", "앱토스"],
+    arbitrum: ["arb", "arbitrum", "아비트럼"],
+    optimism: ["op", "optimism", "옵티미즘"],
+    polygon: ["matic", "polygon", "폴리곤", "폴리"],
+    chainlink: ["link", "chainlink", "체인링크", "링크"],
+    near: ["near", "니어프로토콜", "니어"],
+    avalanche: ["avax", "avalanche", "아발란체", "아바스"],
+    cardano: ["ada", "cardano", "에이다", "카르다노"],
+    tron: ["trx", "tron", "트론"],
+    shiba: ["shib", "shiba", "시바이누", "시바"],
+    bch: ["bch", "bitcoin cash", "비트코인캐시"],
+    etc: ["etc", "ethereum classic", "이더리움클래식"],
+    eos: ["eos", "이오스"],
+    theta: ["theta", "쎄타토큰", "쎄타"],
+    sand: ["sand", "sandbox", "샌드박스", "샌드"],
+    mana: ["mana", "decentraland", "디센트럴랜드"],
+    axs: ["axs", "axie infinity", "엑시인피니티", "엑시"],
+    neo: ["neo", "네오"],
+    vet: ["vet", "vechain", "비체인"],
+    chz: ["chz", "chiliz", "칠리즈"],
+    mkr: ["mkr", "maker", "메이커"],
+    aave: ["aave", "에이브"],
+    qtum: ["qtum", "퀀텀"],
+    algo: ["algo", "algorand", "알고랜드"],
+    hbar: ["hbar", "hedera", "헤데라"],
+    sei: ["sei", "세이"],
+    mina: ["mina", "미나"],
+    blur: ["blur", "블러"],
+    pepe: ["pepe", "페페"],
+    wld: ["wld", "worldcoin", "월드코인"],
+    tia: ["tia", "celestia", "셀레스티아"],
+  };
+
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     const term = searchTerm.toLowerCase().trim();
     if (!term) return;
 
-    if (
-      term === "btc" ||
-      term.includes("bitcoin") ||
-      term.includes("비트코인") ||
-      term.includes("비트")
-    ) {
-      setActiveCoinId("bitcoin");
-    } else if (
-      term === "eth" ||
-      term.includes("ethereum") ||
-      term.includes("이더리움") ||
-      term.includes("이더")
-    ) {
-      setActiveCoinId("ethereum");
-    } else if (
-      term === "sol" ||
-      term.includes("solana") ||
-      term.includes("솔라나") ||
-      term.includes("솔")
-    ) {
-      setActiveCoinId("solana");
-    } else if (
-      term === "w" ||
-      term.includes("wormhole") ||
-      term.includes("웜홀")
-    ) {
-      setActiveCoinId("wormhole");
-    } else if (
-      term === "xrp" ||
-      term.includes("ripple") ||
-      term.includes("리플")
-    ) {
-      setActiveCoinId("ripple");
-    } else if (
-      term === "doge" ||
-      term.includes("dogecoin") ||
-      term.includes("도지코인") ||
-      term.includes("도지")
-    ) {
-      setActiveCoinId("dogecoin");
-    } else {
-      setActiveCoinId(term);
+    let foundId = term;
+    for (const [id, keywords] of Object.entries(SEARCH_MAPPINGS)) {
+      if (keywords.some((k) => term.includes(k) || term === k)) {
+        foundId = id;
+        break;
+      }
     }
+    setActiveCoinId(foundId);
   };
 
   const coin = MOCK_COINS[activeCoinId] || {
@@ -391,7 +409,35 @@ export default function CryptoDashboard() {
     return parseFloat(clean) || 0;
   };
 
+  const parseUSDWithUnit = (str: string) => {
+    if (!str) return 0;
+    let multiplier = 1;
+    const upper = str.toUpperCase();
+    if (upper.includes('T')) multiplier = 1e12;
+    else if (upper.includes('B')) multiplier = 1e9;
+    else if (upper.includes('M')) multiplier = 1e6;
+    else if (upper.includes('K')) multiplier = 1e3;
+    const clean = str.replace(/[^0-9.]/g, "");
+    return (parseFloat(clean) || 0) * multiplier;
+  };
+
   const USD_TO_KRW = 1400; // 원/달러 고밀도 실시간 고정 변환율 적용
+
+  const formatUSDToKRW = (usdStr: string) => {
+    if (!usdStr || usdStr === "-") return "-";
+    const usdVal = parseUSD(usdStr);
+    return `₩${Math.round(usdVal * USD_TO_KRW).toLocaleString()}`;
+  };
+
+  const formatUSDToKRWMacro = (usdStr: string) => {
+    if (!usdStr || usdStr === "-") return "-";
+    const usdVal = parseUSDWithUnit(usdStr);
+    const krwVal = usdVal * USD_TO_KRW;
+    if (krwVal >= 1e12) return `₩${(krwVal / 1e12).toFixed(1)}조`;
+    if (krwVal >= 1e8) return `₩${Math.round(krwVal / 1e8).toLocaleString()}억`;
+    return `₩${krwVal.toLocaleString()}`;
+  };
+
   const currentPriceUSD = parseUSD(cryptoData?.price || coin.price);
   const currentPriceKRW = currentPriceUSD * USD_TO_KRW;
 
@@ -458,7 +504,6 @@ export default function CryptoDashboard() {
     }
 
     const { open, high, low, close } = candle;
-    // Format to Korean Won (KRW) for maximum trading immersion
     const openKRW = open * USD_TO_KRW;
     const highKRW = high * USD_TO_KRW;
     const lowKRW = low * USD_TO_KRW;
@@ -589,8 +634,8 @@ export default function CryptoDashboard() {
             )}
             <MetricCard
               label="현재 가격"
-              value={cryptoData?.price || coin.price}
-              unit="USD"
+              value={formatUSDToKRW(cryptoData?.price || coin.price)}
+              unit="KRW"
               trend={cryptoData?.trend || coin.trend}
               trendUp={
                 cryptoData?.trend
@@ -616,19 +661,19 @@ export default function CryptoDashboard() {
                 ></div>
               </div>
               <div className="mt-3 flex justify-between text-[11px] font-mono font-semibold text-on-surface-variant">
-                <span>저가: {cryptoData?.low24h || coin.volLow}</span>
-                <span>고가: {cryptoData?.high24h || coin.volHigh}</span>
+                <span>저가: {formatUSDToKRW(cryptoData?.low24h || coin.volLow)}</span>
+                <span>고가: {formatUSDToKRW(cryptoData?.high24h || coin.volHigh)}</span>
               </div>
             </div>
             <MetricCard
               label="시가총액"
-              value={cryptoData?.marketCap || coin.marketCap}
+              value={formatUSDToKRWMacro(cryptoData?.marketCap || coin.marketCap)}
               badges={[{ text: coin.rank, isAccent: true }]}
               footerText={coin.fdv}
             />
             <MetricCard
               label="24시간 거래량"
-              value={cryptoData?.volume || coin.volume}
+              value={formatUSDToKRWMacro(cryptoData?.volume || coin.volume)}
               trend={coin.volChange}
               trendUp={!coin.volChange.includes("↓")}
               footerText="전일 대비"
@@ -728,8 +773,9 @@ export default function CryptoDashboard() {
                         />
                         <XAxis 
                           dataKey="time" 
-                          stroke="#94A3B8" 
-                          fontSize={10}
+                          stroke="#1E293B" 
+                          fontSize={11}
+                          fontWeight={600}
                           tickLine={false} 
                           axisLine={false} 
                           dy={10}
@@ -737,8 +783,9 @@ export default function CryptoDashboard() {
                         <YAxis 
                           domain={chartDomain} 
                           tickFormatter={(v) => `₩${Math.round(v).toLocaleString()}`}
-                          stroke="#94A3B8" 
-                          fontSize={10} 
+                          stroke="#1E293B" 
+                          fontSize={11} 
+                          fontWeight={600}
                           orientation="right"
                           axisLine={false}
                           tickLine={false}
@@ -832,15 +879,6 @@ export default function CryptoDashboard() {
                     </span>
                   </div>
                 </div>
-                <div className="flex justify-between mt-6 pt-4 border-t border-outline/20 text-xs font-mono font-semibold text-on-surface-variant">
-                  <span>{footerLabels[0]}</span>
-                  <span>{footerLabels[1]}</span>
-                  <span>{footerLabels[2]}</span>
-                  <span>{footerLabels[3]}</span>
-                  <span className="text-primary font-bold border-b-2 border-primary pb-1">
-                    {footerLabels[4]}
-                  </span>
-                </div>
               </div>
 
               {/* Indicators Grid */}
@@ -860,13 +898,13 @@ export default function CryptoDashboard() {
                 />
                 <IndicatorCard
                   title="MA (50)"
-                  value={cryptoData?.ma50 || "$2.82"}
+                  value={formatUSDToKRW(cryptoData?.ma50 || "$2.82")}
                   sub="단기 추세선"
                   color="cyber"
                 />
                 <IndicatorCard
                   title="MA (200)"
-                  value={cryptoData?.ma200 || "$2.15"}
+                  value={formatUSDToKRW(cryptoData?.ma200 || "$2.15")}
                   sub="장기 추세선"
                   color="cyber"
                 />
@@ -1098,21 +1136,24 @@ export default function CryptoDashboard() {
               <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-10 md:mb-12">
                 <div className="bg-primary/5 border border-primary/10 p-6 md:p-8 rounded-2xl">
                   <h3 className="text-primary font-display font-bold text-xl mb-6 flex items-center gap-3">
-                    <BarChart2 className="w-6 h-6" /> 주요 핵심 요약
+                    <BarChart2 className="w-6 h-6" /> 주요 핵심 요약 (실시간 데이터 연동)
                   </h3>
                   <ul className="space-y-4 text-base font-medium text-on-surface leading-relaxed">
-                    <li className="flex items-start gap-3">
-                      <span className="text-primary shrink-0 mt-1">●</span> 7일
-                      프레임 기준 뚜렷한 "상승 저점(Higher-Low)" 패턴 형성.
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-primary shrink-0 mt-1">●</span>{" "}
-                      저항선이었던 $3.00이 성공적으로 구조적 지지선으로 전환됨.
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-primary shrink-0 mt-1">●</span>{" "}
-                      ZK-Proof 기술 도입이 마켓 내 압도적 기술 우위를 점함.
-                    </li>
+                    {insights.length > 0 ? (
+                      insights.slice(0, 3).map((insight, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="text-primary shrink-0 mt-1">●</span>
+                          실시간 이슈: {insight.label.replace(/(\[[^\]]*\]| <[^>]*> )/g, '')}
+                        </li>
+                      ))
+                    ) : (
+                      <>
+                        <li className="flex items-start gap-3">
+                          <span className="text-primary shrink-0 mt-1 animate-pulse">●</span> 
+                          실시간 동향 데이터를 불러오는 중입니다...
+                        </li>
+                      </>
+                    )}
                   </ul>
                 </div>
                 <div className="bg-surface border border-outline/20 p-6 md:p-8 rounded-2xl shadow-[0_4px_12px_-2px_rgba(0,0,0,0.05)] flex flex-col justify-between">
@@ -1124,20 +1165,20 @@ export default function CryptoDashboard() {
                     <div className="space-y-6">
                       <div className="flex justify-between items-center border-b border-outline/10 pb-4">
                         <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                          단기 저항선
+                          단기 저항선 (24H High 기반)
                         </p>
                         <p className="text-2xl font-mono border border-primary/20 bg-primary-light/30 px-3 py-1 rounded-lg font-bold text-primary">
-                          $3.25
+                          {formatUSDToKRW(cryptoData?.high24h || "$3.25")}
                         </p>
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-                          연말 목표가 (Y/E)
+                          장기 목표가 (MA200 기반)
                         </p>
                         <p
-                          className={`text-2xl font-mono font-bold ${coin.targetColor === "text-bullish" ? "text-[#00C853]" : "text-primary"}`}
+                          className={`text-2xl font-mono font-bold ${coin.targetColor === "text-bullish" ? "text-green-500" : "text-primary"}`}
                         >
-                          {coin.targetPrice}
+                          {formatUSDToKRW(cryptoData?.ma200 || coin.targetPrice)}
                         </p>
                       </div>
                     </div>
@@ -1148,30 +1189,24 @@ export default function CryptoDashboard() {
               <div className="space-y-10 text-on-surface leading-relaxed text-lg font-sans">
                 <div className="space-y-4">
                   <h3 className="text-2xl font-display font-bold text-on-surface mb-2">
-                    01. 실시간 인공지능 시장 총평
+                    01. 동적 시장 총평 및 실시간 분석
                   </h3>
                   <p className="text-on-surface-variant">
                     {cryptoData?.analysis ||
-                      `2026년 5월 말 기준, ${coin.name}(${coin.symbol})은(는) 주요 크립토 어셋으로서의 포지션을 단단히 굳히고 있습니다. 시가총액은 약 ${coin.marketCap}에 달하며, 전반적인 시장의 이목을 끌고 있습니다.`}
+                      `현재 ${coin.name}(${coin.symbol})은(는) 주요 자산으로서 시장의 이목을 끌고 있습니다. 기술적 모멘텀과 최근 이슈를 기반으로 볼 때 유의미한 움직임이 포착되고 있습니다.`}
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <h3 className="text-2xl font-display font-bold text-on-surface mb-2">
-                    02. 기술적 심층 분석 (검색 데이터 기반)
+                    02. 주요 관련 동향 브리핑
                   </h3>
                   <p className="text-on-surface-variant">
-                    현재 14일 RSI 지표는{" "}
-                    <strong>{cryptoData?.rsi || "62.4"}</strong>를 기록, 과매수
-                    구간에 진입하지 않으면서도 안정적인 모멘텀을 유지하고
-                    있습니다. 특히 {cryptoData?.ma50 || "$2.82"}의 50일
-                    이동평균선 상단을 여유롭게 돌파하여 중기적 강세 기조가
-                    유효함을 증명했습니다.
+                    현재 모멘텀 지표(RSI)는{" "}
+                    <strong>{cryptoData?.rsi || "62.4"}</strong>를 기록하며, 전반적인 시장 추세를 반영하고 있습니다. 특히 검색된 최신 뉴스 기반 동향으로 볼 때 다음과 같은 인사이트를 도출할 수 있습니다.
                   </p>
-                  <blockquote className="border-l-4 border-primary bg-primary-light/20 p-6 xl:p-8 rounded-r-2xl italic text-primary/80 my-6 shadow-sm border-r border-y border-outline/10 font-medium">
-                    "최근 나타난 이동평균선과 현재 가격(
-                    {cryptoData?.price || coin.price})의 구조적 시그널은 견고한
-                    바닥을 형성하고 있습니다. (Google 웹검색 실시간 기반 예측)"
+                  <blockquote className="border-l-4 border-primary bg-primary-light/20 p-6 xl:p-8 rounded-r-2xl italic text-primary/80 my-6 shadow-sm border-r border-y border-outline/10 font-medium break-keep">
+                    "{insights.length > 0 ? `${insights[0].label.replace(/(\[[^\]]*\]| <[^>]*> )/g, '')} 등의 소식이 ${coin.name}의 투심에 영향을 주고 있습니다. (서버 비용을 최적화한 무료 RSS 통합 데이터)` : `관련 뉴스를 기반으로 시장 동향을 파악하고 있습니다. (Google 웹검색 실시간 기반 예측)`}"
                   </blockquote>
                 </div>
               </div>
