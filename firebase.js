@@ -19,13 +19,15 @@ try {
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseAppletConfig.storageBucket,
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseAppletConfig.messagingSenderId,
     appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseAppletConfig.appId,
-    firestoreDatabaseId: firebaseAppletConfig.firestoreDatabaseId
+    firestoreDatabaseId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? "(default)" : firebaseAppletConfig.firestoreDatabaseId
   };
 
   if (config.apiKey && config.apiKey !== 'undefined' && config.apiKey !== "your-api-key-here") {
     app = initializeApp(config);
     // CRITICAL: Must use firestoreDatabaseId if specified to connect to correct database instance in AI Studio sandbox
-    db = getFirestore(app, config.firestoreDatabaseId || "(default)");
+    // Use the custom database ID if using the AI Studio project, otherwise default to '(default)'
+    const dbId = import.meta.env.VITE_FIREBASE_PROJECT_ID ? "(default)" : (config.firestoreDatabaseId || "(default)");
+    db = getFirestore(app, dbId);
     auth = getAuth(app);
     storage = getStorage(app);
     console.log("🔥 Firebase initialized successfully with database id:", config.firestoreDatabaseId || "(default)");
