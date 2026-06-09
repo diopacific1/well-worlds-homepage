@@ -19,13 +19,13 @@ try {
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseAppletConfig.storageBucket,
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseAppletConfig.messagingSenderId,
     appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseAppletConfig.appId,
-    firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseAppletConfig.firestoreDatabaseId
+    firestoreDatabaseId: firebaseAppletConfig.firestoreDatabaseId
   };
 
   if (config.apiKey && config.apiKey !== 'undefined' && config.apiKey !== "your-api-key-here") {
     app = initializeApp(config);
-    // Always use the configured database ID
-    const dbId = config.firestoreDatabaseId || "(default)";
+    // Always use the configured database ID strictly from the config JSON
+    const dbId = firebaseAppletConfig.firestoreDatabaseId || "(default)";
     db = getFirestore(app, dbId);
     auth = getAuth(app);
     storage = getStorage(app);

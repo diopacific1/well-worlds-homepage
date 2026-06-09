@@ -12,10 +12,8 @@ service cloud.firestore {
 
     // Guestbook (방명록 - 관리자 승인제)
     match /guestbook/{entryId} {
-      allow read: if resource.data == null || resource.data.status == 'approved' || isAdmin();
-      allow create: if request.resource.data.status == 'pending'
-                    && request.resource.data.nickname is string
-                    && request.resource.data.message is string;
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow create: if request.resource.data.status == 'pending';
       allow update, delete: if isAdmin();
     }
 

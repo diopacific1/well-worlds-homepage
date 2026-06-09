@@ -77,7 +77,7 @@ export default function Guestbook() {
       const docData = {
         nickname: nickname.trim(),
         message: message.trim(),
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         status: "pending"
       };
       
