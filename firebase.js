@@ -10,15 +10,14 @@ let auth = null;
 let storage = null;
 
 try {
-  // Prefer environment variables if they are set, otherwise fall back to the provisioned applet config.
-  // This allows the user to easily override fields (like storageBucket) via environment variables.
+  // Strictly use the provisioned applet config to prevent mismatch with any injected environment variables.
   const config = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseAppletConfig.apiKey,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseAppletConfig.authDomain,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseAppletConfig.projectId,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseAppletConfig.storageBucket,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseAppletConfig.messagingSenderId,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseAppletConfig.appId,
+    apiKey: firebaseAppletConfig.apiKey,
+    authDomain: firebaseAppletConfig.authDomain,
+    projectId: firebaseAppletConfig.projectId,
+    storageBucket: firebaseAppletConfig.storageBucket,
+    messagingSenderId: firebaseAppletConfig.messagingSenderId,
+    appId: firebaseAppletConfig.appId,
     firestoreDatabaseId: firebaseAppletConfig.firestoreDatabaseId
   };
 
