@@ -46,9 +46,13 @@ export default function Guestbook() {
       });
       setEntries(fetched);
       setIsLoading(false);
-    }, (err) => {
+    }, (err: any) => {
       console.error("Guestbook fetch error:", err);
-      setError("방명록을 불러오는 데 실패했습니다.");
+      if (err.code === "permission-denied") {
+        setError("Firebase 데이터베이스 읽기 권한이 없습니다.\n\n해결방법: Firebase 콘솔(home-page-1 프로젝트)에 접속하여 Firestore Database > Rules(규칙) 탭으로 이동한 후, 이 프로젝트의 파일 탐색기에서 'firestore.rules' 파일의 내용을 그대로 복사하여 붙여넣고 '게시(Publish)'를 눌러주셔야 합니다.");
+      } else {
+        setError(`방명록을 불러오는 데 실패했습니다: ${err.message}`);
+      }
       setIsLoading(false);
     });
 
@@ -175,7 +179,9 @@ export default function Guestbook() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : error ? (
-          <div className="p-6 text-center bg-error/10 text-error font-semibold rounded-2xl">{error}</div>
+          <div className="p-6 text-center bg-error/10 text-error font-semibold rounded-2xl whitespace-pre-wrap leading-relaxed shadow-sm">
+            {error}
+          </div>
         ) : entries.length === 0 ? (
           <div className="p-16 text-center text-on-surface-variant font-medium bg-surface-container-lowest border border-outline/10 rounded-3xl">
             아직 승인된 기록이 없습니다.

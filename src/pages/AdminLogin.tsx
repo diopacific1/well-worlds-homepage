@@ -80,6 +80,24 @@ export default function AdminLogin() {
         {error && (
           <div className="text-error text-sm font-medium p-4 bg-error/10 rounded-xl whitespace-pre-wrap leading-relaxed shadow-sm">
             {error}
+            {error.includes('이메일 로그인이 비활성화') && (
+              <a 
+                href={`https://console.firebase.google.com/project/${auth?.app?.options?.projectId || 'home-page-1-b923f'}/authentication/providers`}
+                target="_blank" 
+                rel="noreferrer"
+                className="block mt-4 p-3 bg-white/50 rounded-lg text-primary font-bold text-center underline"
+              >
+                👉 Firebase 콘솔 바로가기 (본인 프로젝트일 경우)
+              </a>
+            )}
+            {error.includes('팝업 창이 닫혀서') && (
+              <button 
+                onClick={() => window.open(window.location.href, "_blank")}
+                className="block w-full mt-4 p-3 bg-white/50 text-error rounded-lg font-bold text-center underline"
+              >
+                👉 창 분리해서 다시 열기
+              </button>
+            )}
           </div>
         )}
 

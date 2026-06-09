@@ -1,10 +1,10 @@
 {
-  "projectId": "linen-slate-jpnh2",
-  "appId": "1:352046608811:web:107e314f818164bacb62ee",
-  "apiKey": "AIzaSyA0DGvz7bZz0hUV1ixXrW_OcluaAJqXg54",
-  "authDomain": "linen-slate-jpnh2.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-f590546d-f1a3-4163-8893-f4ad6cd438ff",
-  "storageBucket": "linen-slate-jpnh2.firebasestorage.app",
-  "messagingSenderId": "352046608811",
+  "projectId": "home-page-1-b923f",
+  "appId": "1:1051049886906:web:665e470bc9b6220e5aae83",
+  "apiKey": "AIzaSyDKa2wjb8qEHL1CF9no2mgZbcG_-yRFDRA",
+  "authDomain": "home-page-1-b923f.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "home-page-1-b923f.firebasestorage.app",
+  "messagingSenderId": "1051049886906",
   "measurementId": ""
 }

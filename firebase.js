@@ -10,7 +10,7 @@ let auth = null;
 let storage = null;
 
 try {
-  // Strictly use the provisioned applet config to prevent mismatch with any injected environment variables.
+  // Strictly use the provisioned applet config (updated to home-page-1-b923f)
   const config = {
     apiKey: firebaseAppletConfig.apiKey,
     authDomain: firebaseAppletConfig.authDomain,
