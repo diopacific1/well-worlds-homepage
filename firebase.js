@@ -2,7 +2,10 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-import firebaseAppletConfig from "./firebase-applet-config.json";
+
+// Safely import the generated config if it exists (AI Studio environment)
+const configModules = import.meta.glob('./firebase-applet-config.json', { eager: true });
+const localConfig = configModules['./firebase-applet-config.json']?.default || {};
 
 let app;
 let db = null;
@@ -10,28 +13,28 @@ let auth = null;
 let storage = null;
 
 try {
-  // Strictly use the provisioned applet config (updated to home-page-1-b923f)
+  // Merge Vite environment variables (Vercel) with the local config (AI Studio)
   const config = {
-    apiKey: firebaseAppletConfig.apiKey,
-    authDomain: firebaseAppletConfig.authDomain,
-    projectId: firebaseAppletConfig.projectId,
-    storageBucket: firebaseAppletConfig.storageBucket,
-    messagingSenderId: firebaseAppletConfig.messagingSenderId,
-    appId: firebaseAppletConfig.appId,
-    firestoreDatabaseId: firebaseAppletConfig.firestoreDatabaseId
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || localConfig.apiKey,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || localConfig.authDomain,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || localConfig.projectId,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || localConfig.storageBucket,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || localConfig.messagingSenderId,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || localConfig.appId,
+    firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || localConfig.firestoreDatabaseId || "(default)"
   };
 
   if (config.apiKey && config.apiKey !== 'undefined' && config.apiKey !== "your-api-key-here") {
     app = initializeApp(config);
-    // Always use the configured database ID strictly from the config JSON
-    const dbId = firebaseAppletConfig.firestoreDatabaseId || "(default)";
+    // Always use the configured database ID strictly from the config JSON or Environment
+    const dbId = config.firestoreDatabaseId || "(default)";
     db = getFirestore(app, dbId);
     auth = getAuth(app);
     storage = getStorage(app);
     console.log("🔥 Firebase initialized successfully with database id:", config.firestoreDatabaseId || "(default)");
     console.log("📦 Active storage bucket config:", config.storageBucket);
   } else {
-    console.warn("⚠️ Firebase is not configured! Please provide proper API keys via env or firebase-applet-config.json.");
+    console.warn("⚠️ Firebase is not configured! Please provide proper API keys via env variables like VITE_FIREBASE_API_KEY or via firebase-applet-config.json.");
   }
 } catch (error) {
   console.error("Firebase init error:", error);
