@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { Link } from "react-router-dom";
 import {
   LineChart,
@@ -6,10 +6,14 @@ import {
   ArrowRight,
   MessageSquareHeart,
   BookOpen,
-  ChevronDown
+  ChevronDown,
+  Database,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 import { Helmet } from "react-helmet-async";
+import { db } from "../../firebase";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -33,7 +37,52 @@ const itemVariants: Variants = {
   }
 };
 
-const HeroSection = () => {
+// --- 환경변수 및 DB 연결 상태를 감지하는 SystemStatus 컴포넌트 추가 ---
+const SystemStatus = memo(() => {
+  const [isDbConnected, setIsDbConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // db가 존재하면 환경변수가 정상적으로 로드되어 초기화된 상태
+    if (db) {
+      setIsDbConnected(true);
+    } else {
+      setIsDbConnected(false);
+    }
+  }, []);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="absolute top-6 right-6 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-variant/30 border border-outline/10 backdrop-blur-md shadow-sm"
+    >
+      <div className="flex items-center gap-1.5">
+        {isDbConnected ? (
+          <>
+            <Wifi className="w-3.5 h-3.5 text-green-500" />
+            <span className="text-[10px] font-mono font-bold text-green-500 tracking-wider">ENV OPTIMIZED</span>
+          </>
+        ) : (
+          <>
+            <WifiOff className="w-3.5 h-3.5 text-error" />
+            <span className="text-[10px] font-mono font-bold text-error tracking-wider">ENV MISSING</span>
+          </>
+        )}
+      </div>
+      <div className="w-px h-3 bg-outline/20" />
+      <div className="flex items-center gap-1.5">
+        <Database className={`w-3.5 h-3.5 ${isDbConnected ? 'text-primary' : 'text-on-surface-variant/50'}`} />
+        <span className={`text-[10px] font-mono font-bold tracking-wider ${isDbConnected ? 'text-primary' : 'text-on-surface-variant/50'}`}>
+          {isDbConnected ? 'SYNC ACTIVE' : 'OFFLINE MODE'}
+        </span>
+      </div>
+    </motion.div>
+  );
+});
+
+SystemStatus.displayName = "SystemStatus";
+
+const HeroSection = memo(() => {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
   const y2 = useTransform(scrollY, [0, 500], [0, -150]);
@@ -61,27 +110,37 @@ const HeroSection = () => {
   const glow2CombinedY = useTransform([y2, glow2Y], ([latestY2, latestGlowY]) => (latestY2 as number) + (latestGlowY as number));
 
   useEffect(() => {
+    let animationFrameId: number;
     const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set((e.clientX / window.innerWidth - 0.5) * 30);
-      mouseY.set((e.clientY / window.innerHeight - 0.5) * 30);
+      // requestAnimationFrame을 활용한 마우스 이벤트 최적화
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => {
+        mouseX.set((e.clientX / window.innerWidth - 0.5) * 30);
+        mouseY.set((e.clientY / window.innerHeight - 0.5) * 30);
+      });
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, [mouseX, mouseY]);
 
-  // Generate stable particle arrays
-  const [particles] = useState(() => 
+  // Generate stable particle arrays using useMemo
+  const particles = useMemo(() => 
     Array.from({ length: 20 }).map(() => ({
       width: Math.random() * 6 + 2,
       left: Math.random() * 100,
       top: Math.random() * 100,
       duration: Math.random() * 10 + 10,
       delay: Math.random() * 10,
-    }))
-  );
+    })), 
+  []);
 
   return (
     <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[85vh] overflow-hidden">
+      <SystemStatus />
+      
       {/* Abstract Background Deep World Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 bg-background">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background/80 via-background to-surface" />
@@ -90,7 +149,7 @@ const HeroSection = () => {
         {particles.map((p, i) => (
           <motion.div
             key={i}
-            className="absolute bg-primary/30 rounded-full blur-[1px]"
+            className="absolute bg-primary/30 rounded-full blur-[1px] will-change-transform"
             style={{
               width: p.width,
               height: p.width,
@@ -114,15 +173,15 @@ const HeroSection = () => {
         {/* Deep well ambient lights with Mouse Parallax (Optimized to skip React re-renders) */}
         <motion.div 
           style={{ x: glow1X, y: glow1CombinedY }}
-          className="absolute top-[10%] left-[15%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/20 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse" 
+          className="absolute top-[10%] left-[15%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-primary/20 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse will-change-transform" 
         />
         <motion.div 
           style={{ x: glow2X, y: glow2CombinedY }}
-          className="absolute bottom-[20%] right-[10%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-secondary/15 rounded-full blur-[120px] md:blur-[150px] mix-blend-multiply animate-glow-pulse [animation-delay:4s]" 
+          className="absolute bottom-[20%] right-[10%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-secondary/15 rounded-full blur-[120px] md:blur-[150px] mix-blend-multiply animate-glow-pulse [animation-delay:4s] will-change-transform" 
         />
         <motion.div 
           style={{ x: glow3X, y: glow3Y }}
-          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[500px] h-[400px] bg-blue-300/10 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse [animation-delay:2s]" 
+          className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[500px] h-[400px] bg-blue-300/10 rounded-full blur-[120px] md:blur-[160px] mix-blend-multiply animate-glow-pulse [animation-delay:2s] will-change-transform" 
         />
         
         {/* Subtle top glow simulating surface light */}
@@ -196,9 +255,11 @@ const HeroSection = () => {
       </motion.div>
     </header>
   );
-};
+});
 
-const BentoCard = ({ to, label, className = "", children }: { to: string; label: string; className?: string; children: React.ReactNode }) => (
+HeroSection.displayName = "HeroSection";
+
+const BentoCard = memo(({ to, label, className = "", children }: { to: string; label: string; className?: string; children: React.ReactNode }) => (
   <motion.article 
     variants={itemVariants} 
     className={`group relative flex flex-col h-full rounded-[2rem] overflow-hidden content-visibility-auto will-change-transform ${className}`}
@@ -210,16 +271,18 @@ const BentoCard = ({ to, label, className = "", children }: { to: string; label:
     />
     {children}
   </motion.article>
-);
+));
+
+BentoCard.displayName = "BentoCard";
 
 export default function Home() {
-  const structuredData = {
+  const structuredData = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "우물 그리고 세계들",
     "url": window.location.href,
     "description": "다양한 데이터를 탐색하고 기록을 남기는 웹 공간. 가상자산 터미널, 반려식물 저널, 개인 기록실을 제공합니다."
-  };
+  }), []);
 
   return (
     <div className="space-y-12 md:space-y-24 pb-24 overflow-hidden relative">
@@ -230,6 +293,7 @@ export default function Home() {
           {JSON.stringify(structuredData)}
         </script>
       </Helmet>
+      
       <HeroSection />
 
       {/* Bento Grid Layer */}
