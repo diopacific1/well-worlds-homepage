@@ -199,14 +199,17 @@ const HeroSection = () => {
 };
 
 const BentoCard = ({ to, label, className = "", children }: { to: string; label: string; className?: string; children: React.ReactNode }) => (
-  <motion.div variants={itemVariants} className={`group relative flex flex-col h-full rounded-[2rem] overflow-hidden ${className}`}>
+  <motion.article 
+    variants={itemVariants} 
+    className={`group relative flex flex-col h-full rounded-[2rem] overflow-hidden content-visibility-auto will-change-transform ${className}`}
+  >
     <Link
       to={to}
       aria-label={label}
       className="absolute inset-0 z-20 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-[2rem]"
     />
     {children}
-  </motion.div>
+  </motion.article>
 );
 
 export default function Home() {

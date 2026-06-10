@@ -135,11 +135,13 @@ const PostItem = ({
         {/* Post Content */}
         <div className="text-on-surface-variant font-medium">
           {post.image && (
-            <div className="relative rounded-2xl overflow-hidden max-h-[500px] border border-outline/10 mb-8 shadow-sm group-hover/card:shadow-md transition-shadow duration-500">
+            <div className="relative rounded-2xl overflow-hidden max-h-[500px] bg-surface-dim border border-outline/10 mb-8 shadow-sm group-hover/card:shadow-md transition-shadow duration-500">
               <img
                 src={post.image}
                 alt="게시물 표지 이미지"
                 loading="lazy"
+                decoding="async"
+                fetchPriority="low"
                 className="w-full h-full object-cover group-hover/card:scale-105 group-hover/card:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover/card:brightness-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-transparent pointer-events-none opacity-50 group-hover/card:opacity-0 transition-opacity duration-500" />
@@ -644,11 +646,13 @@ export default function Stories() {
                 </div>
 
                 {newImage && (
-                  <div className="relative rounded-xl overflow-hidden h-36 border border-outline/20 max-w-sm mx-auto shadow-inner">
+                  <div className="relative rounded-xl overflow-hidden h-36 bg-surface-dim border border-outline/20 max-w-sm mx-auto shadow-inner">
                     <img 
                       src={newImage} 
                       alt="첨부된 이미지 미리보기" 
                       referrerPolicy="no-referrer"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover" 
                     />
                     <button 

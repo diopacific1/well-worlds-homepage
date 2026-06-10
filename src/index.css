@@ -38,6 +38,14 @@
 body {
   @apply bg-background text-on-surface antialiased;
   overflow-x: hidden;
+  /* 모바일/데스크탑 전역 성능 최적화: 스크롤 스무딩 */
+  scroll-behavior: smooth;
+}
+
+/* 렌더링 성능 최적화: 화면 밖 요소 렌더링 지연 */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1px;
 }
 
 ::-webkit-scrollbar {

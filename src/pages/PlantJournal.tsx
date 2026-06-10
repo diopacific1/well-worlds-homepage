@@ -456,12 +456,13 @@ export default function PlantJournal() {
                   <span className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">
                     Cover Image
                   </span>
-                  <div className="relative w-full h-56 bg-surface-container-lowest border border-outline/30 rounded-xl overflow-hidden group shadow-inner">
+                  <div className="relative w-full h-56 bg-surface-dim border border-outline/30 rounded-xl overflow-hidden group shadow-inner">
                     {formParams.image ? (
                       <img
                         src={formParams.image}
                         alt="커버 이미지 미리보기"
                         loading="lazy"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
@@ -810,12 +811,14 @@ export default function PlantJournal() {
               </div>
 
               {/* Hero Image */}
-              <div className="w-full md:w-2/5 order-1 md:order-2 bg-surface-container-lowest border-b md:border-b-0 md:border-l border-outline/10 relative">
-                <div className="relative w-full h-[300px] md:h-full md:min-h-[420px] overflow-hidden">
+              <div className="w-full md:w-2/5 order-1 md:order-2 bg-surface-dim border-b md:border-b-0 md:border-l border-outline/10 relative">
+                <div className="relative w-full h-[300px] md:h-[420px] lg:h-full lg:min-h-[420px] overflow-hidden">
                   <img
                     src={entry.image}
                     alt={`${entry.title} 이미지`}
                     loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
                     className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover:brightness-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none opacity-80 md:opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

@@ -580,7 +580,9 @@ export default function CryptoDashboard() {
                   src={coin.image}
                   alt={`${coin.name} 로고`}
                   loading="lazy"
-                  className="w-12 h-12 rounded-full object-contain bg-surface p-1 border border-outline/20 shadow-sm"
+                  decoding="async"
+                  fetchPriority="high"
+                  className="w-12 h-12 rounded-full object-contain bg-surface p-1 border border-outline/20 shadow-sm content-visibility-auto"
                 />
               ) : (
                 <div
