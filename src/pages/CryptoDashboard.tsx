@@ -1,4 +1,5 @@
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import {
   Search,
   Wallet,
@@ -302,22 +303,50 @@ export default function CryptoDashboard() {
 
   useEffect(() => {
     setLoadingCrypto(true);
-    fetch(`/api/crypto?id=${activeCoinId}&timeframe=${timeframe}`)
+
+    const cacheKey = `crypto_data_v1_${activeCoinId}_${timeframe}`;
+    const cachedData = sessionStorage.getItem(cacheKey);
+    const now = Date.now();
+
+    if (cachedData) {
+      try {
+        const { timestamp, data } = JSON.parse(cachedData);
+        // 캐시 유효기간: 3분 (180000ms) - API 호출 최소화로 서버 비용 절감 및 성능 1단계 개선
+        if (now - timestamp < 180000) {
+          setCryptoData(data);
+          setLoadingCrypto(false);
+          return;
+        }
+      } catch (e) {
+        sessionStorage.removeItem(cacheKey);
+      }
+    }
+
+    const fetchController = new AbortController();
+
+    fetch(`/api/crypto?id=${activeCoinId}&timeframe=${timeframe}`, {
+      signal: fetchController.signal,
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
           console.error("API Error:", data.error);
           setCryptoData(null);
         } else {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, data }));
           setCryptoData(data);
         }
         setLoadingCrypto(false);
       })
       .catch((err) => {
-        console.error(err);
-        setCryptoData(null);
-        setLoadingCrypto(false);
+        if (err.name !== "AbortError") {
+          console.error(err);
+          setCryptoData(null);
+          setLoadingCrypto(false);
+        }
       });
+
+      return () => fetchController.abort();
   }, [activeCoinId, refreshCount, timeframe]);
 
   const SEARCH_MAPPINGS: Record<string, string[]> = {
@@ -561,9 +590,22 @@ export default function CryptoDashboard() {
   const maxHigh = highs.length > 0 ? Math.max(...highs) : 100;
   const chartDomain = [minLow * 0.997, maxHigh * 1.003];
 
+  // (Step 5) Algorithm Insights Analysis based on client-side properties
+  const algoAction = useMemo(() => {
+    const rsiVal = parseFloat(cryptoData?.rsi || "50");
+    if (rsiVal < 30) return { label: "강력 매수 (과매도)", color: "text-[#E13030]", bg: "bg-[#E13030]/10" };
+    if (rsiVal > 70) return { label: "강력 매도 (과매수)", color: "text-[#1261C4]", bg: "bg-[#1261C4]/10" };
+    if (coin.trendUp) return { label: "보유 (상승 흐름)", color: "text-primary", bg: "bg-primary/10" };
+    return { label: "관망 (중립)", color: "text-on-surface-variant", bg: "bg-surface-dim" };
+  }, [cryptoData?.rsi, coin.trendUp]);
+
   return (
     <PriceProvider>
-      <div className="w-full flex flex-col pb-20">
+      <Helmet>
+        <title>{coin.name} ({coin.symbol}) 실시간 시세 및 AI 지표 분석 | 알고리즘 트레이더</title>
+        <meta name="description" content={`${coin.name}의 실시간 가격, 변동성, RSI, MAs 등 기술적 지표를 활용한 알고리즘 트레이딩 전문 리포트`} />
+      </Helmet>
+      <main className="w-full flex flex-col pb-20">
         <PriceTicker />
         <div className="p-4 lg:p-6 space-y-8 animate-in fade-in duration-700 max-w-[1280px] mx-auto w-full mt-4">
           <MarketOverview />
@@ -1127,11 +1169,14 @@ export default function CryptoDashboard() {
 
           {/* Report Section */}
           <section className="card p-5 md:p-12 mt-10 md:mt-12 bg-surface border border-primary/20">
-            <div className="max-w-4xl mx-auto">
+            <article className="max-w-4xl mx-auto">
               <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-10 pb-4 md:pb-6 border-b border-outline/20">
                 <span className="h-2 w-8 md:w-12 bg-primary rounded-full"></span>
-                <h2 className="text-2xl md:text-4xl font-display font-bold tracking-tight text-on-surface">
+                <h2 className="text-2xl md:text-4xl font-display font-bold tracking-tight text-on-surface flex gap-3 items-center">
                   시장 및 기술 분석 보고서
+                  <span className={`text-sm px-3 py-1 rounded-full font-bold font-mono tracking-widest ${algoAction.bg} ${algoAction.color}`}>
+                    AI 판독: {algoAction.label}
+                  </span>
                 </h2>
               </div>
 
@@ -1195,7 +1240,7 @@ export default function CryptoDashboard() {
                   </h3>
                   <p className="text-on-surface-variant">
                     {cryptoData?.analysis ||
-                      `현재 ${coin.name}(${coin.symbol})은(는) 주요 자산으로서 시장의 이목을 끌고 있습니다. 기술적 모멘텀과 최근 이슈를 기반으로 볼 때 유의미한 움직임이 포착되고 있습니다.`}
+                      `로컬 알고리즘 분석 결과, ${coin.name}(${coin.symbol})은(는) 현재 RSI ${cryptoData?.rsi || "50"} 수준으로 ${algoAction.label} 포지션에 적합한 상태입니다. 실시간 동향과 단기 이평선(MA) 추세를 고려할 때 주의 깊은 접근이 요구됩니다.`}
                   </p>
                 </div>
 
@@ -1212,10 +1257,10 @@ export default function CryptoDashboard() {
                   </blockquote>
                 </div>
               </div>
-            </div>
+            </article>
           </section>
         </div>
-      </div>
+      </main>
     </PriceProvider>
   );
 }
