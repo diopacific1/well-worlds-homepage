@@ -14,19 +14,26 @@ import {
   Leaf,
   Scissors,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { db, storage, handleFirestoreError, OperationType } from "../../firebase";
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  serverTimestamp 
+import {
+  db,
+  storage,
+  auth,
+  handleFirestoreError,
+  OperationType,
+} from "../../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -63,6 +70,24 @@ export default function PlantJournal() {
   // Firestore Feed Integration for Plants
   const [entries, setEntries] = useState<any[]>([]);
   const [isLoadingEntries, setIsLoadingEntries] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin login status
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (
+        user &&
+        (user.uid === "w02kvOK1b0SiPGgmQRX3g34ArSt2" ||
+          user.email === "diopacific1@gmail.com")
+      ) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!db) {
@@ -78,7 +103,10 @@ export default function PlantJournal() {
       return;
     }
 
-    const q = query(collection(db, "plant_journal"), orderBy("createdAt", "desc"));
+    const q = query(
+      collection(db, "plant_journal"),
+      orderBy("createdAt", "desc"),
+    );
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -87,9 +115,11 @@ export default function PlantJournal() {
           return {
             id: doc.id,
             ...data,
-            date: data.date || (data.createdAt?.toDate 
-              ? data.createdAt.toDate().toISOString().split("T")[0]
-              : new Date().toISOString().split("T")[0]),
+            date:
+              data.date ||
+              (data.createdAt?.toDate
+                ? data.createdAt.toDate().toISOString().split("T")[0]
+                : new Date().toISOString().split("T")[0]),
           };
         });
         setEntries(postsData);
@@ -102,7 +132,7 @@ export default function PlantJournal() {
         } catch (err) {
           console.error("Firestore plant_journal error: ", err);
         }
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -170,11 +200,14 @@ export default function PlantJournal() {
     setIsUploading(true);
     try {
       const storageRef = ref(storage, `plants/${Date.now()}_${file.name}`);
-      
+
       // 10-second timeout promise
       const uploadPromise = uploadBytes(storageRef, file);
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout (10 seconds Limit exceeded)")), 10000)
+        setTimeout(
+          () => reject(new Error("Timeout (10 seconds Limit exceeded)")),
+          10000,
+        ),
       );
 
       // Race them!
@@ -183,8 +216,11 @@ export default function PlantJournal() {
       setFormParams({ ...formParams, image: downloadURL });
       alert("이미지가 파이어베이스 스토리지에 성공적으로 업로드되었습니다!");
     } catch (err: any) {
-      console.warn("Storage upload failed/timed out, falling back to local Base64. Error:", err);
-      
+      console.warn(
+        "Storage upload failed/timed out, falling back to local Base64. Error:",
+        err,
+      );
+
       // Read file as Base64 data URL fallback
       try {
         const base64Url = await new Promise<string>((resolve, reject) => {
@@ -196,7 +232,10 @@ export default function PlantJournal() {
         setFormParams({ ...formParams, image: base64Url });
         alert(
           "안내: 파이어베이스 스토리지 업로드(CORS 또는 버킷 주소 불일치 등)가 실패하여, 브라우저 로컬 이미지(Base64) 데이터로 임시 자동 전환하여 적용했습니다.\n\n" +
-          "💡 세팅하신 스토리지 버킷 '" + ((import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || "미지정") + "' 주소가 파이어베이스 콘솔 Storage 탭의 실제 주소(예: home-page-1-b923f.appspot.com 또는 home-page-1-b923f.firebasestorage.app)와 100% 일치하는지 꼭 확인하고, Secrets 탭에서 다시 저장 후 'Apply changes' 해주세요!"
+            "💡 세팅하신 스토리지 버킷 '" +
+            ((import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET ||
+              "미지정") +
+            "' 주소가 파이어베이스 콘솔 Storage 탭의 실제 주소(예: home-page-1-b923f.appspot.com 또는 home-page-1-b923f.firebasestorage.app)와 100% 일치하는지 꼭 확인하고, Secrets 탭에서 다시 저장 후 'Apply changes' 해주세요!",
         );
       } catch (fallbackErr) {
         alert("이미지 처리 실패: " + err.message);
@@ -224,7 +263,9 @@ export default function PlantJournal() {
     const dataToSave = {
       title: formParams.title,
       content: formParams.content,
-      image: formParams.image || PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)],
+      image:
+        formParams.image ||
+        PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)],
       tags: newTags,
       type: formParams.type,
       date: formParams.date,
@@ -238,9 +279,16 @@ export default function PlantJournal() {
       if (editingId) {
         if (db) {
           try {
-            await updateDoc(doc(db, "plant_journal", String(editingId)), dataToSave);
+            await updateDoc(
+              doc(db, "plant_journal", String(editingId)),
+              dataToSave,
+            );
           } catch (dbErr) {
-            handleFirestoreError(dbErr, OperationType.UPDATE, `plant_journal/${editingId}`);
+            handleFirestoreError(
+              dbErr,
+              OperationType.UPDATE,
+              `plant_journal/${editingId}`,
+            );
           }
         } else {
           setEntries(
@@ -250,8 +298,8 @@ export default function PlantJournal() {
                     ...e,
                     ...dataToSave,
                   }
-                : e
-            )
+                : e,
+            ),
           );
         }
       } else {
@@ -289,7 +337,11 @@ export default function PlantJournal() {
         try {
           await deleteDoc(doc(db, "plant_journal", id));
         } catch (dbErr) {
-          handleFirestoreError(dbErr, OperationType.DELETE, `plant_journal/${id}`);
+          handleFirestoreError(
+            dbErr,
+            OperationType.DELETE,
+            `plant_journal/${id}`,
+          );
         }
       } else {
         setEntries(entries.filter((e: any) => e.id !== id));
@@ -306,23 +358,25 @@ export default function PlantJournal() {
     setFormParams({ ...formParams, image: randomImg });
   };
 
-  const filteredEntries = entries
-    .filter((e: any) => {
-      const matchesSearch =
-        e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        e.tags.some((t: string) =>
-          t.toLowerCase().includes(searchTerm.toLowerCase()),
-        );
-      const matchesActivity = filterActivity
-        ? e.activity === filterActivity
-        : true;
-      return matchesSearch && matchesActivity;
-    })
-    .sort(
-      (a: any, b: any) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
+  const filteredEntries = useMemo(() => {
+    return entries
+      .filter((e: any) => {
+        const matchesSearch =
+          e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          e.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          e.tags.some((t: string) =>
+            t.toLowerCase().includes(searchTerm.toLowerCase()),
+          );
+        const matchesActivity = filterActivity
+          ? e.activity === filterActivity
+          : true;
+        return matchesSearch && matchesActivity;
+      })
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
+  }, [entries, searchTerm, filterActivity]);
 
   const WeatherIcon = ({ weather }: { weather: string }) => {
     const option =
@@ -343,8 +397,8 @@ export default function PlantJournal() {
       {/* Hero Header */}
       <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto">
         <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#5D7964]/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
-        
-        <motion.div 
+
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
@@ -352,8 +406,8 @@ export default function PlantJournal() {
         >
           <Sprout className="w-8 h-8 md:w-10 md:h-10" />
         </motion.div>
-        
-        <motion.h1 
+
+        <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
@@ -361,26 +415,29 @@ export default function PlantJournal() {
         >
           마음이 머무는 <br className="md:hidden" /> 푸른 아카이브
         </motion.h1>
-        
-        <motion.p 
+
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
           className="text-lg md:text-xl text-on-surface-variant/90 font-medium max-w-2xl leading-relaxed mb-10"
         >
-          조용히 피어나는 일상 속 반려 식물의 숨결.<br className="hidden md:block" />
+          조용히 피어나는 일상 속 반려 식물의 숨결.
+          <br className="hidden md:block" />
           시간의 흐름에 따라 변화하는 나만의 관찰 일지를 기록하세요.
         </motion.p>
 
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
-          onClick={() => openForm()}
-          className="bg-[#5D7964] text-white px-8 py-5 rounded-full font-bold hover:bg-[#4a6351] transition-all flex items-center justify-center gap-3 shadow-[0_8px_24px_rgba(93,121,100,0.3)] hover:shadow-[0_12px_32px_rgba(93,121,100,0.4)] hover:-translate-y-1 w-full sm:w-auto min-w-[240px] text-lg"
-        >
-          <PenSquare className="w-5 h-5" /> 새 추억 기록하기
-        </motion.button>
+        {isAdmin && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+            onClick={() => openForm()}
+            className="bg-[#5D7964] text-white px-8 py-5 rounded-full font-bold hover:bg-[#4a6351] transition-all flex items-center justify-center gap-3 shadow-[0_8px_24px_rgba(93,121,100,0.3)] hover:shadow-[0_12px_32px_rgba(93,121,100,0.4)] hover:-translate-y-1 w-full sm:w-auto min-w-[240px] text-lg"
+          >
+            <PenSquare className="w-5 h-5" /> 새 추억 기록하기
+          </motion.button>
+        )}
       </section>
 
       {/* Sticky Tool & Filter Bar */}
@@ -477,7 +534,9 @@ export default function PlantJournal() {
                     {isUploading && (
                       <div className="absolute inset-0 bg-on-surface/50 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-white z-20">
                         <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-xs font-bold tracking-wider animate-pulse">이미지 업로드 중...</span>
+                        <span className="text-xs font-bold tracking-wider animate-pulse">
+                          이미지 업로드 중...
+                        </span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-on-surface/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm z-10">
@@ -494,11 +553,11 @@ export default function PlantJournal() {
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Device Upload */}
                     <label className="flex items-center justify-center p-4 border border-outline/20 bg-white rounded-2xl hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 cursor-pointer transition-all duration-300 ease-out hover:shadow-md hover:scale-[1.02] active:scale-[0.98] gap-3 text-sm font-semibold text-on-surface-variant shadow-sm w-full">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleFileChange} 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
                         disabled={isUploading}
                       />
                       <Upload className="w-5 h-5" />
@@ -509,7 +568,9 @@ export default function PlantJournal() {
                     <input
                       type="url"
                       value={formParams.image}
-                      onChange={(e) => setFormParams({...formParams, image: e.target.value})}
+                      onChange={(e) =>
+                        setFormParams({ ...formParams, image: e.target.value })
+                      }
                       placeholder="이미지 주소(URL)를 직접 입력하셔도 됩니다"
                       className="w-full input-field text-xs font-medium"
                     />
@@ -678,9 +739,17 @@ export default function PlantJournal() {
                 </button>
                 <button
                   onClick={handleSave}
-                  disabled={isSaving || isUploading || !formParams.title.trim() || !formParams.content.trim()}
+                  disabled={
+                    isSaving ||
+                    isUploading ||
+                    !formParams.title.trim() ||
+                    !formParams.content.trim()
+                  }
                   className={`px-8 py-4 rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 ease-out flex items-center justify-center gap-2 shadow-sm border w-full sm:w-auto ${
-                    isSaving || isUploading || !formParams.title.trim() || !formParams.content.trim()
+                    isSaving ||
+                    isUploading ||
+                    !formParams.title.trim() ||
+                    !formParams.content.trim()
                       ? "bg-surface-dim text-outline-variant cursor-not-allowed border-outline/20"
                       : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 border-outline/20 hover:border-blue-200 hover:shadow-md"
                   }`}
@@ -688,11 +757,15 @@ export default function PlantJournal() {
                   {isSaving || isUploading ? (
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : null}
-                  {isUploading 
-                    ? "이미지 업로드 중..." 
-                    : isSaving 
-                      ? (editingId ? "수정 중..." : "저장 중...") 
-                      : (editingId ? "수정 저장하기" : "저장하기")}
+                  {isUploading
+                    ? "이미지 업로드 중..."
+                    : isSaving
+                      ? editingId
+                        ? "수정 중..."
+                        : "저장 중..."
+                      : editingId
+                        ? "수정 저장하기"
+                        : "저장하기"}
                 </button>
               </div>
             </motion.div>
@@ -703,7 +776,7 @@ export default function PlantJournal() {
       {/* Feed Area */}
       <div className="max-w-5xl mx-auto px-4 lg:px-8 space-y-12 mt-8 relative">
         <AnimatePresence>
-          {filteredEntries.length === 0 && (
+          {entries.length === 0 && !isLoadingEntries ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -716,116 +789,143 @@ export default function PlantJournal() {
                 기다림의 공간이 비어있습니다
               </p>
               <p className="text-on-surface-variant font-medium text-lg relative z-10 max-w-md mx-auto">
-                첫 번째 잎사귀가 돋아날 시간입니다. 
-                당신의 정원에 새로운 생명의 흔적을 남겨주세요.
+                {isAdmin
+                  ? "첫 번째 잎사귀가 돋아날 시간입니다. 당신의 정원에 새로운 생명의 흔적을 남겨주세요."
+                  : "아직 작성된 일지가 없습니다. 곧 푸른 이야기들이 채워질 예정입니다."}
               </p>
             </motion.div>
-          )}
-
-          {filteredEntries.map((entry: any) => (
+          ) : filteredEntries.length === 0 && !isLoadingEntries ? (
             <motion.div
-              key={entry.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              layout
-              className="bg-surface rounded-[2rem] relative overflow-hidden group border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm hover:shadow-2xl hover:shadow-[#5D7964]/10 hover:-translate-y-1 transition-all duration-500"
+              exit={{ opacity: 0 }}
+              className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
             >
-              <div className="relative z-10 w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between order-2 md:order-1">
-                <div>
-                  <div className="flex items-center justify-between mb-8">
-                    <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-4 py-1.5 rounded-full border border-[#5D7964]/20 backdrop-blur-sm">
-                      {entry.date.replace(/-/g, ". ")}
-                    </span>
-                    <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 lg:translate-x-4 group-hover:translate-x-0">
-                      <button
-                        onClick={() => openForm(entry)}
-                        className="p-3 bg-surface hover:bg-surface-dim border border-outline/10 text-on-surface-variant hover:text-[#5D7964] transition-colors rounded-full shadow-sm hover:shadow-md"
-                        title="수정"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        className="p-3 bg-surface hover:bg-[#ba1a1a]/10 border border-outline/10 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 transition-colors rounded-full shadow-sm hover:shadow-md"
-                        title="삭제"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+              <Search className="w-16 h-16 text-outline-variant mx-auto mb-4" />
+              <p className="text-on-surface font-display font-bold text-2xl tracking-tight mb-2">
+                검색 결과가 없습니다
+              </p>
+              <p className="text-on-surface-variant text-base">
+                다른 검색어나 필터를 선택해보세요.
+              </p>
+            </motion.div>
+          ) : null}
+
+          {filteredEntries.map((entry: any, index: number) => {
+            const isEven = index % 2 === 0;
+            return (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                layout
+                className="bg-surface rounded-[2rem] relative overflow-hidden group border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm hover:shadow-2xl hover:shadow-[#5D7964]/10 hover:-translate-y-1 transition-all duration-500"
+              >
+                <div
+                  className={`relative z-10 w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between order-2 ${isEven ? "md:order-1" : "md:order-2"}`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-8">
+                      <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-4 py-1.5 rounded-full border border-[#5D7964]/20 backdrop-blur-sm">
+                        {entry.date.replace(/-/g, ". ")}
+                      </span>
+                      {isAdmin && (
+                        <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 lg:translate-x-4 group-hover:translate-x-0">
+                          <button
+                            onClick={() => openForm(entry)}
+                            className="p-3 bg-surface hover:bg-surface-dim border border-outline/10 text-on-surface-variant hover:text-[#5D7964] transition-colors rounded-full shadow-sm hover:shadow-md"
+                            title="수정"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(entry.id)}
+                            className="p-3 bg-surface hover:bg-[#ba1a1a]/10 border border-outline/10 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 transition-colors rounded-full shadow-sm hover:shadow-md"
+                            title="삭제"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold text-on-surface mb-6 leading-tight max-w-[95%] break-words tracking-tight">
+                      {entry.title}
+                    </h3>
+
+                    <div className="prose prose-p:leading-relaxed prose-p:text-on-surface-variant max-w-none text-base md:text-lg whitespace-pre-wrap break-words font-medium">
+                      {entry.content}
                     </div>
                   </div>
 
-                  <h3 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold text-on-surface mb-6 leading-tight max-w-[95%] break-words tracking-tight">
-                    {entry.title}
-                  </h3>
-
-                  <div className="prose prose-p:leading-relaxed prose-p:text-on-surface-variant max-w-none text-base md:text-lg whitespace-pre-wrap break-words font-medium">
-                    {entry.content}
-                  </div>
-                </div>
-
-                <div className="mt-10 pt-6 border-t border-outline/20">
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center divide-x divide-outline/30">
-                      {entry.weather && (
-                        <span className="inline-flex items-center gap-2 pr-4 text-on-surface-variant text-sm font-bold tracking-wide">
-                          <WeatherIcon weather={entry.weather} />
-                          {
-                            WEATHER_OPTIONS.find((w) => w.id === entry.weather)
-                              ?.label
-                          }
-                        </span>
-                      )}
-                      {entry.activity && (
-                        <span className="inline-flex items-center gap-2 pl-4 text-on-surface-variant text-sm font-bold tracking-wide">
-                          <ActivityIcon activity={entry.activity} />
-                          <span>
+                  <div className="mt-10 pt-6 border-t border-outline/20">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center divide-x divide-outline/30">
+                        {entry.weather && (
+                          <span className="inline-flex items-center gap-2 pr-4 text-on-surface-variant text-sm font-bold tracking-wide">
+                            <WeatherIcon weather={entry.weather} />
                             {
-                              ACTIVITY_OPTIONS.find(
-                                (a) => a.id === entry.activity,
+                              WEATHER_OPTIONS.find(
+                                (w) => w.id === entry.weather,
                               )?.label
                             }
                           </span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-surface-container-lowest border border-outline/20 text-on-surface-variant rounded-md text-xs font-bold whitespace-nowrap shadow-sm">
-                        <Leaf className="w-3.5 h-3.5 text-[#5D7964]" />{" "}
-                        {entry.type}
-                      </span>
-                      <div className="flex gap-2 flex-wrap justify-end">
-                        {entry.tags?.map((tag: string, idx: number) => (
-                          <span
-                            key={idx}
-                            className="text-xs font-mono font-semibold text-[#5D7964] block bg-[#5D7964]/5 px-2 py-0.5 rounded border border-[#5D7964]/10"
-                          >
-                            #{tag}
+                        )}
+                        {entry.activity && (
+                          <span className="inline-flex items-center gap-2 pl-4 text-on-surface-variant text-sm font-bold tracking-wide">
+                            <ActivityIcon activity={entry.activity} />
+                            <span>
+                              {
+                                ACTIVITY_OPTIONS.find(
+                                  (a) => a.id === entry.activity,
+                                )?.label
+                              }
+                            </span>
                           </span>
-                        ))}
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-surface-container-lowest border border-outline/20 text-on-surface-variant rounded-md text-xs font-bold whitespace-nowrap shadow-sm">
+                          <Leaf className="w-3.5 h-3.5 text-[#5D7964]" />{" "}
+                          {entry.type}
+                        </span>
+                        <div className="flex gap-2 flex-wrap justify-end">
+                          {entry.tags?.map((tag: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="text-xs font-mono font-semibold text-[#5D7964] block bg-[#5D7964]/5 px-2 py-0.5 rounded border border-[#5D7964]/10"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Hero Image */}
-              <div className="w-full md:w-2/5 order-1 md:order-2 bg-surface-dim border-b md:border-b-0 md:border-l border-outline/10 relative">
-                <div className="relative w-full h-[300px] md:h-[420px] lg:h-full lg:min-h-[420px] overflow-hidden">
-                  <img
-                    src={entry.image}
-                    alt={`${entry.title} 이미지`}
-                    loading="lazy"
-                    decoding="async"
-                    fetchPriority="low"
-                    className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover:brightness-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none opacity-80 md:opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* Hero Image */}
+                <div
+                  className={`w-full md:w-2/5 order-1 ${isEven ? "md:order-2 border-b md:border-b-0 md:border-l" : "md:order-1 border-b md:border-b-0 md:border-r"} bg-surface-dim border-outline/10 relative`}
+                >
+                  <div className="relative w-full h-[300px] md:h-[420px] lg:h-full lg:min-h-[420px] overflow-hidden">
+                    <img
+                      src={entry.image}
+                      alt={`${entry.title} 이미지`}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover:brightness-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none opacity-80 md:opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
     </div>

@@ -20,7 +20,7 @@ import {
   Globe,
   ChevronDown,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Markdown from "react-markdown";
 import { useClickOutside } from "../hooks/useClickOutside";
@@ -70,7 +70,7 @@ const PostItem = ({
 
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
 
-  const hasWorldbuilding = post.idea || post.worldview || post.chronology || post.characters || post.episodes;
+  const hasWorldbuilding = post.idea || post.worldview || post.chronology || post.characters || post.episodes || post.prompt;
 
   return (
     <motion.div
@@ -87,15 +87,27 @@ const PostItem = ({
       <div className="flex flex-col gap-8 relative z-10">
         {/* Post Header */}
         <div>
-          <div className="flex items-center justify-between mb-8">
-            <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-4 py-1.5 rounded-full font-bold flex items-center gap-2 w-fit border border-primary/20 backdrop-blur-sm tracking-widest">
-              {CATEGORIES.find((c) => c.id === post.category)?.icon &&
-                (() => {
-                  const Icon = CATEGORIES.find((c) => c.id === post.category)!.icon;
-                  return <Icon className="w-3.5 h-3.5" />;
-                })()}
-              {post.category}
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-xs uppercase bg-primary/10 text-primary px-4 py-1.5 rounded-full font-bold flex items-center gap-2 border border-primary/20 backdrop-blur-sm tracking-widest">
+                {CATEGORIES.find((c) => c.id === post.category)?.icon &&
+                  (() => {
+                    const Icon = CATEGORIES.find((c) => c.id === post.category)!.icon;
+                    return <Icon className="w-3.5 h-3.5" />;
+                  })()}
+                {post.category}
+              </span>
+              {post.status && (
+                <span className="font-mono text-xs uppercase bg-surface-variant text-on-surface-variant px-4 py-1.5 rounded-full font-bold border border-outline/20 backdrop-blur-sm tracking-widest">
+                  {post.status}
+                </span>
+              )}
+              {post.content && (
+                <span className="font-mono text-xs uppercase bg-surface-variant/50 text-on-surface-variant px-4 py-1.5 rounded-full font-bold border border-outline/10 backdrop-blur-sm tracking-widest" title="공백 제외 글자수">
+                  {post.content.replace(/\s+/g, '').length}자
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-4 opacity-100 md:opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform md:translate-x-4 group-hover/card:translate-x-0">
               <p className="font-mono text-sm text-on-surface-variant font-bold tracking-wider mr-2">
                 {post.date}
@@ -234,6 +246,16 @@ const PostItem = ({
                           </div>
                         </div>
                       )}
+                      {post.prompt && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-bold text-primary flex items-center gap-2 tracking-wide uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> AI 프롬프트
+                          </h4>
+                          <div className="pl-3.5 border-l-2 border-outline/20 text-on-surface-variant/90 text-sm font-mono bg-surface-container/50 p-4 rounded-xl whitespace-pre-wrap leading-relaxed border border-outline/5">
+                            {post.prompt}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -256,6 +278,20 @@ const PostItem = ({
               />
             </div>
             <span className="text-sm font-bold">{post.likes}</span>
+          </button>
+          <button
+            aria-label="내용 복사하기"
+            onClick={() => {
+              navigator.clipboard.writeText(post.content);
+              showToast("내용이 클립보드에 복사되었습니다.");
+            }}
+            className="flex items-center gap-2 hover:text-primary transition-colors group"
+            title="소설 내용 복사하기"
+          >
+            <div className="bg-surface-container-lowest p-2 rounded-lg border border-outline/20 group-hover:bg-primary/10 group-hover:border-primary/30 transition-colors shadow-sm">
+              <BookOpen className="w-5 h-5" aria-hidden="true" />
+            </div>
+            <span className="text-sm font-bold hidden sm:inline">내용 복사</span>
           </button>
           <button
             aria-label="공유하기"
@@ -296,6 +332,12 @@ export default function Stories() {
   );
   const [newEpisodes, setNewEpisodes] = useState(
     () => localStorage.getItem("story_draft_episodes") || "",
+  );
+  const [newPrompt, setNewPrompt] = useState(
+    () => localStorage.getItem("story_draft_prompt") || "",
+  );
+  const [newStatus, setNewStatus] = useState(
+    () => localStorage.getItem("story_draft_status") || "구상 중",
   );
   const [selectedCategory, setSelectedCategory] = useState("일기");
   const [activeFilter, setActiveFilter] = useState("전체");
@@ -396,10 +438,12 @@ export default function Stories() {
       localStorage.setItem("story_draft_chronology", newChronology);
       localStorage.setItem("story_draft_characters", newCharacters);
       localStorage.setItem("story_draft_episodes", newEpisodes);
+      localStorage.setItem("story_draft_prompt", newPrompt);
+      localStorage.setItem("story_draft_status", newStatus);
       if (newImage) localStorage.setItem("story_draft_image", newImage);
     }, 2000);
     return () => clearTimeout(timeoutId);
-  }, [newTitle, newPost, newImage, newIdea, newWorldview, newChronology, newCharacters, newEpisodes]);
+  }, [newTitle, newPost, newImage, newIdea, newWorldview, newChronology, newCharacters, newEpisodes, newPrompt, newStatus]);
 
   const showToast = (message: string) => {
     const id = Date.now();
@@ -479,6 +523,8 @@ export default function Stories() {
               chronology: newChronology,
               characters: newCharacters,
               episodes: newEpisodes,
+              prompt: newPrompt,
+              status: newStatus,
               category: selectedCategory,
               image: newImage,
               updatedAt: serverTimestamp(),
@@ -499,6 +545,8 @@ export default function Stories() {
                     chronology: newChronology,
                     characters: newCharacters,
                     episodes: newEpisodes,
+                    prompt: newPrompt,
+                    status: newStatus,
                     category: selectedCategory,
                     image: newImage,
                   }
@@ -518,6 +566,8 @@ export default function Stories() {
           chronology: newChronology,
           characters: newCharacters,
           episodes: newEpisodes,
+          prompt: newPrompt,
+          status: newStatus,
           likes: 0,
           image: newImage,
           createdAt: serverTimestamp(),
@@ -553,6 +603,8 @@ export default function Stories() {
       setNewChronology("");
       setNewCharacters("");
       setNewEpisodes("");
+      setNewPrompt("");
+      setNewStatus("구상 중");
       setNewImage("");
       setIsPreview(false);
       setShowImageInput(false);
@@ -564,6 +616,8 @@ export default function Stories() {
       localStorage.removeItem("story_draft_chronology");
       localStorage.removeItem("story_draft_characters");
       localStorage.removeItem("story_draft_episodes");
+      localStorage.removeItem("story_draft_prompt");
+      localStorage.removeItem("story_draft_status");
       localStorage.removeItem("story_draft_image");
     } catch (err: any) {
       console.error("Post writing error:", err);
@@ -582,10 +636,12 @@ export default function Stories() {
     setNewChronology(post.chronology || "");
     setNewCharacters(post.characters || "");
     setNewEpisodes(post.episodes || "");
+    setNewPrompt(post.prompt || "");
+    setNewStatus(post.status || "구상 중");
     setNewImage(post.image || "");
     setSelectedCategory(post.category);
     setIsPreview(false);
-    setShowSettingsInput(!!(post.idea || post.worldview || post.chronology || post.characters || post.episodes));
+    setShowSettingsInput(!!(post.idea || post.worldview || post.chronology || post.characters || post.episodes || post.prompt));
     setActiveDropdown(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -639,10 +695,11 @@ export default function Stories() {
     }
   };
 
-  const filteredFeed =
-    activeFilter === "전체"
+  const filteredFeed = useMemo(() => {
+    return activeFilter === "전체"
       ? feed
       : feed.filter((post: any) => post.category === activeFilter);
+  }, [feed, activeFilter]);
 
   return (
     <div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
@@ -890,6 +947,27 @@ export default function Stories() {
                       className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium resize-none min-h-[100px]"
                     />
                   </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-xs font-semibold text-on-surface-variant ml-1">AI 프롬프트 (AI Prompt) - 소설 생성 등에 사용한 프롬프트 기록용</label>
+                    <textarea
+                      value={newPrompt}
+                      onChange={(e) => setNewPrompt(e.target.value)}
+                      placeholder="이 글을 생성하거나 보조받을 때 사용한 프롬프트를 기록해두세요."
+                      className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium resize-none min-h-[100px]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-on-surface-variant ml-1">작업 상태 (Status)</label>
+                    <select
+                      value={newStatus}
+                      onChange={(e) => setNewStatus(e.target.value)}
+                      className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium"
+                    >
+                      <option value="구상 중">💡 구상 중</option>
+                      <option value="집필 중">✍️ 집필 중</option>
+                      <option value="발행됨">✅ 발행됨</option>
+                    </select>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -905,7 +983,7 @@ export default function Stories() {
                 </button>
                 <button
                   onClick={() => setShowSettingsInput(!showSettingsInput)}
-                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showSettingsInput || newIdea || newWorldview || newChronology || newCharacters || newEpisodes ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-white text-on-surface hover:bg-purple-50 hover:text-purple-600 border-outline/20 hover:border-purple-200 hover:shadow-md"}`}
+                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showSettingsInput || newIdea || newWorldview || newChronology || newCharacters || newEpisodes || newPrompt ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-white text-on-surface hover:bg-purple-50 hover:text-purple-600 border-outline/20 hover:border-purple-200 hover:shadow-md"}`}
                   title="세계관 및 설정"
                 >
                   <Globe className="w-5 h-5" />
@@ -915,7 +993,7 @@ export default function Stories() {
                     이미지 첨부됨
                   </span>
                 )}
-                {(newIdea || newWorldview || newChronology || newCharacters || newEpisodes) && !showSettingsInput && (
+                {(newIdea || newWorldview || newChronology || newCharacters || newEpisodes || newPrompt) && !showSettingsInput && (
                   <span className="text-xs text-purple-600 font-bold truncate max-w-[150px] hidden sm:inline-block">
                     설정 첨부됨
                   </span>
@@ -997,7 +1075,7 @@ export default function Stories() {
             ))}
           </AnimatePresence>
 
-          {filteredFeed.length === 0 && (
+          {feed.length === 0 && !isLoadingFeed ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1010,11 +1088,27 @@ export default function Stories() {
                 기록의 공간이 비어있습니다
               </p>
               <p className="text-on-surface-variant font-medium text-lg relative z-10 max-w-md mx-auto">
-                첫 번째 문장을 시도해볼 시간입니다. 
-                당신만의 특별한 세계를 자유롭게 스케치해보세요.
+                {isAdmin
+                  ? "첫 번째 문장을 시도해볼 시간입니다. 당신만의 특별한 세계를 자유롭게 스케치해보세요."
+                  : "아직 작성된 이야기가 없습니다. 곧 신비로운 세계가 펼쳐질 예정입니다."}
               </p>
             </motion.div>
-          )}
+          ) : filteredFeed.length === 0 && !isLoadingFeed ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
+            >
+              <BookOpen className="w-16 h-16 text-outline-variant mx-auto mb-4" />
+              <p className="text-on-surface font-display font-bold text-2xl tracking-tight mb-2">
+                해당 카테고리의 기록이 없습니다
+              </p>
+              <p className="text-on-surface-variant text-base">
+                다른 카테고리를 선택해보세요.
+              </p>
+            </motion.div>
+          ) : null}
         </div>
       </div>
 

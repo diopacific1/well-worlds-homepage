@@ -1,4 +1,4 @@
-import { useEffect, useMemo, memo } from "react";
+import { useEffect, useMemo, memo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   LineChart,
@@ -7,7 +7,11 @@ import {
   MessageSquareHeart,
   BookOpen,
   ChevronDown,
+  ExternalLink,
+  Code2,
 } from "lucide-react";
+import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
+import { db } from "../../firebase";
 import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 import { Helmet } from "react-helmet-async";
 
@@ -273,6 +277,22 @@ const BentoCard = memo(({ to, label, className = "", children }: { to: string; l
 BentoCard.displayName = "BentoCard";
 
 export default function Home() {
+  const [portfolios, setPortfolios] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPortfolios = async () => {
+      try {
+        if (!db) return;
+        const q = query(collection(db, "portfolio"), orderBy("createdAt", "desc"), limit(6));
+        const snapshot = await getDocs(q);
+        setPortfolios(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } catch (err) {
+        console.error("Failed to fetch portfolios:", err);
+      }
+    };
+    fetchPortfolios();
+  }, []);
+
   const structuredData = useMemo(() => ({
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -628,6 +648,77 @@ export default function Home() {
           </BentoCard>
         </motion.section>
       </div>
+
+      {/* Portfolio Section */}
+      {portfolios.length > 0 && (
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-24">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center text-center space-y-4 mb-16"
+          >
+            <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center border border-primary/20 mb-2">
+              <Code2 className="w-8 h-8" />
+            </div>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-on-surface tracking-tight">
+              나의 포트폴리오
+            </h2>
+            <p className="text-on-surface-variant font-medium text-lg max-w-2xl mx-auto break-keep">
+              세상에 선보인 작은 세계들. 그동안 제가 만들고 가꿔온 프로젝트들을 소개합니다.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {portfolios.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="group p-6 md:p-8 rounded-[2rem] bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface hover:shadow-xl transition-all duration-500 relative flex flex-col justify-between"
+              >
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start gap-4">
+                    <h3 className="font-display font-bold text-2xl text-on-surface group-hover:text-primary transition-colors">
+                      {item.title}
+                    </h3>
+                    {item.link && (
+                      <a 
+                        href={item.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition-colors shrink-0"
+                        title="프로젝트 바로가기"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                  <p className="text-on-surface-variant text-base leading-relaxed line-clamp-3">
+                    {item.description}
+                  </p>
+                </div>
+                
+                {item.techStack && (
+                  <div className="mt-8 flex flex-wrap gap-2">
+                    {item.techStack.split(",").map((tech: string, i: number) => (
+                      <span 
+                        key={i} 
+                        className="text-xs font-mono bg-surface-variant/50 text-on-surface-variant px-3 py-1.5 rounded-lg border border-outline/5"
+                      >
+                        {tech.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
