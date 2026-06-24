@@ -216,6 +216,17 @@ export default function Layout() {
       <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16">
         <Outlet />
       </main>
+
+      {/* Footer */}
+      <footer className="w-full border-t border-outline/20 bg-surface mt-12 py-10">
+        <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm font-medium text-on-surface-variant">
+          <p>© {new Date().getFullYear()} 우물 그리고 세계들. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <Link to="/" className="hover:text-primary transition-colors">홈</Link>
+            <Link to="/guestbook" className="hover:text-primary transition-colors">방명록</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
