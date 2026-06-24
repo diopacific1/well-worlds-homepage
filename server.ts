@@ -293,7 +293,23 @@ async function startServer() {
     try {
       const query = req.query.q as string || 'KBO 야구';
       const encodedQuery = encodeURIComponent(query);
-      const feed = await parser.parseURL(`https://news.google.com/rss/search?q=${encodedQuery}&hl=ko&gl=KR&ceid=KR:ko`);
+      
+      const response = await fetch(`https://news.google.com/rss/search?q=${encodedQuery}&hl=ko&gl=KR&ceid=KR:ko`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+        }
+      });
+
+      if (!response.ok) {
+        console.warn(`Google RSS returned status: ${response.status}`);
+        return res.json({ items: [] });
+      }
+
+      const xml = await response.text();
+      const feed = await parser.parseString(xml);
+
       return res.json({
         items: feed.items.map(item => ({
           title: item.title,
@@ -304,7 +320,7 @@ async function startServer() {
       });
     } catch (error) {
       console.error('Error fetching RSS:', error);
-      return res.status(500).json({ error: 'Failed to fetch news' });
+      return res.json({ items: [] });
     }
   });
 

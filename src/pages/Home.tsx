@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, memo } from "react";
+import { useEffect, useMemo, memo } from "react";
 import { Link } from "react-router-dom";
 import {
   LineChart,
@@ -7,13 +7,9 @@ import {
   MessageSquareHeart,
   BookOpen,
   ChevronDown,
-  Database,
-  Wifi,
-  WifiOff
 } from "lucide-react";
 import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 import { Helmet } from "react-helmet-async";
-import { db } from "../../firebase";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -36,51 +32,6 @@ const itemVariants: Variants = {
     } 
   }
 };
-
-// --- 환경변수 및 DB 연결 상태를 감지하는 SystemStatus 컴포넌트 추가 ---
-const SystemStatus = memo(() => {
-  const [isDbConnected, setIsDbConnected] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    // db가 존재하면 환경변수가 정상적으로 로드되어 초기화된 상태
-    if (db) {
-      setIsDbConnected(true);
-    } else {
-      setIsDbConnected(false);
-    }
-  }, []);
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="absolute top-6 right-6 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-variant/30 border border-outline/10 backdrop-blur-md shadow-sm"
-    >
-      <div className="flex items-center gap-1.5">
-        {isDbConnected ? (
-          <>
-            <Wifi className="w-3.5 h-3.5 text-green-500" />
-            <span className="text-[10px] font-mono font-bold text-green-500 tracking-wider">ENV OPTIMIZED</span>
-          </>
-        ) : (
-          <>
-            <WifiOff className="w-3.5 h-3.5 text-error" />
-            <span className="text-[10px] font-mono font-bold text-error tracking-wider">ENV MISSING</span>
-          </>
-        )}
-      </div>
-      <div className="w-px h-3 bg-outline/20" />
-      <div className="flex items-center gap-1.5">
-        <Database className={`w-3.5 h-3.5 ${isDbConnected ? 'text-primary' : 'text-on-surface-variant/50'}`} />
-        <span className={`text-[10px] font-mono font-bold tracking-wider ${isDbConnected ? 'text-primary' : 'text-on-surface-variant/50'}`}>
-          {isDbConnected ? 'SYNC ACTIVE' : 'OFFLINE MODE'}
-        </span>
-      </div>
-    </motion.div>
-  );
-});
-
-SystemStatus.displayName = "SystemStatus";
 
 const HeroSection = memo(() => {
   const { scrollY } = useScroll();
@@ -139,7 +90,6 @@ const HeroSection = memo(() => {
 
   return (
     <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[92vh] overflow-hidden">
-      <SystemStatus />
       
       {/* Abstract Background Deep World Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 bg-background">
@@ -582,71 +532,69 @@ export default function Home() {
           <BentoCard 
             to="/guestbook" 
             label="방명록으로 이동" 
-            className="md:col-span-7 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-[#7D91B4]/8 group overflow-hidden"
+            className="md:col-span-7 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-[#7D91B4]/10 group overflow-hidden"
           >
             {/* Immersive Deep Water Ripple and Dynamic Light Gradients */}
-            <div className="absolute inset-0 bg-gradient-to-tl from-[#7D91B4]/12 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="absolute -bottom-36 -right-36 w-[450px] h-[450px] bg-[#7D91B4]/12 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-tl from-[#7D91B4]/15 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute -bottom-36 -right-36 w-[450px] h-[450px] bg-[#7D91B4]/15 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
 
-            {/* Immersive Echoes / Footprints glassmorphic feed widget */}
-            <div className="absolute right-[5%] top-[12%] w-[250px] sm:w-[280px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-4.5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-1 shadow-[0_15px_40px_rgba(125,145,180,0.08)] flex flex-col justify-between pointer-events-none overflow-hidden rotate-[-2deg] scale-95 sm:scale-100 origin-top-right">
-              <div className="absolute top-[-40%] left-[-20%] w-44 h-44 bg-[#7D91B4]/15 rounded-full blur-2xl opacity-50" />
-              <div className="flex justify-between items-center border-b border-outline/10 pb-2">
+            {/* Immersive Echoes / Footprints glassmorphic feed widget - Hidden on mobile for cleaner UX */}
+            <div className="hidden md:flex absolute right-[4%] top-[12%] w-[260px] h-[210px] border border-outline/15 bg-surface/40 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-3 group-hover:rotate-1 shadow-[0_15px_40px_rgba(125,145,180,0.12)] flex-col justify-between pointer-events-none overflow-hidden rotate-[-2deg] origin-top-right z-0">
+              <div className="absolute top-[-40%] left-[-20%] w-44 h-44 bg-[#7D91B4]/20 rounded-full blur-2xl opacity-60" />
+              <div className="flex justify-between items-center border-b border-outline/10 pb-2.5 relative z-10">
                 <span className="text-[10px] font-mono text-[#7D91B4] font-extrabold tracking-widest uppercase">ECHOES FEED</span>
-                <span className="text-[8px] font-mono text-on-surface-variant/80 bg-[#7D91B4]/10 px-2 py-0.5 rounded-full text-[#7D91B4] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                <span className="text-[8px] font-mono text-on-surface-variant/90 bg-[#7D91B4]/15 px-2 py-0.5 rounded-full text-[#7D91B4] flex items-center gap-1.5 border border-[#7D91B4]/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_5px_rgba(96,165,250,0.8)]" />
                   REALTIME
                 </span>
               </div>
 
-              <div className="space-y-2 max-h-[120px] overflow-hidden pr-0.5 my-2">
-                {/* Simulated Echo Item 1 */}
-                <div className="p-2 rounded-lg bg-surface/25 border border-outline/5 space-y-0.5">
+              <div className="space-y-2.5 max-h-[120px] overflow-hidden pr-1 my-2 relative z-10">
+                <div className="p-2.5 rounded-lg bg-surface-variant/30 border border-outline/5 space-y-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-on-surface/90">Explorer_Luna</span>
-                    <span className="text-[8px] text-on-surface-variant/50 font-mono">10m ago</span>
+                    <span className="text-[11px] font-bold text-on-surface/90">Explorer_Luna</span>
+                    <span className="text-[8px] text-on-surface-variant/60 font-mono">10m ago</span>
                   </div>
-                  <p className="text-[9px] text-on-surface-variant/85 leading-relaxed line-clamp-1">
-                    고요한 정적이 주는 깊은 내면의 위로를 받았습니다...
+                  <p className="text-[10px] text-on-surface-variant/90 leading-relaxed line-clamp-1">
+                    고요한 정적이 주는 깊은 내면의 위로를 받았습니다.
                   </p>
                 </div>
-                {/* Simulated Echo Item 2 */}
-                <div className="p-2 rounded-lg bg-surface/25 border border-outline/5 space-y-0.5">
+                <div className="p-2.5 rounded-lg bg-surface-variant/30 border border-outline/5 space-y-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-on-surface/90">Aura_09</span>
-                    <span className="text-[8px] text-on-surface-variant/50 font-mono">1h ago</span>
+                    <span className="text-[11px] font-bold text-on-surface/90">Aura_09</span>
+                    <span className="text-[8px] text-on-surface-variant/60 font-mono">1h ago</span>
                   </div>
-                  <p className="text-[9px] text-on-surface-variant/85 leading-relaxed line-clamp-1">
-                    우물 속 세계라는 철학이 너무 아름답네요. 흔적을...
+                  <p className="text-[10px] text-on-surface-variant/90 leading-relaxed line-clamp-1">
+                    우물 속 세계라는 철학이 너무 아름답네요.
                   </p>
                 </div>
               </div>
 
-              <div className="text-[8px] font-mono text-[#7D91B4]/80 flex justify-between items-center border-t border-outline/10 pt-2 font-medium">
+              <div className="text-[8px] font-mono text-[#7D91B4]/80 flex justify-between items-center border-t border-outline/10 pt-2.5 font-bold relative z-10">
                 <span>TOTAL REVERBS: 1,342</span>
                 <span>SECURE SYNC: OK</span>
               </div>
             </div>
 
             {/* Micro floating bubbles simulating underwater whispers */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(3)].map((_, i) => (
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+              {[...Array(4)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute bg-[#7D91B4]/15 rounded-full blur-[0.3px]"
+                  className="absolute bg-[#7D91B4]/20 rounded-full blur-[0.5px]"
                   style={{
-                    width: `${(i + 1) * 3 + 3}px`,
-                    height: `${(i + 1) * 3 + 3}px`,
-                    right: `${10 + i * 22}%`,
-                    bottom: `${8 + i * 14}%`,
+                    width: `${(i + 1) * 4 + 4}px`,
+                    height: `${(i + 1) * 4 + 4}px`,
+                    right: `${10 + i * 20}%`,
+                    bottom: `${5 + i * 18}%`,
                   }}
                   animate={{
-                    y: [0, -35, 0],
-                    x: [0, (i % 2 === 0 ? 8 : -8), 0],
-                    opacity: [0.2, 0.7, 0.2],
+                    y: [0, -60, 0],
+                    x: [0, Math.sin(i) * 15, 0],
+                    opacity: [0.1, 0.6, 0.1],
                   }}
                   transition={{
-                    duration: 5.5 + i * 1.5,
+                    duration: 6 + i * 2,
                     repeat: Infinity,
                     ease: "easeInOut",
                   }}
@@ -655,25 +603,25 @@ export default function Home() {
             </div>
 
             {/* Ambient Background Water/Book icon */}
-            <div className="absolute right-[-10%] bottom-[-15%] opacity-[0.02] group-hover:opacity-[0.05] transition-all duration-1000 group-hover:-translate-y-5 group-hover:rotate-6 pointer-events-none">
+            <div className="absolute right-[-10%] bottom-[-15%] opacity-[0.02] group-hover:opacity-[0.04] transition-all duration-1000 group-hover:-translate-y-5 group-hover:rotate-6 pointer-events-none z-0">
               <BookOpen className="w-96 h-96 text-on-surface" />
             </div>
 
             <div className="flex flex-col h-full p-8 md:p-10 relative z-10 w-full justify-between">
-              <div className="w-16 h-16 bg-[#7D91B4]/10 text-[#7D91B4] rounded-2xl flex items-center justify-center border border-[#7D91B4]/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner">
+              <div className="w-16 h-16 bg-[#7D91B4]/10 text-[#7D91B4] rounded-2xl flex items-center justify-center border border-[#7D91B4]/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner backdrop-blur-sm">
                 <BookOpen className="w-8 h-8" />
               </div>
 
               <div className="mt-12 max-w-sm sm:max-w-md">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-[#7D91B4] transition-colors duration-300">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-[#7D91B4] transition-colors duration-300 drop-shadow-sm">
                   방명록
                 </h2>
-                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep">
+                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep text-shadow-sm">
                   수막을 넘어 흘러드는 또 다른 세계의 신호들.<br />
-                  이곳을 스쳐 간 외로운 탐험가들의 사유를 마주하고, 당신만의 고유한 파동을 흔적으로 남겨보세요.
+                  이곳을 스쳐 간 탐험가들의 사유를 마주하고, 당신만의 파동을 남겨보세요.
                 </p>
-                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#7D91B4] bg-[#7D91B4]/10 w-fit px-4.5 py-2.5 rounded-full group-hover:bg-[#7D91B4] group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(125,145,180,0)] group-hover:shadow-[0_8px_20px_rgba(125,145,180,0.25)]">
-                  흔적 둘러보기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <div className="mt-8 flex items-center gap-3 text-sm font-bold text-surface bg-[#7D91B4] w-fit px-6 py-3 rounded-full hover:bg-[#687C9E] hover:scale-105 transition-all duration-300 shadow-[0_4px_15px_rgba(125,145,180,0.3)] hover:shadow-[0_8px_25px_rgba(125,145,180,0.4)]">
+                  나의 파동 남기기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
                 </div>
               </div>
             </div>

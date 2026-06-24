@@ -17,6 +17,8 @@ import {
   Save,
   X,
   Upload,
+  Globe,
+  ChevronDown,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -60,9 +62,12 @@ const PostItem = ({
   showToast: (msg: string) => void;
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showWorldbuilding, setShowWorldbuilding] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
+
+  const hasWorldbuilding = post.idea || post.worldview || post.chronology || post.characters || post.episodes;
 
   return (
     <motion.div
@@ -150,6 +155,86 @@ const PostItem = ({
           <div className="prose prose-base md:prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
             <Markdown>{post.content}</Markdown>
           </div>
+          
+          {hasWorldbuilding && (
+            <div className="mt-8 border border-outline/20 rounded-2xl bg-surface-container-lowest overflow-hidden transition-all duration-300">
+              <button 
+                onClick={() => setShowWorldbuilding(!showWorldbuilding)}
+                className="w-full flex items-center justify-between p-5 md:p-6 bg-surface-variant/20 hover:bg-surface-variant/40 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-primary" />
+                  <span className="font-bold text-on-surface text-base">설정 및 세계관 (Worldbuilding)</span>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-on-surface-variant transition-transform duration-300 ${showWorldbuilding ? "rotate-180" : ""}`} />
+              </button>
+              
+              <AnimatePresence>
+                {showWorldbuilding && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="border-t border-outline/10"
+                  >
+                    <div className="p-5 md:p-6 space-y-6">
+                      {post.idea && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-bold text-primary flex items-center gap-2 tracking-wide uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> 아이디어
+                          </h4>
+                          <div className="pl-3.5 border-l-2 border-outline/20 text-on-surface-variant/90 text-sm whitespace-pre-wrap leading-relaxed">
+                            {post.idea}
+                          </div>
+                        </div>
+                      )}
+                      {post.worldview && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-bold text-primary flex items-center gap-2 tracking-wide uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> 설정 및 세계관
+                          </h4>
+                          <div className="pl-3.5 border-l-2 border-outline/20 text-on-surface-variant/90 text-sm whitespace-pre-wrap leading-relaxed">
+                            {post.worldview}
+                          </div>
+                        </div>
+                      )}
+                      {post.characters && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-bold text-primary flex items-center gap-2 tracking-wide uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> 등장인물
+                          </h4>
+                          <div className="pl-3.5 border-l-2 border-outline/20 text-on-surface-variant/90 text-sm whitespace-pre-wrap leading-relaxed">
+                            {post.characters}
+                          </div>
+                        </div>
+                      )}
+                      {post.chronology && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-bold text-primary flex items-center gap-2 tracking-wide uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> 연대기
+                          </h4>
+                          <div className="pl-3.5 border-l-2 border-outline/20 text-on-surface-variant/90 text-sm whitespace-pre-wrap leading-relaxed">
+                            {post.chronology}
+                          </div>
+                        </div>
+                      )}
+                      {post.episodes && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-bold text-primary flex items-center gap-2 tracking-wide uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> 에피소드 메모
+                          </h4>
+                          <div className="pl-3.5 border-l-2 border-outline/20 text-on-surface-variant/90 text-sm whitespace-pre-wrap leading-relaxed">
+                            {post.episodes}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
 
         {/* Post Actions */}
@@ -192,6 +277,21 @@ export default function Stories() {
   const [newPost, setNewPost] = useState(
     () => localStorage.getItem("story_draft_content") || "",
   );
+  const [newIdea, setNewIdea] = useState(
+    () => localStorage.getItem("story_draft_idea") || "",
+  );
+  const [newWorldview, setNewWorldview] = useState(
+    () => localStorage.getItem("story_draft_worldview") || "",
+  );
+  const [newChronology, setNewChronology] = useState(
+    () => localStorage.getItem("story_draft_chronology") || "",
+  );
+  const [newCharacters, setNewCharacters] = useState(
+    () => localStorage.getItem("story_draft_characters") || "",
+  );
+  const [newEpisodes, setNewEpisodes] = useState(
+    () => localStorage.getItem("story_draft_episodes") || "",
+  );
   const [selectedCategory, setSelectedCategory] = useState("일기");
   const [activeFilter, setActiveFilter] = useState("전체");
   const [isPreview, setIsPreview] = useState(false);
@@ -203,6 +303,7 @@ export default function Stories() {
     () => localStorage.getItem("story_draft_image") || "",
   );
   const [showImageInput, setShowImageInput] = useState(false);
+  const [showSettingsInput, setShowSettingsInput] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -271,10 +372,15 @@ export default function Stories() {
     const timeoutId = setTimeout(() => {
       localStorage.setItem("story_draft_title", newTitle);
       localStorage.setItem("story_draft_content", newPost);
+      localStorage.setItem("story_draft_idea", newIdea);
+      localStorage.setItem("story_draft_worldview", newWorldview);
+      localStorage.setItem("story_draft_chronology", newChronology);
+      localStorage.setItem("story_draft_characters", newCharacters);
+      localStorage.setItem("story_draft_episodes", newEpisodes);
       if (newImage) localStorage.setItem("story_draft_image", newImage);
     }, 2000);
     return () => clearTimeout(timeoutId);
-  }, [newTitle, newPost, newImage]);
+  }, [newTitle, newPost, newImage, newIdea, newWorldview, newChronology, newCharacters, newEpisodes]);
 
   const showToast = (message: string) => {
     const id = Date.now();
@@ -349,6 +455,11 @@ export default function Stories() {
             await updateDoc(postRef, {
               title: newTitle,
               content: newPost,
+              idea: newIdea,
+              worldview: newWorldview,
+              chronology: newChronology,
+              characters: newCharacters,
+              episodes: newEpisodes,
               category: selectedCategory,
               image: newImage,
               updatedAt: serverTimestamp(),
@@ -364,6 +475,11 @@ export default function Stories() {
                     ...p,
                     title: newTitle,
                     content: newPost,
+                    idea: newIdea,
+                    worldview: newWorldview,
+                    chronology: newChronology,
+                    characters: newCharacters,
+                    episodes: newEpisodes,
                     category: selectedCategory,
                     image: newImage,
                   }
@@ -378,6 +494,11 @@ export default function Stories() {
           category: selectedCategory,
           title: newTitle,
           content: newPost,
+          idea: newIdea,
+          worldview: newWorldview,
+          chronology: newChronology,
+          characters: newCharacters,
+          episodes: newEpisodes,
           likes: 0,
           image: newImage,
           createdAt: serverTimestamp(),
@@ -408,11 +529,22 @@ export default function Stories() {
 
       setNewTitle("");
       setNewPost("");
+      setNewIdea("");
+      setNewWorldview("");
+      setNewChronology("");
+      setNewCharacters("");
+      setNewEpisodes("");
       setNewImage("");
       setIsPreview(false);
       setShowImageInput(false);
+      setShowSettingsInput(false);
       localStorage.removeItem("story_draft_title");
       localStorage.removeItem("story_draft_content");
+      localStorage.removeItem("story_draft_idea");
+      localStorage.removeItem("story_draft_worldview");
+      localStorage.removeItem("story_draft_chronology");
+      localStorage.removeItem("story_draft_characters");
+      localStorage.removeItem("story_draft_episodes");
       localStorage.removeItem("story_draft_image");
     } catch (err: any) {
       console.error("Post writing error:", err);
@@ -426,9 +558,15 @@ export default function Stories() {
     setEditingId(post.id);
     setNewTitle(post.title);
     setNewPost(post.content);
+    setNewIdea(post.idea || "");
+    setNewWorldview(post.worldview || "");
+    setNewChronology(post.chronology || "");
+    setNewCharacters(post.characters || "");
+    setNewEpisodes(post.episodes || "");
     setNewImage(post.image || "");
     setSelectedCategory(post.category);
     setIsPreview(false);
+    setShowSettingsInput(!!(post.idea || post.worldview || post.chronology || post.characters || post.episodes));
     setActiveDropdown(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -667,23 +805,105 @@ export default function Stories() {
               </motion.div>
             )}
 
+            {showSettingsInput && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="overflow-hidden bg-surface-container-lowest border border-outline/20 p-5 rounded-2xl space-y-4 shadow-inner"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-primary" />
+                    세계관 및 설정 (소설/이야기용)
+                  </span>
+                  <button 
+                    onClick={() => setShowSettingsInput(false)}
+                    className="p-1.5 hover:bg-surface-dim rounded-lg transition-colors text-on-surface-variant"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-on-surface-variant ml-1">아이디어 (Idea)</label>
+                    <textarea
+                      value={newIdea}
+                      onChange={(e) => setNewIdea(e.target.value)}
+                      placeholder="핵심 아이디어나 영감을 메모하세요"
+                      className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium resize-none min-h-[80px]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-on-surface-variant ml-1">설정/세계관 (Worldview)</label>
+                    <textarea
+                      value={newWorldview}
+                      onChange={(e) => setNewWorldview(e.target.value)}
+                      placeholder="배경, 세계의 규칙, 주요 설정"
+                      className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium resize-none min-h-[80px]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-on-surface-variant ml-1">등장인물 (Characters)</label>
+                    <textarea
+                      value={newCharacters}
+                      onChange={(e) => setNewCharacters(e.target.value)}
+                      placeholder="주요 인물들의 성격, 외양, 동기"
+                      className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium resize-none min-h-[80px]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-on-surface-variant ml-1">연대기 (Chronology)</label>
+                    <textarea
+                      value={newChronology}
+                      onChange={(e) => setNewChronology(e.target.value)}
+                      placeholder="주요 사건의 흐름이나 시간선"
+                      className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium resize-none min-h-[80px]"
+                    />
+                  </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-xs font-semibold text-on-surface-variant ml-1">에피소드 (Episodes)</label>
+                    <textarea
+                      value={newEpisodes}
+                      onChange={(e) => setNewEpisodes(e.target.value)}
+                      placeholder="개별 에피소드의 시놉시스나 요약"
+                      className="w-full bg-surface border border-outline/20 rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-sm font-sans font-medium resize-none min-h-[100px]"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-6 border-t border-outline/20 gap-4 mt-6">
-              <div className="flex items-center justify-between sm:justify-start gap-4">
+              <div className="flex flex-wrap items-center justify-between sm:justify-start gap-4">
                 <button
                   onClick={() => setShowImageInput(!showImageInput)}
-                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${newImage ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 border-outline/20 hover:border-blue-200 hover:shadow-md"}`}
+                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showImageInput || newImage ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 border-outline/20 hover:border-blue-200 hover:shadow-md"}`}
                   title="이미지 첨부"
                 >
                   <ImageIcon className="w-5 h-5" />
                 </button>
+                <button
+                  onClick={() => setShowSettingsInput(!showSettingsInput)}
+                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showSettingsInput || newIdea || newWorldview || newChronology || newCharacters || newEpisodes ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-white text-on-surface hover:bg-purple-50 hover:text-purple-600 border-outline/20 hover:border-purple-200 hover:shadow-md"}`}
+                  title="세계관 및 설정"
+                >
+                  <Globe className="w-5 h-5" />
+                </button>
                 {newImage && !showImageInput && (
-                  <span className="text-xs text-blue-600 font-bold truncate max-w-[150px]">
+                  <span className="text-xs text-blue-600 font-bold truncate max-w-[150px] hidden sm:inline-block">
                     이미지 첨부됨
+                  </span>
+                )}
+                {(newIdea || newWorldview || newChronology || newCharacters || newEpisodes) && !showSettingsInput && (
+                  <span className="text-xs text-purple-600 font-bold truncate max-w-[150px] hidden sm:inline-block">
+                    설정 첨부됨
                   </span>
                 )}
                 <div className="text-sm text-on-surface-variant font-semibold flex items-center gap-2 px-4 py-3 bg-white hover:bg-blue-50 hover:text-blue-600 rounded-full border border-outline/20 hover:border-blue-200 shadow-sm transition-all duration-300 ease-out hover:shadow-md cursor-default">
                   <Save className="w-4 h-4 text-blue-600" />{" "}
-                  {editingId ? "수정 중..." : "자동 임시저장"}
+                  <span className="hidden sm:inline">{editingId ? "수정 중..." : "자동 임시저장"}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
