@@ -153,7 +153,7 @@ export default function Layout() {
         </div>
 
         {/* Global News Ticker */}
-        <div className="w-full border-t border-outline/20 bg-surface-container-lowest">
+        <div className="w-full border-t border-outline/20 bg-surface-container-lowest" role="region" aria-label="글로벌 속보">
           <div className="max-w-[1280px] mx-auto px-6 h-10 flex items-center overflow-hidden relative text-xs font-semibold">
             <div className="flex items-center gap-2 text-primary shrink-0 z-10 bg-surface-container-lowest pr-4 h-full">
                <Globe className="w-4 h-4" /> <span className="tracking-widest uppercase">LIVE 속보</span>
@@ -222,8 +222,8 @@ export default function Layout() {
         <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm font-medium text-on-surface-variant">
           <p>© {new Date().getFullYear()} 우물 그리고 세계들. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link to="/" className="hover:text-primary transition-colors">홈</Link>
-            <Link to="/guestbook" className="hover:text-primary transition-colors">방명록</Link>
+            <Link to="/" className="hover:text-primary transition-colors" aria-label="홈페이지로 이동">홈</Link>
+            <Link to="/guestbook" className="hover:text-primary transition-colors" aria-label="방명록 페이지로 이동">방명록</Link>
           </div>
         </div>
       </footer>

@@ -692,6 +692,7 @@ export default function Home() {
                         rel="noopener noreferrer"
                         className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition-colors shrink-0"
                         title="프로젝트 바로가기"
+                        aria-label={`${item.title} 프로젝트 외부 링크로 이동`}
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
