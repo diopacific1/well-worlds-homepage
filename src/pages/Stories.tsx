@@ -24,7 +24,8 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import Markdown from "react-markdown";
 import { useClickOutside } from "../hooks/useClickOutside";
-import { db, storage, handleFirestoreError, OperationType } from "../../firebase";
+import { db, storage, auth, handleFirestoreError, OperationType } from "../../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { 
   collection, 
   addDoc, 
@@ -54,12 +55,14 @@ const PostItem = ({
   handleDelete,
   handleLike,
   showToast,
+  isAdmin,
 }: {
   post: any;
   handleEdit: (post: any) => void;
   handleDelete: (id: number) => void;
   handleLike: (id: number) => void;
   showToast: (msg: string) => void;
+  isAdmin: boolean;
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showWorldbuilding, setShowWorldbuilding] = useState(false);
@@ -97,39 +100,41 @@ const PostItem = ({
               <p className="font-mono text-sm text-on-surface-variant font-bold tracking-wider mr-2">
                 {post.date}
               </p>
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  aria-expanded={isDropdownOpen}
-                  aria-haspopup="true"
-                  aria-label={`${post.title} 추가 메뉴`}
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="text-on-surface-variant hover:text-primary p-2.5 bg-surface hover:bg-surface-dim rounded-full border border-outline/10 transition-colors shadow-sm hover:shadow-md"
-                >
-                  <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
-                </button>
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-36 bg-surface rounded-xl shadow-xl border border-outline/10 py-2 z-10 text-on-surface overflow-hidden">
-                    <button
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        handleEdit(post);
-                      }}
-                      className="w-full text-left px-5 py-3 text-sm text-on-surface-variant hover:text-on-surface hover:bg-primary/5 flex items-center gap-3 font-bold transition-colors"
-                    >
-                      <Edit3 className="w-4 h-4" aria-hidden="true" /> 수정하기
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        handleDelete(post.id);
-                      }}
-                      className="w-full text-left px-5 py-3 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" aria-hidden="true" /> 삭제하기
-                    </button>
-                  </div>
-                )}
-              </div>
+              {isAdmin && (
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    aria-expanded={isDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label={`${post.title} 추가 메뉴`}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="text-on-surface-variant hover:text-primary p-2.5 bg-surface hover:bg-surface-dim rounded-full border border-outline/10 transition-colors shadow-sm hover:shadow-md"
+                  >
+                    <MoreHorizontal className="w-5 h-5" aria-hidden="true" />
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-36 bg-surface rounded-xl shadow-xl border border-outline/10 py-2 z-10 text-on-surface overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          handleEdit(post);
+                        }}
+                        className="w-full text-left px-5 py-3 text-sm text-on-surface-variant hover:text-on-surface hover:bg-primary/5 flex items-center gap-3 font-bold transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4" aria-hidden="true" /> 수정하기
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          handleDelete(post.id);
+                        }}
+                        className="w-full text-left px-5 py-3 text-sm text-[#ba1a1a] hover:bg-[#ba1a1a]/10 flex items-center gap-3 font-bold transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" aria-hidden="true" /> 삭제하기
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <h2 className="text-3xl md:text-5xl font-display font-extrabold text-on-surface mb-4 tracking-tight leading-tight">
@@ -310,6 +315,20 @@ export default function Stories() {
   // Firestore Feed Integration
   const [feed, setFeed] = useState<any[]>([]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check admin login status
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && (user.uid === "w02kvOK1b0SiPGgmQRX3g34ArSt2" || user.email === "diopacific1@gmail.com")) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!db) {
@@ -661,9 +680,9 @@ export default function Stories() {
       </section>
 
       <div className="space-y-10">
-        {/* Compose Box */}
-        <div className="bg-surface p-6 md:p-12 rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow duration-500 relative overflow-hidden border border-outline/10">
-          <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
+        {isAdmin && (
+          <div className="bg-surface p-6 md:p-12 rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow duration-500 relative overflow-hidden border border-outline/10">
+            <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
             <div className="flex gap-2">
               {CATEGORIES.slice(1).map((cat) => (
                 <button
@@ -945,6 +964,7 @@ export default function Stories() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Filter */}
         <div className="flex items-center gap-6 py-6 border-b border-outline/20 overflow-x-auto hide-scrollbar">
@@ -972,6 +992,7 @@ export default function Stories() {
                 handleDelete={handleDelete} 
                 handleLike={handleLike} 
                 showToast={showToast} 
+                isAdmin={isAdmin}
               />
             ))}
           </AnimatePresence>
