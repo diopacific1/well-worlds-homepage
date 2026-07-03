@@ -572,6 +572,7 @@ export default function PlantJournal() {
                         setFormParams({ ...formParams, image: e.target.value })
                       }
                       placeholder="이미지 주소(URL)를 직접 입력하셔도 됩니다"
+                      aria-label="커버 이미지 주소 입력"
                       className="w-full input-field text-xs font-medium"
                     />
                   </div>
@@ -814,7 +815,7 @@ export default function PlantJournal() {
           {filteredEntries.map((entry: any, index: number) => {
             const isEven = index % 2 === 0;
             return (
-              <motion.div
+              <motion.article
                 key={entry.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -835,17 +836,19 @@ export default function PlantJournal() {
                         <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 lg:translate-x-4 group-hover:translate-x-0">
                           <button
                             onClick={() => openForm(entry)}
-                            className="p-3 bg-surface hover:bg-surface-dim border border-outline/10 text-on-surface-variant hover:text-[#5D7964] transition-colors rounded-full shadow-sm hover:shadow-md"
+                            className="p-3 bg-surface hover:bg-surface-dim border border-outline/10 text-on-surface-variant hover:text-[#5D7964] transition-colors rounded-full shadow-sm hover:shadow-md focus:opacity-100 focus:translate-x-0 focus:ring-2 focus:ring-[#5D7964]"
                             title="수정"
+                            aria-label={`'${entry.title}' 일지 수정`}
                           >
-                            <Edit3 className="w-4 h-4" />
+                            <Edit3 className="w-4 h-4" aria-hidden="true" />
                           </button>
                           <button
                             onClick={() => handleDelete(entry.id)}
-                            className="p-3 bg-surface hover:bg-[#ba1a1a]/10 border border-outline/10 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 transition-colors rounded-full shadow-sm hover:shadow-md"
+                            className="p-3 bg-surface hover:bg-[#ba1a1a]/10 border border-outline/10 text-on-surface-variant hover:text-[#ba1a1a] hover:border-[#ba1a1a]/20 transition-colors rounded-full shadow-sm hover:shadow-md focus:opacity-100 focus:translate-x-0 focus:ring-2 focus:ring-error"
                             title="삭제"
+                            aria-label={`'${entry.title}' 일지 삭제`}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </div>
                       )}
@@ -923,7 +926,7 @@ export default function PlantJournal() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none opacity-80 md:opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
                 </div>
-              </motion.div>
+              </motion.article>
             );
           })}
         </AnimatePresence>

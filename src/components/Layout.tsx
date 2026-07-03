@@ -83,7 +83,13 @@ export default function Layout() {
     : baseNavItems;
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans relative">
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-6 py-3 bg-primary text-white font-bold rounded-lg shadow-xl"
+      >
+        본문으로 건너뛰기
+      </a>
       <Helmet>
         <title>우물 그리고 세계들 | 통합 데이터 대시보드</title>
         <meta name="description" content="우물 그리고 세계들 - 다양한 데이터를 탐색하고 기록을 남기는 웹 공간. 가상자산 터미널, 반려식물 저널, 개인 기록실을 제공합니다." />
@@ -213,7 +219,7 @@ export default function Layout() {
         </AnimatePresence>
       </header>
 
-      <main className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16">
+      <main id="main-content" className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16 focus:outline-none" tabIndex={-1}>
         <Outlet />
       </main>
 

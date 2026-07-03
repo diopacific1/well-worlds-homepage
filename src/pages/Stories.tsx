@@ -73,7 +73,7 @@ const PostItem = ({
   const hasWorldbuilding = post.idea || post.worldview || post.chronology || post.characters || post.episodes || post.prompt;
 
   return (
-    <motion.div
+    <motion.article
       layout
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
@@ -307,7 +307,7 @@ const PostItem = ({
           </button>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 };
 
@@ -978,6 +978,7 @@ export default function Stories() {
                   onClick={() => setShowImageInput(!showImageInput)}
                   className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showImageInput || newImage ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 border-outline/20 hover:border-blue-200 hover:shadow-md"}`}
                   title="이미지 첨부"
+                  aria-label="이미지 첨부 토글"
                 >
                   <ImageIcon className="w-5 h-5" />
                 </button>
@@ -985,6 +986,7 @@ export default function Stories() {
                   onClick={() => setShowSettingsInput(!showSettingsInput)}
                   className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showSettingsInput || newIdea || newWorldview || newChronology || newCharacters || newEpisodes || newPrompt ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-white text-on-surface hover:bg-purple-50 hover:text-purple-600 border-outline/20 hover:border-purple-200 hover:shadow-md"}`}
                   title="세계관 및 설정"
+                  aria-label="세계관 및 설정 토글"
                 >
                   <Globe className="w-5 h-5" />
                 </button>

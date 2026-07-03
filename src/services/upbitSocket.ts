@@ -114,7 +114,7 @@ class UpbitSocket {
     };
 
     this.ws.onerror = (error) => {
-      console.error("Upbit WebSocket error:", error);
+      console.warn("Upbit WebSocket error:", error);
       this.ws?.close();
     };
   }

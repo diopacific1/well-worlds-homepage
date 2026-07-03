@@ -184,13 +184,14 @@ export default function Guestbook() {
               />
             </div>
             <div className="flex justify-end pt-2 items-center gap-4">
-              {submitError && <span className="text-error text-sm font-semibold">{submitError}</span>}
+              {submitError && <span className="text-error text-sm font-semibold" aria-live="polite" role="alert">{submitError}</span>}
               <button
                 type="submit"
                 disabled={isSubmitting || !nickname.trim() || !message.trim()}
-                className="px-6 py-3 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-all shadow-md"
+                className="px-6 py-3 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-all shadow-md focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                aria-label="방명록에 기록 남기기"
               >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> 기록 남기기</>}
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <><Send className="w-4 h-4" aria-hidden="true" /> 기록 남기기</>}
               </button>
             </div>
           </form>
@@ -230,10 +231,11 @@ export default function Guestbook() {
                     {isAdmin && (
                       <button
                         onClick={() => handleDelete(entry.id)}
-                        className="text-[#ba1a1a] hover:bg-[#ba1a1a]/10 p-1.5 rounded-lg transition-colors"
+                        className="text-[#ba1a1a] hover:bg-[#ba1a1a]/10 p-1.5 rounded-lg transition-colors focus:ring-2 focus:ring-error"
                         title="기록 지우기"
+                        aria-label={`${entry.nickname}님의 방명록 기록 지우기`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     )}
                   </div>

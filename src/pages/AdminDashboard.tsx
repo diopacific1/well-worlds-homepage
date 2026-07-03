@@ -214,14 +214,15 @@ export default function AdminDashboard() {
         <section className="bg-surface border border-outline/20 rounded-3xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-on-surface flex items-center gap-2">
-              <FileText className="w-5 h-5 text-primary" />
+              <FileText className="w-5 h-5 text-primary" aria-hidden="true" />
               포트폴리오 관리
             </h2>
             <button 
               onClick={() => setIsPortfolioModalOpen(true)}
-              className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors"
+              className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors focus:ring-2 focus:ring-primary"
+              aria-label="포트폴리오 추가"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
           
@@ -257,10 +258,11 @@ export default function AdminDashboard() {
                   )}
                   <button 
                     onClick={() => handleDeletePortfolio(item.id)}
-                    className="absolute top-4 right-4 p-1.5 text-error/60 hover:text-error hover:bg-error/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
-                    title="삭제"
+                    className="absolute top-4 right-4 p-1.5 text-error/60 hover:text-error hover:bg-error/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 focus:ring-2 focus:ring-error"
+                    title="포트폴리오 삭제"
+                    aria-label={`포트폴리오 '${item.title}' 삭제`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               ))

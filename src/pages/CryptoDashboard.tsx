@@ -656,6 +656,7 @@ export default function CryptoDashboard() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="시장, 자산 검색 (예: 리플, 도지코인, 비트코인)"
                 className="w-full input-field !pl-12 font-mono uppercase"
+                aria-label="시장, 자산 검색"
               />
               <button
                 type="submit"
