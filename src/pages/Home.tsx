@@ -279,6 +279,7 @@ BentoCard.displayName = "BentoCard";
 
 export default function Home() {
   const [portfolios, setPortfolios] = useState<{id: string, title?: string, link?: string, description?: string, techStack?: string}[]>([]);
+  const [isLoadingPortfolios, setIsLoadingPortfolios] = useState(true);
 
   useEffect(() => {
     const fetchPortfolios = async () => {
@@ -289,6 +290,8 @@ export default function Home() {
         setPortfolios(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (err) {
         console.error("Failed to fetch portfolios:", err);
+      } finally {
+        setIsLoadingPortfolios(false);
       }
     };
     fetchPortfolios();
@@ -652,7 +655,7 @@ export default function Home() {
       </div>
 
       {/* Portfolio Section */}
-      {portfolios.length > 0 && (
+      {(isLoadingPortfolios || portfolios.length > 0) && (
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-24">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -673,52 +676,71 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {portfolios.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="group p-6 md:p-8 rounded-[2rem] bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface hover:shadow-xl transition-all duration-500 relative flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <h3 className="font-display font-bold text-2xl text-on-surface group-hover:text-primary transition-colors">
-                      {item.title}
-                    </h3>
-                    {item.link && (
-                      <a 
-                        href={item.link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition-colors shrink-0"
-                        title="프로젝트 바로가기"
-                        aria-label={`${item.title} 프로젝트 외부 링크로 이동`}
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
+            {isLoadingPortfolios
+              ? [...Array(3)].map((_, index) => (
+                  <div
+                    key={`skeleton-${index}`}
+                    className="p-6 md:p-8 rounded-[2rem] bg-surface-variant/30 animate-pulse border border-outline/5 relative flex flex-col justify-between min-h-[250px]"
+                  >
+                    <div className="space-y-4">
+                      <div className="h-8 bg-on-surface-variant/10 rounded-md w-1/2 mb-6"></div>
+                      <div className="h-4 bg-on-surface-variant/10 rounded-md w-full"></div>
+                      <div className="h-4 bg-on-surface-variant/10 rounded-md w-4/5"></div>
+                      <div className="h-4 bg-on-surface-variant/10 rounded-md w-full"></div>
+                    </div>
+                    <div className="mt-8 flex flex-wrap gap-2">
+                      <div className="h-6 w-16 bg-on-surface-variant/10 rounded-lg"></div>
+                      <div className="h-6 w-20 bg-on-surface-variant/10 rounded-lg"></div>
+                      <div className="h-6 w-14 bg-on-surface-variant/10 rounded-lg"></div>
+                    </div>
+                  </div>
+                ))
+              : portfolios.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="group p-6 md:p-8 rounded-[2rem] bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface hover:shadow-xl transition-all duration-500 relative flex flex-col justify-between"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-start gap-4">
+                        <h3 className="font-display font-bold text-2xl text-on-surface group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                        {item.link && (
+                          <a 
+                            href={item.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition-colors shrink-0"
+                            title="프로젝트 바로가기"
+                            aria-label={`${item.title} 프로젝트 외부 링크로 이동`}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                      <p className="text-on-surface-variant text-base leading-relaxed line-clamp-3">
+                        {item.description}
+                      </p>
+                    </div>
+                    
+                    {item.techStack && (
+                      <div className="mt-8 flex flex-wrap gap-2">
+                        {item.techStack.split(",").map((tech: string, i: number) => (
+                          <span 
+                            key={i} 
+                            className="text-xs font-mono bg-surface-variant/50 text-on-surface-variant px-3 py-1.5 rounded-lg border border-outline/5"
+                          >
+                            {tech.trim()}
+                          </span>
+                        ))}
+                      </div>
                     )}
-                  </div>
-                  <p className="text-on-surface-variant text-base leading-relaxed line-clamp-3">
-                    {item.description}
-                  </p>
-                </div>
-                
-                {item.techStack && (
-                  <div className="mt-8 flex flex-wrap gap-2">
-                    {item.techStack.split(",").map((tech: string, i: number) => (
-                      <span 
-                        key={i} 
-                        className="text-xs font-mono bg-surface-variant/50 text-on-surface-variant px-3 py-1.5 rounded-lg border border-outline/5"
-                      >
-                        {tech.trim()}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                  </motion.div>
+                ))}
           </div>
         </div>
       )}

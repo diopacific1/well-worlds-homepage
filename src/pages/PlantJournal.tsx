@@ -782,7 +782,33 @@ export default function PlantJournal() {
       {/* Feed Area */}
       <div className="max-w-5xl mx-auto px-4 lg:px-8 space-y-12 mt-8 relative">
         <AnimatePresence>
-          {entries.length === 0 && !isLoadingEntries ? (
+          {isLoadingEntries ? (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              className="space-y-12"
+            >
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-surface rounded-[2rem] relative overflow-hidden border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm animate-pulse min-h-[400px]">
+                  <div className={`w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between ${i % 2 === 0 ? "md:order-1" : "md:order-2"}`}>
+                    <div>
+                      <div className="w-24 h-8 bg-surface-variant/50 rounded-full mb-8" />
+                      <div className="w-3/4 h-10 bg-surface-variant/50 rounded-lg mb-6" />
+                      <div className="w-full h-4 bg-surface-variant/50 rounded-md mb-3" />
+                      <div className="w-5/6 h-4 bg-surface-variant/50 rounded-md mb-3" />
+                      <div className="w-4/6 h-4 bg-surface-variant/50 rounded-md" />
+                    </div>
+                    <div className="mt-10 pt-6 border-t border-outline/20 flex gap-2">
+                      <div className="w-16 h-8 bg-surface-variant/50 rounded-lg" />
+                      <div className="w-20 h-8 bg-surface-variant/50 rounded-lg" />
+                    </div>
+                  </div>
+                  <div className={`w-full md:w-2/5 h-[300px] md:h-auto bg-surface-variant/30 ${i % 2 === 0 ? "md:order-2" : "md:order-1"}`} />
+                </div>
+              ))}
+            </motion.div>
+          ) : entries.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -800,7 +826,7 @@ export default function PlantJournal() {
                   : "아직 작성된 일지가 없습니다. 곧 푸른 이야기들이 채워질 예정입니다."}
               </p>
             </motion.div>
-          ) : filteredEntries.length === 0 && !isLoadingEntries ? (
+          ) : filteredEntries.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

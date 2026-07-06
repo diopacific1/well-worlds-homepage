@@ -1,5 +1,5 @@
 
-import { useState, FormEvent, useEffect, useMemo } from "react";
+import { useState, FormEvent, useEffect, useMemo, useRef } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import { Helmet } from "react-helmet-async";
 import {
@@ -263,6 +263,30 @@ export default function CryptoDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [activeCoinId, setActiveCoinId] = useState("bitcoin");
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const searchResults = useMemo(() => {
+    if (!debouncedSearchTerm) return [];
+    const term = debouncedSearchTerm.toLowerCase().trim();
+    const results: string[] = [];
+    for (const [id, keywords] of Object.entries(SEARCH_MAPPINGS)) {
+      if (keywords.some((k) => k.toLowerCase().includes(term) || id.includes(term))) {
+        results.push(id);
+      }
+    }
+    return results;
+  }, [debouncedSearchTerm]);
   interface Insight {
     date: string;
     label: string;
@@ -283,7 +307,7 @@ export default function CryptoDashboard() {
     sentimentScore: number;
     sentimentStatus: string;
     analysis: string;
-    candles: { open: number; high: number; low: number; close: number }[];
+    candles: { open: number; high: number; low: number; close: number; volume?: number }[];
     dataSource?: string;
   }
   const [cryptoData, setCryptoData] = useState<CryptoData | null>(null);
@@ -575,13 +599,15 @@ export default function CryptoDashboard() {
         open: openVal,
         high: highVal,
         low: lowVal,
-        close: closeVal
+        close: closeVal,
+        volume: 1000000 + hashVal * 50000 + (Math.random() * 200000)
       };
     });
   };
 
-  const candles = getCandles();
-  const rawChartData = candles.map((candle: { open: number; high: number; low: number; close: number }, i: number) => {
+  const processedChartData = useMemo(() => {
+    const candles = getCandles();
+    const rawChartData = candles.map((candle: { open: number; high: number; low: number; close: number; volume?: number }, i: number) => {
     let label = "";
     const now = new Date();
     if (timeframe === "1H") {
@@ -609,11 +635,12 @@ export default function CryptoDashboard() {
       low: lowKRW,
       close: closeKRW,
       bodyRange: [Math.min(openKRW, closeKRW), Math.max(openKRW, closeKRW)],
+      volume: (candle.volume || 1000000) * USD_TO_KRW * 100, // scaled up for visualization
       isUp,
     };
   });
 
-  const processedChartData = rawChartData.map((item, i: number) => {
+    return rawChartData.map((item, i: number) => {
     // 5-period moving average
     let sum5 = 0;
     let count5 = 0;
@@ -632,35 +659,41 @@ export default function CryptoDashboard() {
     }
     const ma10 = sum10 / count10;
 
-    return {
-      ...item,
-      ma5,
-      ma10,
-    };
-  });
+      return {
+        ...item,
+        ma5: i >= 4 ? ma5 : undefined,
+        ma10: i >= 9 ? ma10 : undefined,
+      };
+    });
+  }, [cryptoData?.candles, timeframe, activeCoinId]);
 
-  const footerLabels = [
+  const footerLabels = useMemo(() => [
     processedChartData[0]?.time || "",
     processedChartData[3]?.time || "",
     processedChartData[6]?.time || "",
     processedChartData[9]?.time || "",
     processedChartData[11]?.time || "실시간"
-  ];
+  ], [processedChartData]);
 
-  const lows = processedChartData.map((d) => d.low);
-  const highs = processedChartData.map((d) => d.high);
-  const minLow = lows.length > 0 ? Math.min(...lows) : 0;
-  const maxHigh = highs.length > 0 ? Math.max(...highs) : 100;
-  const chartDomain = [minLow * 0.997, maxHigh * 1.003];
+  const chartDomain = useMemo(() => {
+    const lows = processedChartData.map((d) => d.low);
+    const highs = processedChartData.map((d) => d.high);
+    const minLow = lows.length > 0 ? Math.min(...lows) : 0;
+    const maxHigh = highs.length > 0 ? Math.max(...highs) : 100;
+    return [minLow * 0.997, maxHigh * 1.003];
+  }, [processedChartData]);
 
   // (Step 5) Algorithm Insights Analysis based on client-side properties
   const algoAction = useMemo(() => {
     const rsiVal = parseFloat(cryptoData?.rsi || "50");
     if (rsiVal < 30) return { label: "강력 매수 (과매도)", color: "text-[#E13030]", bg: "bg-[#E13030]/10" };
     if (rsiVal > 70) return { label: "강력 매도 (과매수)", color: "text-[#1261C4]", bg: "bg-[#1261C4]/10" };
-    if (coin.trendUp) return { label: "보유 (상승 흐름)", color: "text-primary", bg: "bg-primary/10" };
+    if (coin.trendUp) return { label: "보유 (상승 흐름)", color: "text-[#E13030]", bg: "bg-[#E13030]/10" };
     return { label: "관망 (중립)", color: "text-on-surface-variant", bg: "bg-surface-dim" };
   }, [cryptoData?.rsi, coin.trendUp]);
+
+  const sentimentScoreVal = cryptoData?.sentimentScore || 68;
+  const sentimentColorClass = sentimentScoreVal >= 50 ? "text-[#E13030]" : "text-[#1261C4]";
 
   return (
     <PriceProvider>
@@ -704,7 +737,7 @@ export default function CryptoDashboard() {
               </h1>
             </div>
  
-            <div className="flex-1 max-w-2xl relative w-full">
+            <div className="flex-1 max-w-2xl relative w-full" ref={searchInputRef}>
               <label htmlFor="cryptoSearch" className="sr-only">
                 검색어 입력
               </label>
@@ -716,10 +749,15 @@ export default function CryptoDashboard() {
                 id="cryptoSearch"
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setShowSearchDropdown(true)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSearchDropdown(true);
+                }}
                 placeholder="시장, 자산 검색 (예: 리플, 도지코인, 비트코인)"
                 className="w-full input-field !pl-12 font-mono uppercase"
                 aria-label="시장, 자산 검색"
+                autoComplete="off"
               />
               <button
                 type="submit"
@@ -728,19 +766,36 @@ export default function CryptoDashboard() {
               >
                 검색
               </button>
+              
+              {showSearchDropdown && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-outline/20 rounded-xl shadow-lg z-50 overflow-hidden max-h-60 overflow-y-auto">
+                  {searchResults.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => {
+                        setActiveCoinId(id);
+                        setSearchTerm("");
+                        setShowSearchDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-surface-dim transition-colors flex items-center gap-3 border-b border-outline/5 last:border-b-0"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-[10px] font-bold uppercase overflow-hidden">
+                        {id.substring(0, 3)}
+                      </div>
+                      <span className="font-display font-bold text-on-surface uppercase">{id}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </form>
 
           {/* Metrics Row */}
           <div className="flex overflow-x-auto pb-2 md:grid md:grid-cols-4 gap-6 no-scrollbar relative">
-            {loadingCrypto && (
-              <div className="absolute inset-0 z-10 bg-surface/50 backdrop-blur-sm flex items-center justify-center rounded-2xl">
-                <span className="text-sm font-bold text-primary animate-pulse">
-                  실시간 데이터 동기화 중...
-                </span>
-              </div>
-            )}
+
             <MetricCard
+              isLoading={loadingCrypto}
               label="현재 가격"
               value={formatUSDToKRW(cryptoData?.price || coin.price)}
               unit="KRW"
@@ -774,6 +829,7 @@ export default function CryptoDashboard() {
               </div>
             </div>
             <MetricCard
+              isLoading={loadingCrypto}
               label="시가총액"
               value={formatUSDToKRWMacro(cryptoData?.marketCap || coin.marketCap)}
               unit=""
@@ -891,6 +947,7 @@ export default function CryptoDashboard() {
                           dy={10}
                         />
                         <YAxis 
+                          yAxisId="price"
                           domain={chartDomain} 
                           tickFormatter={(v) => `₩${Math.round(v).toLocaleString()}`}
                           stroke="#1E293B" 
@@ -900,6 +957,12 @@ export default function CryptoDashboard() {
                           axisLine={false}
                           tickLine={false}
                           dx={5}
+                        />
+                        <YAxis 
+                          yAxisId="volume"
+                          orientation="left"
+                          hide
+                          domain={[0, (dataMax: number) => dataMax * 5]}
                         />
                         <Tooltip
                           content={({ active, payload }) => {
@@ -959,10 +1022,19 @@ export default function CryptoDashboard() {
                         />
                         <Bar
                           dataKey="bodyRange"
+                          yAxisId="price"
                           shape={<CandlestickShape />}
+                        />
+                        <Bar
+                          dataKey="volume"
+                          yAxisId="volume"
+                          fill="#94A3B8"
+                          opacity={0.25}
+                          barSize={12}
                         />
                         {/* 5-Period Moving Average line */}
                         <Line
+                          yAxisId="price"
                           type="monotone"
                           dataKey="ma5"
                           stroke="#F59E0B"
@@ -973,6 +1045,7 @@ export default function CryptoDashboard() {
                         />
                         {/* 10-Period Moving Average line */}
                         <Line
+                          yAxisId="price"
                           type="monotone"
                           dataKey="ma10"
                           stroke="#8B5CF6"
@@ -1094,10 +1167,11 @@ export default function CryptoDashboard() {
                       </div>
                       <div className="flex justify-between text-[11px] text-on-surface-variant mt-1.5 px-1">
                         <span>초소수점 단위 미세 수량 입력 지원</span>
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => handleQuantityChange(currentQuantity * 2)} className="text-primary hover:underline font-bold">2x 두배</button>
-                          <span>|</span>
-                          <button type="button" onClick={() => handleQuantityChange(Math.max(0, currentQuantity / 2))} className="text-primary hover:underline font-bold">절반</button>
+                        <div className="flex gap-1">
+                          <button type="button" onClick={() => handleQuantityChange(Math.max(0, currentQuantity * 0.5))} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">-50%</button>
+                          <button type="button" onClick={() => handleQuantityChange(Math.max(0, currentQuantity * 0.9))} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">-10%</button>
+                          <button type="button" onClick={() => handleQuantityChange(currentQuantity * 1.1)} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">+10%</button>
+                          <button type="button" onClick={() => handleQuantityChange(currentQuantity * 2)} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">2x</button>
                         </div>
                       </div>
                     </div>
@@ -1157,14 +1231,14 @@ export default function CryptoDashboard() {
                     </h4>
                   </div>
 
-                  <div className={`border p-4 rounded-xl flex flex-col justify-between ${profitLoss >= 0 ? "bg-emerald-500/5 border-emerald-500/25" : "bg-blue-500/5 border-blue-500/25"}`}>
+                  <div className={`border p-4 rounded-xl flex flex-col justify-between ${profitLoss >= 0 ? "bg-[#E13030]/5 border-[#E13030]/25" : "bg-[#1261C4]/5 border-[#1261C4]/25"}`}>
                     <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">평가 손익 (Net Profit)</span>
                     <h4 className={`text-lg font-mono font-bold mt-1.5 ${profitLoss >= 0 ? "text-[#E13030]" : "text-[#1261C4]"}`}>
                       {profitLoss >= 0 ? "+" : ""}₩{Math.round(profitLoss).toLocaleString()} 원
                     </h4>
                   </div>
 
-                  <div className={`border p-4 rounded-xl flex flex-col justify-between ${roi >= 0 ? "bg-emerald-500/10 border-emerald-500/35" : "bg-blue-500/10 border-blue-500/35"}`}>
+                  <div className={`border p-4 rounded-xl flex flex-col justify-between ${roi >= 0 ? "bg-[#E13030]/10 border-[#E13030]/35" : "bg-[#1261C4]/10 border-[#1261C4]/35"}`}>
                     <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">실시간 수익 실현 비율</span>
                     <h4 className={`text-xl font-display font-black mt-1.5 flex items-center gap-1 ${roi >= 0 ? "text-[#E13030]" : "text-[#1261C4]"}`}>
                       {roi >= 0 ? "+" : ""}{roi.toFixed(2)}%
@@ -1191,11 +1265,11 @@ export default function CryptoDashboard() {
                   ></div>
                 </div>
                 <div className="text-center mt-6">
-                  <h4 className="text-3xl font-display font-bold text-[#00C853] tracking-tight">
+                  <h4 className={`text-3xl font-display font-bold tracking-tight ${sentimentColorClass}`}>
                     {cryptoData?.sentimentStatus || "낙관적"}
                   </h4>
                   <p className="text-sm font-semibold text-on-surface-variant mt-2">
-                    인덱스: {cryptoData?.sentimentScore || 68}/100
+                    인덱스: {sentimentScoreVal}/100
                   </p>
                 </div>
               </div>
@@ -1203,11 +1277,11 @@ export default function CryptoDashboard() {
               {/* Related News */}
               <div className="card p-0 flex-1 flex flex-col h-[520px]">
                 <div className="p-6 border-b border-outline/20 bg-surface-container-low rounded-t-2xl">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface">
-                    실시간 관련 뉴스
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-on-surface flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-primary" /> 실시간 관련 뉴스
                   </h3>
                 </div>
-                <div className="p-6 space-y-3 overflow-y-auto pr-4 flex-1 relative hide-scrollbar bg-surface rounded-b-2xl">
+                <div className="p-4 md:p-6 space-y-3 overflow-y-auto flex-1 relative hide-scrollbar bg-surface rounded-b-2xl">
                   {insights.length > 0 ? (
                     insights.map((item, idx) => (
                       <a
@@ -1215,17 +1289,21 @@ export default function CryptoDashboard() {
                         target="_blank"
                         rel="noopener noreferrer"
                         key={idx}
-                        className="block group hover:-translate-y-1 transition-transform"
+                        className="block group p-4 rounded-xl border border-outline/10 bg-surface-container-lowest hover:bg-surface-dim hover:border-primary/30 transition-all shadow-sm"
                       >
-                        <InsightItem
-                          date={item.date}
-                          label={item.label}
-                          color={item.color}
-                        />
+                        <div className="flex justify-between items-start gap-4">
+                          <p className="text-sm font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-relaxed">
+                            {item.label.replace(/(\[[^\]]*\]| <[^>]*> )/g, '')}
+                          </p>
+                          <span className="shrink-0 text-[10px] font-mono text-on-surface-variant bg-surface-dim px-2 py-1 rounded-md">
+                            {item.date}
+                          </span>
+                        </div>
                       </a>
                     ))
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-primary animate-pulse">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-sm font-semibold text-primary/70 animate-pulse gap-3">
+                      <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                       뉴스를 분석 중입니다...
                     </div>
                   )}
@@ -1340,6 +1418,7 @@ function MetricCard({
   trendUp,
   badges,
   footerText,
+  isLoading,
 }: {
   label: string;
   value: string;
@@ -1348,7 +1427,20 @@ function MetricCard({
   trendUp?: boolean;
   badges?: { text: string; isAccent?: boolean }[];
   footerText?: string;
+  isLoading?: boolean;
 }) {
+  if (isLoading) {
+    return (
+      <div className="card min-w-[280px] p-6 relative overflow-hidden flex flex-col justify-between animate-pulse">
+        <div>
+          <div className="w-24 h-4 bg-outline/10 rounded mb-4"></div>
+          <div className="w-3/4 h-10 bg-outline/10 rounded-lg mb-2"></div>
+          <div className="w-1/2 h-4 bg-outline/10 rounded mt-4"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card min-w-[280px] p-6 relative overflow-hidden flex flex-col justify-between">
       <div>

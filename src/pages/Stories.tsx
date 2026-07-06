@@ -1059,58 +1059,80 @@ export default function Stories() {
         {/* Stories Feed */}
         <div className="space-y-10 pb-20 pt-4">
           <AnimatePresence>
-            {filteredFeed.map((post) => (
-              <PostItem 
-                key={post.id} 
-                post={post} 
-                handleEdit={handleEdit} 
-                handleDelete={handleDelete} 
-                handleLike={handleLike} 
-                 
-                isAdmin={isAdmin}
-              />
-            ))}
+            {isLoadingFeed ? (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }}
+                className="space-y-10"
+              >
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-surface rounded-[2rem] p-8 md:p-12 border border-outline/10 shadow-sm animate-pulse min-h-[300px] flex flex-col justify-between">
+                    <div>
+                      <div className="w-24 h-8 bg-surface-variant/50 rounded-full mb-6" />
+                      <div className="w-2/3 h-12 bg-surface-variant/50 rounded-lg mb-6" />
+                      <div className="w-full h-4 bg-surface-variant/50 rounded-md mb-3" />
+                      <div className="w-5/6 h-4 bg-surface-variant/50 rounded-md mb-3" />
+                      <div className="w-4/6 h-4 bg-surface-variant/50 rounded-md" />
+                    </div>
+                    <div className="mt-8 pt-6 border-t border-outline/20 flex gap-4">
+                      <div className="w-12 h-8 bg-surface-variant/50 rounded-lg" />
+                      <div className="w-12 h-8 bg-surface-variant/50 rounded-lg" />
+                      <div className="w-12 h-8 bg-surface-variant/50 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            ) : feed.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="py-32 flex flex-col items-center justify-center text-center relative bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent -z-10" />
+                <div className="w-28 h-28 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[2rem] flex items-center justify-center mb-8 border border-primary/20 shadow-inner -rotate-3 hover:-rotate-6 transition-transform duration-500">
+                  <BookOpen className="w-12 h-12 text-primary" />
+                </div>
+                <h3 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
+                  기록의 공간이 비어있습니다
+                </h3>
+                <p className="text-lg text-on-surface-variant max-w-md font-medium leading-relaxed z-10">
+                  {isAdmin
+                    ? "첫 번째 문장을 시도해볼 시간입니다. 당신만의 특별한 세계를 자유롭게 스케치해보세요."
+                    : "아직 작성된 이야기가 없습니다. 곧 신비로운 세계가 펼쳐질 예정입니다."}
+                </p>
+              </motion.div>
+            ) : filteredFeed.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
+              >
+                <BookOpen className="w-16 h-16 text-outline-variant mx-auto mb-4" />
+                <p className="text-on-surface font-display font-bold text-2xl tracking-tight mb-2">
+                  해당 카테고리의 기록이 없습니다
+                </p>
+                <p className="text-on-surface-variant text-base">
+                  다른 카테고리를 선택해보세요.
+                </p>
+              </motion.div>
+            ) : (
+              filteredFeed.map((post) => (
+                <PostItem 
+                  key={post.id} 
+                  post={post} 
+                  handleEdit={handleEdit} 
+                  handleDelete={handleDelete} 
+                  handleLike={handleLike} 
+                  isAdmin={isAdmin}
+                />
+              ))
+            )}
           </AnimatePresence>
-
-          {feed.length === 0 && !isLoadingFeed ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="text-center py-32 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
-            >
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-              <BookOpen className="w-20 h-20 text-primary/30 mx-auto mb-6 relative z-10 animate-pulse" />
-              <p className="text-on-surface font-display font-extrabold text-3xl relative z-10 tracking-tight mb-4">
-                기록의 공간이 비어있습니다
-              </p>
-              <p className="text-on-surface-variant font-medium text-lg relative z-10 max-w-md mx-auto">
-                {isAdmin
-                  ? "첫 번째 문장을 시도해볼 시간입니다. 당신만의 특별한 세계를 자유롭게 스케치해보세요."
-                  : "아직 작성된 이야기가 없습니다. 곧 신비로운 세계가 펼쳐질 예정입니다."}
-              </p>
-            </motion.div>
-          ) : filteredFeed.length === 0 && !isLoadingFeed ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
-            >
-              <BookOpen className="w-16 h-16 text-outline-variant mx-auto mb-4" />
-              <p className="text-on-surface font-display font-bold text-2xl tracking-tight mb-2">
-                해당 카테고리의 기록이 없습니다
-              </p>
-              <p className="text-on-surface-variant text-base">
-                다른 카테고리를 선택해보세요.
-              </p>
-            </motion.div>
-          ) : null}
         </div>
       </div>
-
-      
     </div>
-    
   );
 }
