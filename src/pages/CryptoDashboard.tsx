@@ -1,4 +1,6 @@
+
 import { useState, FormEvent, useEffect, useMemo } from "react";
+import { useDebounce } from "../hooks/useDebounce";
 import { Helmet } from "react-helmet-async";
 import {
   Search,
@@ -31,7 +33,20 @@ import { PriceTicker } from "../components/PriceTicker";
 import { PriceProvider } from "../context/PriceContext";
 
 // Upbit/Stock-Market style custom Candlestick rendering shape
-const CandlestickShape = (props: any) => {
+interface CandlestickProps {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  payload?: {
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    isUp: boolean;
+  };
+}
+const CandlestickShape = (props: CandlestickProps) => {
   const { x, y, width, height, payload } = props;
   if (!payload) return null;
   const { open, high, low, close, isUp } = payload;
@@ -77,7 +92,32 @@ const CandlestickShape = (props: any) => {
   );
 };
 
-const MOCK_COINS: Record<string, any> = {
+export interface CoinInfo {
+  id?: string;
+  name: string;
+  symbol: string;
+  symbolLength?: string;
+  color: string;
+  price: string;
+  trend: string;
+  trendUp: boolean;
+  volatility: string;
+  volLow: string;
+  volHigh: string;
+  marketCap: string;
+  rank: string;
+  desc?: string;
+  targetPrice: string;
+  english: string;
+  targetColor?: string;
+  volPercent?: string;
+  volColor?: string;
+  image?: string;
+  fdv?: string;
+  volume?: string;
+  volChange?: string;
+}
+const MOCK_COINS: Record<string, CoinInfo> = {
   wormhole: {
     name: "웜홀",
     symbol: "W",
@@ -221,9 +261,32 @@ const MOCK_COINS: Record<string, any> = {
 
 export default function CryptoDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [activeCoinId, setActiveCoinId] = useState("bitcoin");
-  const [insights, setInsights] = useState<any[]>([]);
-  const [cryptoData, setCryptoData] = useState<any>(null);
+  interface Insight {
+    date: string;
+    label: string;
+    color: string;
+    link?: string;
+  }
+  const [insights, setInsights] = useState<Insight[]>([]);
+  interface CryptoData {
+    price: string;
+    trend: string;
+    marketCap: string;
+    volume: string;
+    high24h: string;
+    low24h: string;
+    rsi: string;
+    ma50: string;
+    ma200: string;
+    sentimentScore: number;
+    sentimentStatus: string;
+    analysis: string;
+    candles: { open: number; high: number; low: number; close: number }[];
+    dataSource?: string;
+  }
+  const [cryptoData, setCryptoData] = useState<CryptoData | null>(null);
   const [loadingCrypto, setLoadingCrypto] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
@@ -289,7 +352,7 @@ export default function CryptoDashboard() {
             return `${Math.floor(diffHours/24)}일 전`;
           };
           setInsights(
-            data.items.slice(0, 8).map((item: any) => ({
+            data.items.slice(0, 8).map((item: { pubDate: string; title: string; link: string }) => ({
               date: timeAgo(item.pubDate),
               label: item.title,
               color: "cyber",
@@ -395,7 +458,7 @@ export default function CryptoDashboard() {
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    const term = searchTerm.toLowerCase().trim();
+    const term = debouncedSearchTerm.toLowerCase().trim();
     if (!term) return;
 
     let foundId = term;
@@ -492,16 +555,16 @@ export default function CryptoDashboard() {
 
   // Chart calculation
   const defaultChartData = [40, 35, 45, 38, 55, 65, 75, 70, 85, 80, 90, 95];
-  const chartData = cryptoData?.chartData || defaultChartData;
+  const baseData = cryptoData?.candles || defaultChartData;
 
   const getCandles = () => {
     if (cryptoData?.candles && cryptoData.candles.length > 0) {
       return cryptoData.candles;
     }
     // Fallback candle generation directly in frontend using USD charts
-    let currentOpen = chartData[0] * 0.992;
-    return chartData.map((closeVal: number, i: number) => {
-      const openVal = i === 0 ? currentOpen : chartData[i - 1];
+    let currentOpen = (baseData[0] as any) * 0.992;
+    return (baseData as number[]).map((closeVal: number, i: number) => {
+      const openVal = i === 0 ? currentOpen : (baseData as number[])[i - 1];
       const minOC = Math.min(openVal, closeVal);
       const maxOC = Math.max(openVal, closeVal);
       const hashVal = ((activeCoinId.charCodeAt(0) + i) * 17) % 25;
@@ -518,7 +581,7 @@ export default function CryptoDashboard() {
   };
 
   const candles = getCandles();
-  const rawChartData = candles.map((candle: any, i: number) => {
+  const rawChartData = candles.map((candle: { open: number; high: number; low: number; close: number }, i: number) => {
     let label = "";
     const now = new Date();
     if (timeframe === "1H") {
@@ -550,7 +613,7 @@ export default function CryptoDashboard() {
     };
   });
 
-  const processedChartData = rawChartData.map((item: any, i: number) => {
+  const processedChartData = rawChartData.map((item, i: number) => {
     // 5-period moving average
     let sum5 = 0;
     let count5 = 0;
@@ -584,8 +647,8 @@ export default function CryptoDashboard() {
     processedChartData[11]?.time || "실시간"
   ];
 
-  const lows = processedChartData.map((d: any) => d.low);
-  const highs = processedChartData.map((d: any) => d.high);
+  const lows = processedChartData.map((d) => d.low);
+  const highs = processedChartData.map((d) => d.high);
   const minLow = lows.length > 0 ? Math.min(...lows) : 0;
   const maxHigh = highs.length > 0 ? Math.max(...highs) : 100;
   const chartDomain = [minLow * 0.997, maxHigh * 1.003];
@@ -713,14 +776,16 @@ export default function CryptoDashboard() {
             <MetricCard
               label="시가총액"
               value={formatUSDToKRWMacro(cryptoData?.marketCap || coin.marketCap)}
+              unit=""
               badges={[{ text: coin.rank, isAccent: true }]}
               footerText={coin.fdv}
             />
             <MetricCard
               label="24시간 거래량"
               value={formatUSDToKRWMacro(cryptoData?.volume || coin.volume)}
+              unit=""
               trend={coin.volChange}
-              trendUp={!coin.volChange.includes("↓")}
+              trendUp={!coin.volChange?.includes("↓")}
               footerText="전일 대비"
             />
           </div>
@@ -844,7 +909,8 @@ export default function CryptoDashboard() {
                               const formatPrice = (v: number) => `₩${Math.round(v).toLocaleString()} 원`;
                               const timeframeLabel = timeframe === "1H" ? "시간봉" : timeframe === "1D" ? "일봉" : "주봉";
                               return (
-                                <div className="bg-[#151b2e]/98 text-white p-4 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md text-xs font-mono space-y-1.5 min-w-[210px]">
+    
+      <div className="bg-[#151b2e]/98 text-white p-4 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md text-xs font-mono space-y-1.5 min-w-[210px]">
                                   <div className="text-[11px] font-bold text-slate-400 border-b border-white/10 pb-1 mb-1.5 flex justify-between items-center">
                                     <span>{data.time}</span>
                                     <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-white/80">업비트형 {timeframeLabel}</span>
@@ -1274,7 +1340,15 @@ function MetricCard({
   trendUp,
   badges,
   footerText,
-}: any) {
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  trend?: string;
+  trendUp?: boolean;
+  badges?: { text: string; isAccent?: boolean }[];
+  footerText?: string;
+}) {
   return (
     <div className="card min-w-[280px] p-6 relative overflow-hidden flex flex-col justify-between">
       <div>
@@ -1283,7 +1357,7 @@ function MetricCard({
             {label}
           </p>
           {badges &&
-            badges.map((b: any, i: number) => (
+            badges.map((b: { text: string; isAccent?: boolean }, i: number) => (
               <span
                 key={i}
                 className={`px-2.5 py-1 rounded text-[10px] font-semibold tracking-wider ${b.isAccent ? "bg-primary border border-primary text-white" : "bg-surface-dim border border-outline/20"}`}
@@ -1320,7 +1394,13 @@ function MetricCard({
   );
 }
 
-function IndicatorCard({ title, value, sub, color, barValue }: any) {
+function IndicatorCard({ title, value, sub, color, barValue }: {
+  title: string;
+  value: string | number;
+  sub: string;
+  color: "bullish" | "bearish" | "neutral" | string;
+  barValue?: number;
+}) {
   const isBullish = color === "bullish";
   const tColor = isBullish ? "text-[#00C853]" : "text-primary";
   const bgColor = isBullish ? "bg-[#00C853]" : "bg-primary";
@@ -1350,7 +1430,11 @@ function IndicatorCard({ title, value, sub, color, barValue }: any) {
   );
 }
 
-function InsightItem({ date, label, color }: any) {
+function InsightItem({ date, label, color }: {
+  date: string;
+  label: string;
+  color: "bullish" | "bearish" | "cyber" | string;
+}) {
   const isBullish = color === "bullish";
   const itemColor = isBullish ? "#00C853" : "var(--color-primary)";
 
@@ -1369,5 +1453,6 @@ function InsightItem({ date, label, color }: any) {
         {label}
       </p>
     </div>
+    
   );
 }

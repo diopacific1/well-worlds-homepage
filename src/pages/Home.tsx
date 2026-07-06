@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, memo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -277,7 +278,7 @@ const BentoCard = memo(({ to, label, className = "", children }: { to: string; l
 BentoCard.displayName = "BentoCard";
 
 export default function Home() {
-  const [portfolios, setPortfolios] = useState<any[]>([]);
+  const [portfolios, setPortfolios] = useState<{id: string, title?: string, link?: string, description?: string, techStack?: string}[]>([]);
 
   useEffect(() => {
     const fetchPortfolios = async () => {
@@ -302,7 +303,8 @@ export default function Home() {
   }), []);
 
   return (
-    <div className="space-y-12 md:space-y-24 pb-24 overflow-hidden relative">
+    
+      <div className="space-y-12 md:space-y-24 pb-24 overflow-hidden relative">
       <Helmet>
         <title>디지털 정원과 가상자산 터미널 | 우물 그리고 세계들</title>
         <meta name="description" content="가상자산 동향, 반려식물 기록, 방명록이 함께하는 나만의 디지털 아카이브. 우물 속 다채로운 세계를 탐험하세요." />
@@ -721,5 +723,6 @@ export default function Home() {
         </div>
       )}
     </div>
+    
   );
 }

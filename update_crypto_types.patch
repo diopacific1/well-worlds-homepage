@@ -1,0 +1,158 @@
+--- src/pages/CryptoDashboard.tsx
++++ src/pages/CryptoDashboard.tsx
+@@ -31,7 +31,18 @@
+ import { PriceProvider } from "../context/PriceContext";
+ 
+ // Upbit/Stock-Market style custom Candlestick rendering shape
+-const CandlestickShape = (props: any) => {
++interface CandlestickProps {
++  x: number;
++  y: number;
++  width: number;
++  height: number;
++  payload: {
++    open: number;
++    high: number;
++    low: number;
++    close: number;
++    isUp: boolean;
++  };
++}
++const CandlestickShape = (props: CandlestickProps) => {
+   const { x, y, width, height, payload } = props;
+   if (!payload) return null;
+@@ -77,7 +88,27 @@
+ };
+ 
+-const MOCK_COINS: Record<string, any> = {
++export interface CoinInfo {
++  name: string;
++  symbol: string;
++  image: string;
++  symbolLength: string;
++  color: string;
++  price: string;
++  trend: string;
++  trendUp: boolean;
++  volatility: string;
++  volLow: string;
++  volHigh: string;
++  marketCap: string;
++  rank: string;
++  fdv: string;
++  volume: string;
++  volChange: string;
++  english: string;
++  targetPrice: string;
++}
++const MOCK_COINS: Record<string, CoinInfo> = {
+   wormhole: {
+     name: "웜홀",
+@@ -222,6 +253,30 @@
+ export default function CryptoDashboard() {
+   const [searchTerm, setSearchTerm] = useState("");
+   const [activeCoinId, setActiveCoinId] = useState("bitcoin");
+-  const [insights, setInsights] = useState<any[]>([]);
+-  const [cryptoData, setCryptoData] = useState<any>(null);
++  
++  interface Insight {
++    date: string;
++    label: string;
++    color: string;
++    link?: string;
++  }
++  const [insights, setInsights] = useState<Insight[]>([]);
++
++  interface CryptoData {
++    price: string;
++    trend: string;
++    marketCap: string;
++    volume: string;
++    high24h: string;
++    low24h: string;
++    rsi: string;
++    ma50: string;
++    ma200: string;
++    sentimentScore: number;
++    sentimentStatus: string;
++    analysis: string;
++    candles: { open: number; high: number; low: number; close: number }[];
++    dataSource?: string;
++  }
++  const [cryptoData, setCryptoData] = useState<CryptoData | null>(null);
+   const [loadingCrypto, setLoadingCrypto] = useState(true);
+@@ -289,7 +344,7 @@
+           };
+           setInsights(
+-            data.items.slice(0, 8).map((item: any) => ({
++            data.items.slice(0, 8).map((item: { pubDate: string; title: string; link: string }) => ({
+               date: timeAgo(item.pubDate),
+               label: item.title,
+@@ -518,7 +573,7 @@
+ 
+   const candles = getCandles();
+-  const rawChartData = candles.map((candle: any, i: number) => {
++  const rawChartData = candles.map((candle: { open: number; high: number; low: number; close: number }, i: number) => {
+     let label = "";
+     const now = new Date();
+@@ -550,7 +605,7 @@
+   });
+ 
+-  const processedChartData = rawChartData.map((item: any, i: number) => {
++  const processedChartData = rawChartData.map((item, i: number) => {
+     // 5-period moving average
+     let sum5 = 0;
+@@ -584,8 +639,8 @@
+   ];
+ 
+-  const lows = processedChartData.map((d: any) => d.low);
+-  const highs = processedChartData.map((d: any) => d.high);
++  const lows = processedChartData.map((d) => d.low);
++  const highs = processedChartData.map((d) => d.high);
+   const minLow = lows.length > 0 ? Math.min(...lows) : 0;
+@@ -1274,7 +1329,14 @@
+   badges,
+   footerText,
+-}: any) {
++}: {
++  label: string;
++  value: string;
++  unit: string;
++  trend?: string;
++  trendUp?: boolean;
++  badges?: { text: string; isAccent?: boolean }[];
++  footerText?: string;
++}) {
+   return (
+     <div className="card min-w-[280px] p-6 relative overflow-hidden flex flex-col justify-between">
+@@ -1283,7 +1345,7 @@
+           </p>
+           {badges &&
+-            badges.map((b: any, i: number) => (
++            badges.map((b: { text: string; isAccent?: boolean }, i: number) => (
+               <span
+                 key={i}
+@@ -1320,7 +1382,13 @@
+ }
+ 
+-function IndicatorCard({ title, value, sub, color, barValue }: any) {
++function IndicatorCard({ title, value, sub, color, barValue }: {
++  title: string;
++  value: string | number;
++  sub: string;
++  color: "bullish" | "bearish" | "neutral" | string;
++  barValue?: number;
++}) {
+   const isBullish = color === "bullish";
+   const tColor = isBullish ? "text-[#00C853]" : "text-primary";
+@@ -1350,7 +1418,11 @@
+ }
+ 
+-function InsightItem({ date, label, color }: any) {
++function InsightItem({ date, label, color }: {
++  date: string;
++  label: string;
++  color: "bullish" | "bearish" | "cyber" | string;
++}) {
+   const isBullish = color === "bullish";
+   const itemColor = isBullish ? "#00C853" : "var(--color-primary)";

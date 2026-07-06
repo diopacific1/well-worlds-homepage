@@ -1,10 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, LineChart, Leaf, MessageSquareHeart, BookOpen, Settings, Info, Menu, X, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import BackToTop from "./BackToTop";
+import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { Helmet } from 'react-helmet-async';
+import ErrorBoundary from './ErrorBoundary';
 
 export default function Layout() {
   const location = useLocation();
@@ -14,6 +16,13 @@ export default function Layout() {
   const [globalNews, setGlobalNews] = useState<string[]>([
     "최신 뉴스를 불러오는 중입니다..."
   ]);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -217,13 +226,23 @@ export default function Layout() {
             </motion.div>
           )}
         </AnimatePresence>
+        
+        {/* Scroll Progress Bar */}
+        <motion.div
+          className="h-1 bg-primary origin-left z-50 absolute bottom-0 left-0 right-0 translate-y-full"
+          style={{ scaleX }}
+        />
       </header>
 
       <main id="main-content" className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16 focus:outline-none" tabIndex={-1}>
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       {/* Footer */}
+      <BackToTop />
+
       <footer className="w-full border-t border-outline/20 bg-surface mt-12 py-10">
         <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm font-medium text-on-surface-variant">
           <p>© {new Date().getFullYear()} 우물 그리고 세계들. All rights reserved.</p>

@@ -1,3 +1,5 @@
+
+import { toast } from "../components/Toast";
 import { useState, useEffect } from "react";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, doc, deleteDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
@@ -44,10 +46,10 @@ export default function Guestbook() {
     try {
       if (!db) throw new Error("Firebase DB가 초기화되지 않았습니다.");
       await deleteDoc(doc(db, "guestbook", id));
-      alert("지워졌습니다.");
+      toast.success("지워졌습니다.");
     } catch (err: any) {
       console.error("Delete guestbook entry error:", err);
-      alert(`삭제하는 동안 오류가 발생했습니다: ${err.message}`);
+      toast.error(`삭제하는 동안 오류가 발생했습니다: ${(err as any).message}`);
     }
   };
 
@@ -127,7 +129,8 @@ export default function Guestbook() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-10 w-full animate-in fade-in duration-700 pb-12">
+    
+      <div className="max-w-3xl mx-auto flex flex-col gap-10 w-full animate-in fade-in duration-700 pb-12">
       <header className="flex flex-col gap-3 text-center items-center pt-8">
         <h1 className="text-3xl md:text-4xl font-display font-black tracking-tight text-on-surface">탐험가의 흔적</h1>
         <p className="text-on-surface-variant font-medium text-sm md:text-base max-w-lg">
@@ -249,5 +252,6 @@ export default function Guestbook() {
         )}
       </section>
     </div>
+    
   );
 }

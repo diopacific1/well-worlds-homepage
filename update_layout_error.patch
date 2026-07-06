@@ -1,0 +1,21 @@
+--- src/components/Layout.tsx
++++ src/components/Layout.tsx
+@@ -7,6 +7,7 @@
+ import { onAuthStateChanged } from 'firebase/auth';
+ import { auth } from '../../firebase';
+ import { Helmet } from 'react-helmet-async';
++import ErrorBoundary from './ErrorBoundary';
+ 
+ export default function Layout() {
+   const location = useLocation();
+@@ -220,7 +221,9 @@
+       </header>
+ 
+       <main id="main-content" className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16 focus:outline-none" tabIndex={-1}>
+-        <Outlet />
++        <ErrorBoundary>
++          <Outlet />
++        </ErrorBoundary>
+       </main>
+ 
+       {/* Footer */}

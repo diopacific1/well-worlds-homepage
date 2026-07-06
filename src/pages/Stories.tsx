@@ -1,5 +1,8 @@
 
 
+
+import ImageWithFallback from "../components/ImageWithFallback";
+import { toast } from "../components/Toast";
 import {
   PenSquare,
   Image as ImageIcon,
@@ -47,21 +50,37 @@ const CATEGORIES = [
   { id: "이야기", icon: Feather, label: "이야기" },
 ];
 
-const MOCK_POSTS: any[] = [];
+export interface StoryPost {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  likes: number;
+  date: string;
+  idea?: string;
+  worldview?: string;
+  chronology?: string;
+  characters?: string;
+  episodes?: string;
+  prompt?: string;
+  status?: string;
+  image?: string;
+  [key: string]: any;
+}
+
+const MOCK_POSTS: StoryPost[] = [];
 
 const PostItem = ({
   post,
   handleEdit,
   handleDelete,
   handleLike,
-  showToast,
   isAdmin,
 }: {
-  post: any;
-  handleEdit: (post: any) => void;
-  handleDelete: (id: number) => void;
-  handleLike: (id: number) => void;
-  showToast: (msg: string) => void;
+  post: StoryPost;
+  handleEdit: (post: StoryPost) => void;
+  handleDelete: (id: string) => void;
+  handleLike: (id: string) => void;
   isAdmin: boolean;
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -158,14 +177,7 @@ const PostItem = ({
         <div className="text-on-surface-variant font-medium">
           {post.image && (
             <div className="relative rounded-2xl overflow-hidden max-h-[500px] bg-surface-dim border border-outline/10 mb-8 shadow-sm group-hover/card:shadow-md transition-shadow duration-500">
-              <img
-                src={post.image}
-                alt="게시물 표지 이미지"
-                loading="lazy"
-                decoding="async"
-                fetchPriority="low"
-                className="w-full h-full object-cover group-hover/card:scale-105 group-hover/card:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover/card:brightness-105"
-              />
+              <ImageWithFallback src={post.image} alt="게시물 표지 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full object-cover h-full min-h-[200px] max-h-[500px]" containerClassName="w-full h-full min-h-[200px] max-h-[500px]" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-transparent pointer-events-none opacity-50 group-hover/card:opacity-0 transition-opacity duration-500" />
             </div>
           )}
@@ -283,7 +295,7 @@ const PostItem = ({
             aria-label="내용 복사하기"
             onClick={() => {
               navigator.clipboard.writeText(post.content);
-              showToast("내용이 클립보드에 복사되었습니다.");
+              toast.error("내용이 클립보드에 복사되었습니다.");
             }}
             className="flex items-center gap-2 hover:text-primary transition-colors group"
             title="소설 내용 복사하기"
@@ -297,7 +309,7 @@ const PostItem = ({
             aria-label="공유하기"
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              showToast("링크가 복사되었습니다.");
+              toast.error("링크가 복사되었습니다.");
             }}
             className="flex items-center gap-2 hover:text-primary transition-colors group"
           >
@@ -342,10 +354,9 @@ export default function Stories() {
   const [selectedCategory, setSelectedCategory] = useState("일기");
   const [activeFilter, setActiveFilter] = useState("전체");
   const [isPreview, setIsPreview] = useState(false);
-  const [toasts, setToasts] = useState<{ id: number; message: string }[]>([]);
-  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+    const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
 
-  const [editingId, setEditingId] = useState<any>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newImage, setNewImage] = useState(
     () => localStorage.getItem("story_draft_image") || "",
   );
@@ -355,7 +366,7 @@ export default function Stories() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Firestore Feed Integration
-  const [feed, setFeed] = useState<any[]>([]);
+  const [feed, setFeed] = useState<StoryPost[]>([]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -405,7 +416,7 @@ export default function Stories() {
               : data.date || "방금 전",
           };
         });
-        setFeed(postsData);
+        setFeed(postsData as any);
         setIsLoadingFeed(false);
       },
       (error) => {
@@ -445,26 +456,19 @@ export default function Stories() {
     return () => clearTimeout(timeoutId);
   }, [newTitle, newPost, newImage, newIdea, newWorldview, newChronology, newCharacters, newEpisodes, newPrompt, newStatus]);
 
-  const showToast = (message: string) => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
-  };
-
+  
   // Direct file upload handler via Firebase Storage with 10s Timeout & Base64 Fallback
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!storage) {
-      showToast("Firebase Storage 설정이 되지 않았습니다.");
+      toast.error("Firebase Storage 설정이 되지 않았습니다.");
       return;
     }
 
     setIsUploading(true);
-    showToast("이미지를 파일 업로드 중입니다...");
+    toast.error("이미지를 파일 업로드 중입니다...");
     try {
       const storageRef = ref(storage, `stories/${Date.now()}_${file.name}`);
       
@@ -478,8 +482,8 @@ export default function Stories() {
       const snapshot = await Promise.race([uploadPromise, timeoutPromise]);
       const downloadURL = await getDownloadURL(snapshot.ref);
       setNewImage(downloadURL);
-      showToast("이미지가 성공적으로 업로드되었습니다!");
-    } catch (err: any) {
+      toast.error("이미지가 성공적으로 업로드되었습니다!");
+    } catch (err: unknown) {
       console.warn("Storage upload failed/timed out, falling back to local Base64. Error:", err);
       
       // Read file as Base64 data URL fallback
@@ -491,12 +495,9 @@ export default function Stories() {
           reader.onerror = (e) => reject(e);
         });
         setNewImage(base64Url);
-        alert(
-          "안내: 파이어베이스 스토리지 업로드(CORS 또는 버킷 주소 불일치 등)가 실패하여, 브라우저 로컬 이미지(Base64) 데이터로 임시 자동 전환하여 적용했습니다.\n\n" +
-          "💡 세팅하신 스토리지 버킷 '" + ((import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET || "미지정") + "' 주소가 파이어베이스 콘솔 Storage 탭의 실제 주소(예: home-page-1-b923f.appspot.com 또는 home-page-1-b923f.firebasestorage.app)와 100% 일치하는지 꼭 확인하고, Secrets 탭에서 다시 저장 후 'Apply changes' 해주세요!"
-        );
+        toast.info("파이어베이스 스토리지 업로드가 실패하여 브라우저 로컬 데이터로 전환했습니다. 콘솔을 확인해주세요.");
       } catch (fallbackErr) {
-        showToast("이미지 처리 실패: " + err.message);
+        toast.error("이미지 처리 실패: " + (err as any).message);
       }
     } finally {
       setIsUploading(false);
@@ -505,7 +506,7 @@ export default function Stories() {
 
   const handlePost = async () => {
     if (!newPost.trim() || !newTitle.trim()) {
-      showToast("제목과 내용을 모두 입력해주세요.");
+      toast.error("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
@@ -534,7 +535,7 @@ export default function Stories() {
           }
         } else {
           setFeed(
-            feed.map((p: any) =>
+            feed.map((p) =>
               p.id === editingId
                 ? {
                     ...p,
@@ -555,7 +556,7 @@ export default function Stories() {
           );
         }
         setEditingId(null);
-        showToast("기록이 수정되었습니다.");
+        toast.error("기록이 수정되었습니다.");
       } else {
         const postData = {
           category: selectedCategory,
@@ -581,7 +582,7 @@ export default function Stories() {
           }
         } else {
           const localPost = {
-            id: Date.now(),
+            id: String(Date.now()),
             ...postData,
             date: new Date()
               .toLocaleDateString("ko-KR", {
@@ -593,7 +594,7 @@ export default function Stories() {
           };
           setFeed([localPost, ...feed]);
         }
-        showToast("새로운 세계가 기록되었습니다.");
+        toast.error("새로운 세계가 기록되었습니다.");
       }
 
       setNewTitle("");
@@ -619,15 +620,15 @@ export default function Stories() {
       localStorage.removeItem("story_draft_prompt");
       localStorage.removeItem("story_draft_status");
       localStorage.removeItem("story_draft_image");
-    } catch (err: any) {
+    } catch (err: Error | unknown) {
       console.error("Post writing error:", err);
-      showToast("글 등록에 실패했습니다: " + err.message);
+      toast.error("글 등록에 실패했습니다: " + (err instanceof Error ? (err as any).message : "알 수 없는 오류"));
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleEdit = (post: any) => {
+  const handleEdit = (post: StoryPost) => {
     setEditingId(post.id);
     setNewTitle(post.title);
     setNewPost(post.content);
@@ -646,7 +647,7 @@ export default function Stories() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id: any) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("정말로 이 기록을 삭제하시겠습니까?")) return;
     try {
       if (db && typeof id === "string") {
@@ -656,17 +657,17 @@ export default function Stories() {
           handleFirestoreError(dbErr, OperationType.DELETE, `stories/${id}`);
         }
       } else {
-        setFeed(feed.filter((p: any) => p.id !== id));
+        setFeed(feed.filter((p) => p.id !== id));
       }
       setActiveDropdown(null);
-      showToast("기록이 삭제되었습니다.");
-    } catch (err: any) {
+      toast.error("기록이 삭제되었습니다.");
+    } catch (err: unknown) {
       console.error(err);
-      showToast("삭제 에러가 발생했습니다.");
+      toast.error("삭제 에러가 발생했습니다.");
     }
   };
 
-  const handleLike = async (id: any) => {
+  const handleLike = async (id: string) => {
     const postToLike = feed.find((p) => p.id === id);
     if (!postToLike) return;
 
@@ -682,7 +683,7 @@ export default function Stories() {
         }
       } else {
         setFeed(
-          feed.map((p: any) => {
+          feed.map((p) => {
             if (p.id === id) {
               return { ...p, likes: p.likes + 1 };
             }
@@ -698,11 +699,12 @@ export default function Stories() {
   const filteredFeed = useMemo(() => {
     return activeFilter === "전체"
       ? feed
-      : feed.filter((post: any) => post.category === activeFilter);
+      : feed.filter((post) => post.category === activeFilter);
   }, [feed, activeFilter]);
 
   return (
-    <div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
+    
+      <div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
       {/* Cinematic Header */}
       <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto border-b border-outline/10 mb-10">
         <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
@@ -861,14 +863,7 @@ export default function Stories() {
 
                 {newImage && (
                   <div className="relative rounded-xl overflow-hidden h-36 bg-surface-dim border border-outline/20 max-w-sm mx-auto shadow-inner">
-                    <img 
-                      src={newImage} 
-                      alt="첨부된 이미지 미리보기" 
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover" 
-                    />
+                    <ImageWithFallback src={newImage} alt="첨부된 이미지 미리보기" referrerPolicy="no-referrer" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" containerClassName="w-full h-full" />
                     <button 
                       onClick={() => setNewImage("")}
                       className="absolute top-2.5 right-2.5 p-1.5 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors"
@@ -1064,14 +1059,14 @@ export default function Stories() {
         {/* Stories Feed */}
         <div className="space-y-10 pb-20 pt-4">
           <AnimatePresence>
-            {filteredFeed.map((post: any) => (
+            {filteredFeed.map((post) => (
               <PostItem 
                 key={post.id} 
                 post={post} 
                 handleEdit={handleEdit} 
                 handleDelete={handleDelete} 
                 handleLike={handleLike} 
-                showToast={showToast} 
+                 
                 isAdmin={isAdmin}
               />
             ))}
@@ -1114,23 +1109,8 @@ export default function Stories() {
         </div>
       </div>
 
-      {/* Toasts */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 pointer-events-none">
-        <AnimatePresence>
-          {toasts.map((toast) => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: 30, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-on-surface text-surface px-8 py-3.5 rounded-full shadow-[0_8px_16px_rgba(0,0,0,0.2)] font-bold text-sm tracking-wide border border-outline-variant/30 text-center pointer-events-auto flex items-center justify-center gap-2"
-            >
-              <Feather className="w-4 h-4 opacity-50" />
-              {toast.message}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+      
     </div>
+    
   );
 }

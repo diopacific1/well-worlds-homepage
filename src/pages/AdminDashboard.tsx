@@ -1,3 +1,4 @@
+import { toast } from "../components/Toast";
 import { useState, useEffect } from "react";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebase";
@@ -7,8 +8,8 @@ import { collection, query, getDocs, where, doc, updateDoc, deleteDoc, addDoc, s
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [adminData, setAdminData] = useState<any[]>([]);
-  const [pendingGuestbook, setPendingGuestbook] = useState<any[]>([]);
+  const [adminData, setAdminData] = useState<{id: string, title?: string, link?: string, description?: string, techStack?: string}[]>([]);
+  const [pendingGuestbook, setPendingGuestbook] = useState<{id: string, nickname?: string, message?: string, createdAt?: any}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // 포트폴리오 폼 상태
@@ -34,9 +35,9 @@ export default function AdminDashboard() {
       const gq = query(collection(db, "guestbook"), where("status", "==", "pending"));
       const gSnap = await getDocs(gq);
       const entries = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      entries.sort((a: any, b: any) => {
-        const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt).getTime() || 0);
-        const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt).getTime() || 0);
+      entries.sort((a, b) => {
+        const aTime = (a as any).createdAt?.toMillis ? (a as any).createdAt.toMillis() : (new Date((a as any).createdAt).getTime() || 0);
+        const bTime = (b as any).createdAt?.toMillis ? (b as any).createdAt.toMillis() : (new Date((b as any).createdAt).getTime() || 0);
         return bTime - aTime;
       });
       setPendingGuestbook(entries);
@@ -46,9 +47,9 @@ export default function AdminDashboard() {
       try {
         const pq = query(collection(db, "portfolio"));
         const pSnap = await getDocs(pq);
-        setAdminData(pSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a: any, b: any) => {
-           const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-           const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        setAdminData(pSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any).sort((a: any, b: any) => {
+           const aTime = (a as any).createdAt?.toMillis ? (a as any).createdAt.toMillis() : 0;
+           const bTime = (b as any).createdAt?.toMillis ? (b as any).createdAt.toMillis() : 0;
            return bTime - aTime;
         }));
       } catch (e) {
@@ -84,10 +85,10 @@ export default function AdminDashboard() {
     try {
       await updateDoc(doc(db, "guestbook", id), { status: "approved" });
       setPendingGuestbook(prev => prev.filter(item => item.id !== id));
-      alert("승인되었습니다.");
+      toast.success("승인되었습니다.");
     } catch (err) {
       console.error(err);
-      alert("오류가 발생했습니다.");
+      toast.error("오류가 발생했습니다.");
     }
   };
 
@@ -96,10 +97,10 @@ export default function AdminDashboard() {
     try {
       await deleteDoc(doc(db, "guestbook", id));
       setPendingGuestbook(prev => prev.filter(item => item.id !== id));
-      alert("삭제되었습니다.");
+      toast.success("삭제되었습니다.");
     } catch (err) {
       console.error(err);
-      alert("오류가 발생했습니다.");
+      toast.error("오류가 발생했습니다.");
     }
   };
 
@@ -112,13 +113,13 @@ export default function AdminDashboard() {
         ...portfolioForm,
         createdAt: serverTimestamp()
       });
-      alert("포트폴리오가 추가되었습니다.");
+      toast.success("포트폴리오가 추가되었습니다.");
       setPortfolioForm({ title: "", description: "", link: "", techStack: "" });
       setIsPortfolioModalOpen(false);
       await loadData(); // Reload to show the new item
     } catch (err) {
       console.error(err);
-      alert("포트폴리오 추가 중 오류가 발생했습니다.");
+      toast.error("포트폴리오 추가 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +132,7 @@ export default function AdminDashboard() {
       setAdminData(prev => prev.filter(item => item.id !== id));
     } catch (err) {
       console.error(err);
-      alert("오류가 발생했습니다.");
+      toast.error("오류가 발생했습니다.");
     }
   };
 

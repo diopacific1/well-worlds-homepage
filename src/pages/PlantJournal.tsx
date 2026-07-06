@@ -1,3 +1,6 @@
+
+import ImageWithFallback from "../components/ImageWithFallback";
+import { toast } from "../components/Toast";
 import {
   PenSquare,
   Sprout,
@@ -15,6 +18,7 @@ import {
   Scissors,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import { useDebounce } from "../hooks/useDebounce";
 import { motion, AnimatePresence } from "motion/react";
 import {
   db,
@@ -37,7 +41,19 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-const INITIAL_ENTRIES: any[] = [];
+export interface PlantJournalEntry {
+  id: string;
+  title: string;
+  content: string;
+  image: string;
+  tags: string[];
+  type: string;
+  date: string;
+  weather?: string;
+  [key: string]: any;
+}
+
+const INITIAL_ENTRIES: PlantJournalEntry[] = [];
 
 const PRESET_IMAGES = [
   "https://images.unsplash.com/photo-1466692476877-396416fd8b22?w=800&auto=format&fit=crop",
@@ -61,14 +77,15 @@ const ACTIVITY_OPTIONS = [
 
 export default function PlantJournal() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<any>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterActivity, setFilterActivity] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Firestore Feed Integration for Plants
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<PlantJournalEntry[]>([]);
   const [isLoadingEntries, setIsLoadingEntries] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -122,7 +139,7 @@ export default function PlantJournal() {
                 : new Date().toISOString().split("T")[0]),
           };
         });
-        setEntries(postsData);
+        setEntries(postsData as unknown as PlantJournalEntry[]);
         setIsLoadingEntries(false);
       },
       (error) => {
@@ -156,7 +173,7 @@ export default function PlantJournal() {
     activity: "observation",
   });
 
-  const openForm = (entry?: any) => {
+  const openForm = (entry?: PlantJournalEntry) => {
     if (entry) {
       setEditingId(entry.id);
       setFormParams({
@@ -193,7 +210,7 @@ export default function PlantJournal() {
     if (!file) return;
 
     if (!storage) {
-      alert("Firebase Storage 설정이 완료되지 않았습니다.");
+      toast.error("Firebase Storage 설정이 완료되지 않았습니다.");
       return;
     }
 
@@ -214,7 +231,7 @@ export default function PlantJournal() {
       const snapshot = await Promise.race([uploadPromise, timeoutPromise]);
       const downloadURL = await getDownloadURL(snapshot.ref);
       setFormParams({ ...formParams, image: downloadURL });
-      alert("이미지가 파이어베이스 스토리지에 성공적으로 업로드되었습니다!");
+      toast.success("이미지가 성공적으로 업로드되었습니다.");
     } catch (err: any) {
       console.warn(
         "Storage upload failed/timed out, falling back to local Base64. Error:",
@@ -230,15 +247,9 @@ export default function PlantJournal() {
           reader.onerror = (e) => reject(e);
         });
         setFormParams({ ...formParams, image: base64Url });
-        alert(
-          "안내: 파이어베이스 스토리지 업로드(CORS 또는 버킷 주소 불일치 등)가 실패하여, 브라우저 로컬 이미지(Base64) 데이터로 임시 자동 전환하여 적용했습니다.\n\n" +
-            "💡 세팅하신 스토리지 버킷 '" +
-            ((import.meta as any).env?.VITE_FIREBASE_STORAGE_BUCKET ||
-              "미지정") +
-            "' 주소가 파이어베이스 콘솔 Storage 탭의 실제 주소(예: home-page-1-b923f.appspot.com 또는 home-page-1-b923f.firebasestorage.app)와 100% 일치하는지 꼭 확인하고, Secrets 탭에서 다시 저장 후 'Apply changes' 해주세요!",
-        );
+        toast.info("파이어베이스 업로드 실패, 브라우저 로컬 데이터로 대체했습니다.");
       } catch (fallbackErr) {
-        alert("이미지 처리 실패: " + err.message);
+        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
       }
     } finally {
       setIsUploading(false);
@@ -247,11 +258,11 @@ export default function PlantJournal() {
 
   const handleSave = async () => {
     if (!formParams.title.trim()) {
-      alert("제목을 입력해주세요.");
+      toast.info("제목을 입력해주세요.");
       return;
     }
     if (!formParams.content.trim()) {
-      alert("내용을 입력해주세요.");
+      toast.info("내용을 입력해주세요.");
       return;
     }
 
@@ -292,7 +303,7 @@ export default function PlantJournal() {
           }
         } else {
           setEntries(
-            entries.map((e: any) =>
+            entries.map((e) =>
               e.id === editingId
                 ? {
                     ...e,
@@ -315,22 +326,22 @@ export default function PlantJournal() {
           }
         } else {
           const localEntry = {
-            id: Date.now(),
+            id: String(Date.now()),
             ...newData,
           };
           setEntries([localEntry, ...entries]);
         }
       }
       closeForm();
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error saving plant journal entry: ", error);
-      alert("작성 실패: " + error.message);
+      toast.error("작성 실패: " + (error instanceof Error ? error.message : "알 수 없는 오류"));
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async (id: any) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("정말로 이 정원 일지를 삭제하시겠습니까?")) return;
     try {
       if (db && typeof id === "string") {
@@ -344,11 +355,11 @@ export default function PlantJournal() {
           );
         }
       } else {
-        setEntries(entries.filter((e: any) => e.id !== id));
+        setEntries(entries.filter((e) => e.id !== id));
       }
     } catch (err: any) {
       console.error(err);
-      alert("삭제 실패!");
+      toast.error("삭제 실패!");
     }
   };
 
@@ -360,12 +371,12 @@ export default function PlantJournal() {
 
   const filteredEntries = useMemo(() => {
     return entries
-      .filter((e: any) => {
+      .filter((e) => {
         const matchesSearch =
-          e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          e.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          e.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+          e.content.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
           e.tags.some((t: string) =>
-            t.toLowerCase().includes(searchTerm.toLowerCase()),
+            t.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
           );
         const matchesActivity = filterActivity
           ? e.activity === filterActivity
@@ -373,10 +384,10 @@ export default function PlantJournal() {
         return matchesSearch && matchesActivity;
       })
       .sort(
-        (a: any, b: any) =>
+        (a, b) =>
           new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
-  }, [entries, searchTerm, filterActivity]);
+  }, [entries, debouncedSearchTerm, filterActivity]);
 
   const WeatherIcon = ({ weather }: { weather: string }) => {
     const option =
@@ -393,7 +404,8 @@ export default function PlantJournal() {
   };
 
   return (
-    <div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
+    
+      <div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
       {/* Hero Header */}
       <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto">
         <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#5D7964]/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
@@ -515,14 +527,7 @@ export default function PlantJournal() {
                   </span>
                   <div className="relative w-full h-56 bg-surface-dim border border-outline/30 rounded-xl overflow-hidden group shadow-inner">
                     {formParams.image ? (
-                      <img
-                        src={formParams.image}
-                        alt="커버 이미지 미리보기"
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
+                      <ImageWithFallback src={formParams.image} alt="커버 이미지 미리보기" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" containerClassName="w-full h-full" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-outline-variant flex-col gap-3">
                         <ImageIcon className="w-10 h-10" />
@@ -812,7 +817,7 @@ export default function PlantJournal() {
             </motion.div>
           ) : null}
 
-          {filteredEntries.map((entry: any, index: number) => {
+          {filteredEntries.map((entry, index: number) => {
             const isEven = index % 2 === 0;
             return (
               <motion.article
@@ -915,14 +920,7 @@ export default function PlantJournal() {
                   className={`w-full md:w-2/5 order-1 ${isEven ? "md:order-2 border-b md:border-b-0 md:border-l" : "md:order-1 border-b md:border-b-0 md:border-r"} bg-surface-dim border-outline/10 relative`}
                 >
                   <div className="relative w-full h-[300px] md:h-[420px] lg:h-full lg:min-h-[420px] overflow-hidden">
-                    <img
-                      src={entry.image}
-                      alt={`${entry.title} 이미지`}
-                      loading="lazy"
-                      decoding="async"
-                      fetchPriority="low"
-                      className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-1 transition-transform duration-1000 ease-out brightness-95 group-hover:brightness-105"
-                    />
+                    <ImageWithFallback src={entry.image} alt={`${entry.title} 이미지`} loading="lazy" decoding="async" className="w-full h-full object-cover" containerClassName="w-full h-full" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none opacity-80 md:opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
                 </div>
@@ -932,5 +930,6 @@ export default function PlantJournal() {
         </AnimatePresence>
       </div>
     </div>
+    
   );
 }
