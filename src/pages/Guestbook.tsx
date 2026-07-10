@@ -130,17 +130,21 @@ export default function Guestbook() {
 
   return (
     
-      <div className="max-w-3xl mx-auto flex flex-col gap-10 w-full animate-in fade-in duration-700 pb-12">
-      <header className="flex flex-col gap-3 text-center items-center pt-8">
-        <h1 className="text-3xl md:text-4xl font-display font-black tracking-tight text-on-surface">탐험가의 흔적</h1>
-        <p className="text-on-surface-variant font-medium text-sm md:text-base max-w-lg">
+      <div className="max-w-4xl mx-auto flex flex-col gap-12 w-full animate-in fade-in duration-700 pb-16 px-4">
+      <header className="flex flex-col gap-4 text-center items-center pt-10 pb-4">
+        <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-2">Guestbook</div>
+        <h1 className="text-4xl md:text-5xl font-display font-black tracking-tight text-on-surface">방명록</h1>
+        <p className="text-on-surface-variant font-medium text-sm md:text-base max-w-lg mt-2 leading-relaxed">
           이 우물에 찾아오신 분들의 발자취를 남겨주세요. <br className="hidden md:block" />
           남겨주신 메시지는 관리자 확인 후 우물가에 새겨집니다.
         </p>
       </header>
 
       {/* 방명록 작성 폼 */}
-      <section className="bg-surface border border-outline/20 rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
+      <section className="relative overflow-hidden rounded-[2rem] border border-outline/10 bg-surface/50 p-1">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 opacity-50 pointer-events-none"></div>
+        <div className="absolute inset-0 backdrop-blur-xl"></div>
+        <div className="relative bg-surface/80 rounded-[1.75rem] p-6 md:p-8 shadow-inner border border-white/5">
         {submitSuccess ? (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -170,7 +174,7 @@ export default function Guestbook() {
                 maxLength={20}
                 required
                 placeholder="어떤 이름으로 남길까요?"
-                className="w-full bg-surface-container-lowest border border-outline/20 p-4 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-on-surface"
+                className="w-full bg-surface-container-lowest border border-outline/20 p-4 rounded-2xl focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all font-medium text-on-surface shadow-sm"
               />
             </div>
             <div>
@@ -183,7 +187,7 @@ export default function Guestbook() {
                 required
                 rows={4}
                 placeholder="이곳에 남기고 싶은 이야기를 적어주세요. (욕설, 비방, 광고는 승인되지 않습니다.)"
-                className="w-full bg-surface-container-lowest border border-outline/20 p-4 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium text-on-surface resize-none"
+                className="w-full bg-surface-container-lowest border border-outline/20 p-4 rounded-2xl focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all font-medium text-on-surface resize-none shadow-sm"
               />
             </div>
             <div className="flex justify-end pt-2 items-center gap-4">
@@ -191,7 +195,7 @@ export default function Guestbook() {
               <button
                 type="submit"
                 disabled={isSubmitting || !nickname.trim() || !message.trim()}
-                className="px-6 py-3 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 disabled:opacity-50 transition-all shadow-md focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="px-8 py-3.5 bg-on-surface text-surface rounded-2xl font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 aria-label="방명록에 기록 남기기"
               >
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <><Send className="w-4 h-4" aria-hidden="true" /> 기록 남기기</>}
@@ -199,11 +203,15 @@ export default function Guestbook() {
             </div>
           </form>
         )}
+        </div>
       </section>
 
       {/* 방명록 목록 */}
-      <section className="flex flex-col gap-6 pt-4">
-        <h2 className="text-xl font-bold text-on-surface px-2">우물가에 새겨진 기록들</h2>
+      <section className="flex flex-col gap-8 pt-8 border-t border-outline/10">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-2xl font-display font-bold text-on-surface">우물가에 새겨진 기록들</h2>
+          <span className="text-sm font-medium text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">{entries.length}개의 기록</span>
+        </div>
         
         {isLoading ? (
           <div className="py-20 flex justify-center">
@@ -218,16 +226,23 @@ export default function Guestbook() {
             아직 승인된 기록이 없습니다.
           </div>
         ) : (
-          <div className="grid gap-4">
-            {entries.map((entry) => (
+          <div className="columns-1 md:columns-2 gap-6 space-y-6">
+            {entries.map((entry, idx) => (
               <motion.div 
-                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 20 }} 
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
                 key={entry.id} 
-                className="bg-surface p-6 rounded-2xl border border-outline/10 shadow-sm"
+                className="break-inside-avoid bg-surface/80 backdrop-blur-md p-7 rounded-3xl border border-outline/20 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative group"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <span className="font-bold text-primary">{entry.nickname}</span>
+                <div className="flex justify-between items-start mb-5">
                   <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center font-serif text-primary font-bold text-lg border border-primary/10">
+                      {entry.nickname.charAt(0)}
+                    </div>
+                    <span className="font-bold text-on-surface text-lg">{entry.nickname}</span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
                     <span className="text-xs text-on-surface-variant">
                       {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '방금 전')}
                     </span>
@@ -243,9 +258,12 @@ export default function Guestbook() {
                     )}
                   </div>
                 </div>
-                <p className="text-on-surface font-medium leading-relaxed whitespace-pre-wrap word-break-all">
-                  {entry.message}
-                </p>
+                <div className="relative z-10">
+                  <span className="absolute -top-4 -left-2 text-4xl text-primary/10 font-serif">"</span>
+                  <p className="text-on-surface font-medium leading-relaxed whitespace-pre-wrap word-break-all relative z-10 pt-2">
+                    {entry.message}
+                  </p>
+                </div>
               </motion.div>
             ))}
           </div>
