@@ -210,12 +210,28 @@ export default function PlantJournal() {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
 
+    setIsUploading(true);
+
     if (!storage) {
-      toast.error("Firebase Storage 설정이 완료되지 않았습니다.");
+      toast.info("스토리지 미설정으로 이미지를 로컬 데이터로 처리합니다.");
+      try {
+        const file = await compressAndConvertImage(rawFile);
+        const base64Url = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (e) => reject(e);
+        });
+        setFormParams({ ...formParams, image: base64Url });
+        toast.success("이미지가 로컬 데이터로 준비되었습니다!");
+      } catch (fallbackErr) {
+        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
+      } finally {
+        setIsUploading(false);
+      }
       return;
     }
 
-    setIsUploading(true);
     try {
       // Compress and convert image (HEIC handling & Resizing to max 1600px, JPEG compression)
       const file = await compressAndConvertImage(rawFile);

@@ -66,6 +66,8 @@ export interface StoryPost {
   prompt?: string;
   status?: string;
   image?: string;
+  image2?: string;
+  images?: string[];
   [key: string]: any;
 }
 
@@ -176,12 +178,38 @@ const PostItem = ({
 
         {/* Post Content */}
         <div className="text-on-surface-variant font-medium">
-          {post.image && (
-            <div className="relative rounded-2xl overflow-hidden max-h-[500px] bg-surface-dim border border-outline/10 mb-8 shadow-sm group-hover/card:shadow-md transition-shadow duration-500">
-              <ImageWithFallback src={post.image} alt="게시물 표지 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full object-cover h-full min-h-[200px] max-h-[500px]" containerClassName="w-full h-full min-h-[200px] max-h-[500px]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-transparent pointer-events-none opacity-50 group-hover/card:opacity-0 transition-opacity duration-500" />
-            </div>
-          )}
+          {(() => {
+            const hasFirst = !!post.image;
+            const hasSecond = !!post.image2;
+            
+            if (hasFirst && hasSecond) {
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                  <div className="relative rounded-2xl overflow-hidden h-[300px] md:h-[400px] bg-surface-dim border border-outline/10 shadow-sm hover:shadow-md transition-shadow duration-500">
+                    <ImageWithFallback src={post.image!} alt="첫 번째 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-cover" containerClassName="w-full h-full" />
+                  </div>
+                  <div className="relative rounded-2xl overflow-hidden h-[300px] md:h-[400px] bg-surface-dim border border-outline/10 shadow-sm hover:shadow-md transition-shadow duration-500">
+                    <ImageWithFallback src={post.image2!} alt="두 번째 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-cover" containerClassName="w-full h-full" />
+                  </div>
+                </div>
+              );
+            } else if (hasFirst) {
+              return (
+                <div className="relative rounded-2xl overflow-hidden max-h-[500px] bg-surface-dim border border-outline/10 mb-8 shadow-sm group-hover/card:shadow-md transition-shadow duration-500">
+                  <ImageWithFallback src={post.image} alt="게시물 표지 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full object-cover h-full min-h-[200px] max-h-[500px]" containerClassName="w-full h-full min-h-[200px] max-h-[500px]" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-transparent pointer-events-none opacity-50 group-hover/card:opacity-0 transition-opacity duration-500" />
+                </div>
+              );
+            } else if (hasSecond) {
+              return (
+                <div className="relative rounded-2xl overflow-hidden max-h-[500px] bg-surface-dim border border-outline/10 mb-8 shadow-sm group-hover/card:shadow-md transition-shadow duration-500">
+                  <ImageWithFallback src={post.image2!} alt="게시물 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full object-cover h-full min-h-[200px] max-h-[500px]" containerClassName="w-full h-full min-h-[200px] max-h-[500px]" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/5 to-transparent pointer-events-none opacity-50 group-hover/card:opacity-0 transition-opacity duration-500" />
+                </div>
+              );
+            }
+            return null;
+          })()}
           <div className="prose prose-base md:prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
             <Markdown>{post.content}</Markdown>
           </div>
@@ -361,6 +389,9 @@ export default function Stories() {
   const [newImage, setNewImage] = useState(
     () => localStorage.getItem("story_draft_image") || "",
   );
+  const [newImage2, setNewImage2] = useState(
+    () => localStorage.getItem("story_draft_image2") || "",
+  );
   const [showImageInput, setShowImageInput] = useState(false);
   const [showSettingsInput, setShowSettingsInput] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -453,23 +484,45 @@ export default function Stories() {
       localStorage.setItem("story_draft_prompt", newPrompt);
       localStorage.setItem("story_draft_status", newStatus);
       if (newImage) localStorage.setItem("story_draft_image", newImage);
+      if (newImage2) localStorage.setItem("story_draft_image2", newImage2);
     }, 2000);
     return () => clearTimeout(timeoutId);
-  }, [newTitle, newPost, newImage, newIdea, newWorldview, newChronology, newCharacters, newEpisodes, newPrompt, newStatus]);
+  }, [newTitle, newPost, newImage, newImage2, newIdea, newWorldview, newChronology, newCharacters, newEpisodes, newPrompt, newStatus]);
 
   
   // Direct file upload handler via Firebase Storage with 10s Timeout & Base64 Fallback
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
     const rawFile = e.target.files?.[0];
     if (!rawFile) return;
 
+    setIsUploading(true);
+    
+    // If firebase storage is not available, immediately fall back to local Base64
     if (!storage) {
-      toast.error("Firebase Storage 설정이 되지 않았습니다.");
+      toast.info(`스토리지 미설정으로 이미지 ${slot}을 로컬 데이터로 처리합니다.`);
+      try {
+        const file = await compressAndConvertImage(rawFile);
+        const base64Url = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (e) => reject(e);
+        });
+        if (slot === 1) {
+          setNewImage(base64Url);
+        } else {
+          setNewImage2(base64Url);
+        }
+        toast.success(`이미지 ${slot}이(가) 로컬 데이터로 준비되었습니다!`);
+      } catch (fallbackErr) {
+        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
+      } finally {
+        setIsUploading(false);
+      }
       return;
     }
 
-    setIsUploading(true);
-    toast.error("이미지를 파일 업로드 중입니다...");
+    toast.info(`이미지 ${slot} 업로드를 시작합니다...`);
     try {
       // Compress and convert image (HEIC handling & Resizing to max 1600px, JPEG compression)
       const file = await compressAndConvertImage(rawFile);
@@ -484,8 +537,12 @@ export default function Stories() {
       // Race them!
       const snapshot = await Promise.race([uploadPromise, timeoutPromise]);
       const downloadURL = await getDownloadURL(snapshot.ref);
-      setNewImage(downloadURL);
-      toast.error("이미지가 성공적으로 업로드되었습니다!");
+      if (slot === 1) {
+        setNewImage(downloadURL);
+      } else {
+        setNewImage2(downloadURL);
+      }
+      toast.success(`이미지 ${slot}이(가) 성공적으로 업로드되었습니다!`);
     } catch (err: unknown) {
       console.warn("Storage upload failed/timed out, falling back to local Base64. Error:", err);
       
@@ -498,8 +555,12 @@ export default function Stories() {
           reader.onload = () => resolve(reader.result as string);
           reader.onerror = (e) => reject(e);
         });
-        setNewImage(base64Url);
-        toast.info("파이어베이스 스토리지 업로드가 실패하여 브라우저 로컬 데이터로 전환했습니다. 콘솔을 확인해주세요.");
+        if (slot === 1) {
+          setNewImage(base64Url);
+        } else {
+          setNewImage2(base64Url);
+        }
+        toast.info("업로드가 지연되어 브라우저 로컬 이미지로 대체 준비했습니다.");
       } catch (fallbackErr) {
         toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
       }
@@ -532,6 +593,8 @@ export default function Stories() {
               status: newStatus,
               category: selectedCategory,
               image: newImage,
+              image2: newImage2 || "",
+              images: [newImage, newImage2].filter(Boolean),
               updatedAt: serverTimestamp(),
             });
           } catch (dbErr) {
@@ -554,13 +617,15 @@ export default function Stories() {
                     status: newStatus,
                     category: selectedCategory,
                     image: newImage,
+                    image2: newImage2 || "",
+                    images: [newImage, newImage2].filter(Boolean),
                   }
                 : p
             )
           );
         }
         setEditingId(null);
-        toast.error("기록이 수정되었습니다.");
+        toast.success("기록이 수정되었습니다.");
       } else {
         const postData = {
           category: selectedCategory,
@@ -575,6 +640,8 @@ export default function Stories() {
           status: newStatus,
           likes: 0,
           image: newImage,
+          image2: newImage2 || "",
+          images: [newImage, newImage2].filter(Boolean),
           createdAt: serverTimestamp(),
         };
 
@@ -598,7 +665,7 @@ export default function Stories() {
           };
           setFeed([localPost, ...feed]);
         }
-        toast.error("새로운 세계가 기록되었습니다.");
+        toast.success("새로운 세계가 기록되었습니다.");
       }
 
       setNewTitle("");
@@ -611,6 +678,7 @@ export default function Stories() {
       setNewPrompt("");
       setNewStatus("구상 중");
       setNewImage("");
+      setNewImage2("");
       setIsPreview(false);
       setShowImageInput(false);
       setShowSettingsInput(false);
@@ -624,6 +692,7 @@ export default function Stories() {
       localStorage.removeItem("story_draft_prompt");
       localStorage.removeItem("story_draft_status");
       localStorage.removeItem("story_draft_image");
+      localStorage.removeItem("story_draft_image2");
     } catch (err: Error | unknown) {
       console.error("Post writing error:", err);
       toast.error("글 등록에 실패했습니다: " + (err instanceof Error ? (err as any).message : "알 수 없는 오류"));
@@ -644,6 +713,7 @@ export default function Stories() {
     setNewPrompt(post.prompt || "");
     setNewStatus(post.status || "구상 중");
     setNewImage(post.image || "");
+    setNewImage2(post.image2 || "");
     setSelectedCategory(post.category);
     setIsPreview(false);
     setShowSettingsInput(!!(post.idea || post.worldview || post.chronology || post.characters || post.episodes || post.prompt));
@@ -817,10 +887,13 @@ export default function Stories() {
                 initial={{ opacity: 0, height: 0, marginTop: 0 }}
                 animate={{ opacity: 1, height: "auto", marginTop: 16 }}
                 exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                className="overflow-hidden bg-surface-container-lowest border border-outline/20 p-5 rounded-2xl space-y-4 shadow-inner"
+                className="overflow-hidden bg-surface-container-lowest border border-outline/20 p-5 rounded-2xl space-y-6 shadow-inner"
               >
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">이미지 첨부 수단 선택</span>
+                <div className="flex justify-between items-center border-b border-outline/10 pb-3">
+                  <span className="text-sm font-bold text-on-surface flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-primary" />
+                    이야기 사진 첨부 (최대 2장 등록 가능)
+                  </span>
                   <button 
                     onClick={() => setShowImageInput(false)}
                     className="p-1.5 hover:bg-surface-dim rounded-lg transition-colors text-on-surface-variant"
@@ -829,54 +902,119 @@ export default function Stories() {
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* File Upload Zone */}
-                  <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-outline/30 rounded-xl hover:bg-primary/5 hover:border-primary/50 cursor-pointer transition-all gap-2 group min-h-[140px]">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleFileChange} 
-                      className="hidden" 
-                      disabled={isUploading}
-                    />
-                    {isUploading ? (
-                      <div className="flex flex-col items-center gap-2 justify-center">
-                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-xs font-bold text-primary animate-pulse">업로드 중...</span>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="w-6 h-6 text-on-surface-variant group-hover:text-primary transition-colors" />
-                        <span className="text-xs font-bold text-on-surface-variant group-hover:text-on-surface transition-colors text-center">컴퓨터 / 스마트폰 사진 선택</span>
-                      </>
-                    )}
-                  </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Slot 1: First Image */}
+                  <div className="space-y-3 bg-surface-variant/10 p-4 rounded-xl border border-outline/5">
+                    <span className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      첫 번째 사진 (대표 이미지)
+                    </span>
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* File Upload Slot 1 */}
+                      <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-outline/30 rounded-xl hover:bg-primary/5 hover:border-primary/50 cursor-pointer transition-all gap-1.5 group min-h-[100px]">
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleFileChange(e, 1)} 
+                          className="hidden" 
+                          disabled={isUploading}
+                        />
+                        {isUploading ? (
+                          <div className="flex flex-col items-center gap-1.5 justify-center">
+                            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-[11px] font-bold text-primary animate-pulse">업로드 중...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
+                            <span className="text-[11px] font-bold text-on-surface-variant group-hover:text-on-surface transition-colors text-center">컴퓨터/스마트폰 사진 선택 (1)</span>
+                          </>
+                        )}
+                      </label>
 
-                  {/* URL Input Zone */}
-                  <div className="flex flex-col justify-center gap-2">
-                    <span className="text-xs font-semibold text-on-surface-variant">이미지 인터넷 주소(URL) 입력</span>
-                    <input
-                      type="url"
-                      value={newImage}
-                      onChange={(e) => setNewImage(e.target.value)}
-                      placeholder="https://example.com/image.jpg"
-                      className="w-full bg-surface border border-outline/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-primary text-xs font-sans font-medium"
-                    />
+                      {/* URL Input Slot 1 */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-semibold text-on-surface-variant">인터넷 주소(URL) 직접 입력</span>
+                        <input
+                          type="url"
+                          value={newImage}
+                          onChange={(e) => setNewImage(e.target.value)}
+                          placeholder="https://example.com/image1.jpg"
+                          className="w-full bg-surface border border-outline/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary text-xs font-sans font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {newImage && (
+                      <div className="relative rounded-xl overflow-hidden h-28 bg-surface-dim border border-outline/20 shadow-inner mt-2">
+                        <ImageWithFallback src={newImage} alt="첫 번째 이미지 미리보기" referrerPolicy="no-referrer" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" containerClassName="w-full h-full" />
+                        <button 
+                          onClick={() => setNewImage("")}
+                          className="absolute top-2 right-2 p-1 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors"
+                          title="이미지 제거"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Slot 2: Second Image */}
+                  <div className="space-y-3 bg-surface-variant/10 p-4 rounded-xl border border-outline/5">
+                    <span className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      두 번째 사진 (선택 사항)
+                    </span>
+                    <div className="grid grid-cols-1 gap-3">
+                      {/* File Upload Slot 2 */}
+                      <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-outline/30 rounded-xl hover:bg-primary/5 hover:border-primary/50 cursor-pointer transition-all gap-1.5 group min-h-[100px]">
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={(e) => handleFileChange(e, 2)} 
+                          className="hidden" 
+                          disabled={isUploading}
+                        />
+                        {isUploading ? (
+                          <div className="flex flex-col items-center gap-1.5 justify-center">
+                            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-[11px] font-bold text-primary animate-pulse">업로드 중...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
+                            <span className="text-[11px] font-bold text-on-surface-variant group-hover:text-on-surface transition-colors text-center">컴퓨터/스마트폰 사진 선택 (2)</span>
+                          </>
+                        )}
+                      </label>
+
+                      {/* URL Input Slot 2 */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-semibold text-on-surface-variant">인터넷 주소(URL) 직접 입력</span>
+                        <input
+                          type="url"
+                          value={newImage2}
+                          onChange={(e) => setNewImage2(e.target.value)}
+                          placeholder="https://example.com/image2.jpg"
+                          className="w-full bg-surface border border-outline/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary text-xs font-sans font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {newImage2 && (
+                      <div className="relative rounded-xl overflow-hidden h-28 bg-surface-dim border border-outline/20 shadow-inner mt-2">
+                        <ImageWithFallback src={newImage2} alt="두 번째 이미지 미리보기" referrerPolicy="no-referrer" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" containerClassName="w-full h-full" />
+                        <button 
+                          onClick={() => setNewImage2("")}
+                          className="absolute top-2 right-2 p-1 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors"
+                          title="이미지 제거"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                {newImage && (
-                  <div className="relative rounded-xl overflow-hidden h-36 bg-surface-dim border border-outline/20 max-w-sm mx-auto shadow-inner">
-                    <ImageWithFallback src={newImage} alt="첨부된 이미지 미리보기" referrerPolicy="no-referrer" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" containerClassName="w-full h-full" />
-                    <button 
-                      onClick={() => setNewImage("")}
-                      className="absolute top-2.5 right-2.5 p-1.5 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors"
-                      title="이미지 제거"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
               </motion.div>
             )}
 
@@ -975,7 +1113,7 @@ export default function Stories() {
               <div className="flex flex-wrap items-center justify-between sm:justify-start gap-4">
                 <button
                   onClick={() => setShowImageInput(!showImageInput)}
-                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showImageInput || newImage ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 border-outline/20 hover:border-blue-200 hover:shadow-md"}`}
+                  className={`p-3.5 rounded-full border shadow-sm transition-all duration-300 ease-out hover:scale-105 active:scale-95 ${showImageInput || newImage || newImage2 ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 border-outline/20 hover:border-blue-200 hover:shadow-md"}`}
                   title="이미지 첨부"
                   aria-label="이미지 첨부 토글"
                 >
@@ -989,9 +1127,9 @@ export default function Stories() {
                 >
                   <Globe className="w-5 h-5" />
                 </button>
-                {newImage && !showImageInput && (
+                {(newImage || newImage2) && !showImageInput && (
                   <span className="text-xs text-blue-600 font-bold truncate max-w-[150px] hidden sm:inline-block">
-                    이미지 첨부됨
+                    {(newImage && newImage2) ? "이미지 2장 첨부됨" : "이미지 1장 첨부됨"}
                   </span>
                 )}
                 {(newIdea || newWorldview || newChronology || newCharacters || newEpisodes || newPrompt) && !showSettingsInput && (
@@ -1012,6 +1150,7 @@ export default function Stories() {
                       setNewTitle("");
                       setNewPost("");
                       setNewImage("");
+                      setNewImage2("");
                       setShowImageInput(false);
                     }}
                     className="px-6 py-4 rounded-full font-semibold text-lg transition-all duration-300 ease-out hover:bg-gray-100 hover:scale-105 active:scale-95 border border-transparent hover:border-gray-200 text-on-surface-variant hover:text-on-surface"
