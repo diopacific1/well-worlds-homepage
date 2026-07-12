@@ -40,6 +40,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { compressAndConvertImage } from "../utils/imageCompressor";
 
 export interface PlantJournalEntry {
   id: string;
@@ -206,8 +207,8 @@ export default function PlantJournal() {
 
   // Direct file upload handler via Firebase Storage with 10s Timeout & Base64 Fallback
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
     if (!storage) {
       toast.error("Firebase Storage 설정이 완료되지 않았습니다.");
@@ -216,6 +217,8 @@ export default function PlantJournal() {
 
     setIsUploading(true);
     try {
+      // Compress and convert image (HEIC handling & Resizing to max 1600px, JPEG compression)
+      const file = await compressAndConvertImage(rawFile);
       const storageRef = ref(storage, `plants/${Date.now()}_${file.name}`);
 
       // 10-second timeout promise
@@ -240,6 +243,7 @@ export default function PlantJournal() {
 
       // Read file as Base64 data URL fallback
       try {
+        const file = await compressAndConvertImage(rawFile);
         const base64Url = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.readAsDataURL(file);

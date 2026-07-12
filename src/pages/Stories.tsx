@@ -41,6 +41,7 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { compressAndConvertImage } from "../utils/imageCompressor";
 
 const CATEGORIES = [
   { id: "전체", icon: BookOpen, label: "전체 보기" },
@@ -459,8 +460,8 @@ export default function Stories() {
   
   // Direct file upload handler via Firebase Storage with 10s Timeout & Base64 Fallback
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
     if (!storage) {
       toast.error("Firebase Storage 설정이 되지 않았습니다.");
@@ -470,6 +471,8 @@ export default function Stories() {
     setIsUploading(true);
     toast.error("이미지를 파일 업로드 중입니다...");
     try {
+      // Compress and convert image (HEIC handling & Resizing to max 1600px, JPEG compression)
+      const file = await compressAndConvertImage(rawFile);
       const storageRef = ref(storage, `stories/${Date.now()}_${file.name}`);
       
       // 10-second timeout promise
@@ -488,6 +491,7 @@ export default function Stories() {
       
       // Read file as Base64 data URL fallback
       try {
+        const file = await compressAndConvertImage(rawFile);
         const base64Url = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.readAsDataURL(file);
@@ -497,7 +501,7 @@ export default function Stories() {
         setNewImage(base64Url);
         toast.info("파이어베이스 스토리지 업로드가 실패하여 브라우저 로컬 데이터로 전환했습니다. 콘솔을 확인해주세요.");
       } catch (fallbackErr) {
-        toast.error("이미지 처리 실패: " + (err as any).message);
+        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
       }
     } finally {
       setIsUploading(false);
