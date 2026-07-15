@@ -96,11 +96,16 @@ const HeroSection = memo(() => {
   []);
 
   return (
-    <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[92vh] overflow-visible pointer-events-auto">
+    <>
+      <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[92vh] pointer-events-none -mt-8 md:-mt-16 mb-12 w-full overflow-hidden">
+        {/* Full bleed wrapper for SolarSystem3D background */}
+        <div className="absolute inset-0 w-full h-full -z-10 pointer-events-auto">
+          <SolarSystem3D />
+        </div>
       
       {/* Abstract Background Deep World Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-background/70 via-background to-surface" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-transparent" />
         
         {/* Floating Particles simulating deep well / underwater space in subtle sine motion */}
         {particles.map((p, i) => (
@@ -151,30 +156,7 @@ const HeroSection = memo(() => {
       >
         <div className="space-y-12 flex flex-col items-center justify-center relative w-full pointer-events-auto">
           
-          {/* Enhanced Abstract Core Animation */}
-          <div
-            className="relative w-full h-[500px] sm:h-[600px] md:h-[700px] lg:h-[800px] max-w-6xl mx-auto flex items-center justify-center rounded-3xl z-50 pointer-events-auto"
-          >
-            {/* Deep Intense Aura Background for 3D Canvas */}
-            <motion.div
-              animate={{
-                scale: [0.8, 1.2, 0.8],
-                opacity: [0.2, 0.5, 0.2],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute inset-0 bg-primary/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none"
-            />
-            
-            <div className="absolute inset-0 rounded-3xl border border-gray-800 shadow-2xl overflow-hidden ring-1 ring-white/10 pointer-events-auto z-50">
-              <div className="w-full h-full pointer-events-auto relative block">
-                <SolarSystem3D />
-              </div>
-            </div>
-          </div>
+          {/* SolarSystem3D is now rendered outside this flow as a fixed full-screen background */}
           
           <div className="flex flex-col items-center gap-8 relative z-20 mt-8">
 
@@ -201,6 +183,7 @@ const HeroSection = memo(() => {
 
 
     </header>
+    </>
   );
 });
 

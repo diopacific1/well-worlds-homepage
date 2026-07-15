@@ -163,9 +163,9 @@ export default function SolarSystem3D() {
   const selectedPlanet = useMemo(() => PLANETS.find(p => p.id === selectedPlanetId) || null, [selectedPlanetId]);
 
   return (
-    <div className="absolute inset-0 bg-[#020205] text-white font-mono overflow-hidden pointer-events-auto">
+    <div className="absolute inset-0 z-0 bg-[#020205] text-white font-mono overflow-hidden pointer-events-auto">
       {/* 3D Canvas */}
-      <Canvas camera={{ position: [0, 20, 40], fov: 45 }} shadows className="outline-none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto' }}>
+      <Canvas camera={{ position: [0, 20, 40], fov: 45 }} shadows className="outline-none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', touchAction: 'auto' }}>
         <color attach="background" args={['#020205']} />
         
         {/* Lights */}
@@ -178,8 +178,9 @@ export default function SolarSystem3D() {
         {/* Controls */}
         <OrbitControls 
           ref={controlsRef}
-          enablePan={true} 
-          enableZoom={true} 
+          enablePan={false} 
+          enableZoom={false} 
+          enableRotate={false}
           minDistance={2} 
           maxDistance={100}
           autoRotate={!selectedPlanetId && settings.revolutionEnabled}
