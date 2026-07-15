@@ -13,7 +13,7 @@ function CameraController({ targetPlanet, controlsRef }: { targetPlanet: PlanetD
   const vec = new THREE.Vector3();
   
   useFrame(() => {
-    if (targetPlanet && targetPlanet.id !== 'sun') {
+    if (targetPlanet) {
       // Find the planet object in the scene
       const planetObj = camera.parent?.getObjectByName(`planet-${targetPlanet.id}`);
       if (planetObj) {
@@ -22,7 +22,7 @@ function CameraController({ targetPlanet, controlsRef }: { targetPlanet: PlanetD
         controlsRef.current?.target.lerp(vec, 0.05);
       }
     } else {
-      // Default to Sun
+      // Default to Center
       controlsRef.current?.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
     }
   });
@@ -41,37 +41,44 @@ function Planet({
   const groupRef = useRef<THREE.Group>(null);
   const planetRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
+  
+  useEffect(() => {
+    const checkTouch = () => {
+      setIsTouch(window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+    };
+    checkTouch();
+    window.addEventListener('resize', checkTouch);
+    return () => window.removeEventListener('resize', checkTouch);
+  }, []);
+
+  const showTooltip = hovered || isTouch;
   
   // Random starting angle
-  const startAngle = useMemo(() => Math.random() * Math.PI * 2, []);
+  const currentAngle = useRef(Math.random() * Math.PI * 2);
   
   // Axial tilt in radians
   const tiltRad = (data.axialTilt * Math.PI) / 180;
 
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    
+  useFrame((state, delta) => {
     // Revolution (Orbit)
     if (groupRef.current) {
-      if (settings.revolutionEnabled && data.id !== 'sun') {
-        // Apply time multiplier for orbit
-        const currentAngle = startAngle + (t * data.speed * 0.1 * settings.timeMultiplier);
-        groupRef.current.position.x = Math.cos(currentAngle) * data.distance;
-        groupRef.current.position.z = Math.sin(currentAngle) * data.distance;
-      } else if (!settings.revolutionEnabled && data.id !== 'sun') {
-        const currentAngle = startAngle;
-        groupRef.current.position.x = Math.cos(currentAngle) * data.distance;
-        groupRef.current.position.z = Math.sin(currentAngle) * data.distance;
+      if (settings.revolutionEnabled) {
+        // Increment angle based on delta, speed, and time multiplier
+        currentAngle.current += delta * data.speed * 0.1 * settings.timeMultiplier;
       }
+      // Always update position based on currentAngle
+      groupRef.current.position.x = Math.cos(currentAngle.current) * data.distance;
+      groupRef.current.position.z = Math.sin(currentAngle.current) * data.distance;
     }
     
     // Rotation
     if (planetRef.current && settings.rotationEnabled) {
-      // Calculate rotation speed based on rotation period (relative to Earth 24h)
-      // Cap max speed to avoid crazy spinning for fast planets like Jupiter
+      // Calculate rotation speed based on rotation period
       const baseRotation = (24 / (Math.abs(data.rotationPeriod) || 24)) * 0.5;
       const direction = data.rotationPeriod < 0 ? -1 : 1;
-      planetRef.current.rotation.y += baseRotation * direction * settings.timeMultiplier * 0.01;
+      // Use delta for smooth rotation
+      planetRef.current.rotation.y += baseRotation * direction * settings.timeMultiplier * delta;
     }
   });
 
@@ -82,47 +89,30 @@ function Planet({
         <mesh 
           ref={planetRef} 
           onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}
-          onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'crosshair'; }}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered(true); document.body.style.cursor = 'pointer'; }}
           onPointerOut={(e) => { e.stopPropagation(); setHovered(false); document.body.style.cursor = 'auto'; }}
           onPointerDown={(e) => { e.stopPropagation(); }}
           castShadow
           receiveShadow
         >
           <sphereGeometry args={[data.size, 64, 64]} />
-          {data.id === 'sun' ? (
-            <meshStandardMaterial color={data.color} emissive={data.color} emissiveIntensity={3} toneMapped={false} />
-          ) : (
-            <meshStandardMaterial color={data.color} roughness={0.7} metalness={0.1} />
-          )}
-          
-          {hovered && (
-            <Html distanceFactor={15} zIndexRange={[100, 0]} className="pointer-events-none">
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="px-4 py-3 bg-black/80 backdrop-blur-md border border-cyan-500/30 rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.15)] whitespace-nowrap min-w-[200px]"
-              >
-                <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2 mb-2">
-                  <div className="flex items-center gap-2 text-cyan-400 font-mono text-[10px] uppercase tracking-widest font-bold">
-                    <Crosshair className="w-3 h-3 animate-pulse" />
-                    {data.en}
-                  </div>
-                  <div className="text-[8px] text-gray-500 tracking-wider">OBJ-{data.id.toUpperCase()}</div>
-                </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[9px] font-mono text-gray-300">
-                  <div className="text-gray-500">RADIUS</div>
-                  <div className="text-right text-cyan-100">{data.radius.toLocaleString()} km</div>
-                  <div className="text-gray-500">MASS</div>
-                  <div className="text-right text-cyan-100">{data.mass}</div>
-                  <div className="text-gray-500">ORBIT</div>
-                  <div className="text-right text-cyan-100">{data.orbitalPeriod} d</div>
-                  <div className="text-gray-500">GRAVITY</div>
-                  <div className="text-right text-cyan-100">{data.gravity} m/s²</div>
-                </div>
-              </motion.div>
-            </Html>
-          )}
+          <meshStandardMaterial color={data.color} roughness={0.7} metalness={0.1} />
+
+          {/* Tooltip */}
+          <Html distanceFactor={15} zIndexRange={[100, 0]} className="pointer-events-none">
+            <motion.div 
+              initial={false}
+              animate={{ 
+                opacity: showTooltip ? 1 : 0, 
+                scale: showTooltip ? 1 : 0.8,
+                y: showTooltip ? 0 : 10
+              }}
+              transition={{ duration: 0.2 }}
+              className="px-3 py-1.5 bg-black/80 backdrop-blur-md border border-white/20 rounded-lg shadow-lg whitespace-nowrap font-bold tracking-tight text-white/90"
+            >
+              {data.name}
+            </motion.div>
+          </Html>
         </mesh>
         
         {data.hasRing && (
@@ -140,7 +130,7 @@ function OrbitLines({ visible }: { visible: boolean }) {
   if (!visible) return null;
   return (
     <group>
-      {PLANETS.filter(p => p.id !== 'sun').map((p) => (
+      {PLANETS.map((p) => (
         <mesh key={`orbit-${p.id}`} rotation={[Math.PI / 2, 0, 0]}>
           <ringGeometry args={[p.distance - 0.02, p.distance + 0.02, 128]} />
           <meshBasicMaterial color={p.color} transparent opacity={0.2} side={THREE.DoubleSide} />
@@ -150,7 +140,7 @@ function OrbitLines({ visible }: { visible: boolean }) {
   );
 }
 
-export default function SolarSystem3D() {
+export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: string) => void }) {
   const [settings, setSettings] = useState({
     timeMultiplier: 1,
     orbitsVisible: true,
@@ -178,9 +168,9 @@ export default function SolarSystem3D() {
         {/* Controls */}
         <OrbitControls 
           ref={controlsRef}
-          enablePan={false} 
-          enableZoom={false} 
-          enableRotate={false}
+          enablePan={true} 
+          enableZoom={true} 
+          enableRotate={true}
           minDistance={2} 
           maxDistance={100}
           autoRotate={!selectedPlanetId && settings.revolutionEnabled}
@@ -190,13 +180,31 @@ export default function SolarSystem3D() {
         <CameraController targetPlanet={selectedPlanet} controlsRef={controlsRef} />
         
         {/* Objects */}
+        {/* Central Core (The Well) */}
+        <mesh>
+          <sphereGeometry args={[2, 32, 32]} />
+          <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={2} toneMapped={false} transparent opacity={0.8} />
+          <Html distanceFactor={15} zIndexRange={[100, 0]} className="pointer-events-none">
+            <motion.div 
+              initial={{ opacity: 0.5, y: -10 }}
+              animate={{ opacity: 0.8, y: 0 }}
+              transition={{ repeat: Infinity, repeatType: 'mirror', duration: 2 }}
+              className="px-2 py-1 text-center whitespace-nowrap font-bold tracking-widest text-cyan-200/80 text-[10px]"
+            >
+              THE WELL
+            </motion.div>
+          </Html>
+        </mesh>
+
         <OrbitLines visible={settings.orbitsVisible} />
         {PLANETS.map((p) => (
-          <Planet key={p.id} data={p} settings={settings} onSelect={setSelectedPlanetId} />
+          <Planet key={p.id} data={p} settings={settings} onSelect={(id) => {
+            setSelectedPlanetId(id);
+          }} />
         ))}
 
         {/* Post-processing */}
-        <EffectComposer disableNormalPass>
+        <EffectComposer>
           <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} />
           <Noise opacity={0.03} />
           <Vignette eskil={false} offset={0.1} darkness={1.1} />
@@ -301,6 +309,15 @@ export default function SolarSystem3D() {
                   <span className="text-gray-500">MOONS</span>
                   <span className="text-cyan-400 font-bold">{selectedPlanet.moons}</span>
                 </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <button
+                  onClick={() => onPlanetClick && onPlanetClick(selectedPlanet.id)}
+                  className="w-full py-2 bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 font-bold tracking-widest text-xs rounded transition-colors border border-cyan-500/50"
+                >
+                  ENTER {selectedPlanet.en.toUpperCase()}
+                </button>
               </div>
             </div>
           ) : (

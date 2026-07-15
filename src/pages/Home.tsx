@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, memo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   LineChart,
   Leaf,
@@ -41,9 +41,18 @@ const itemVariants: Variants = {
 };
 
 const HeroSection = memo(() => {
+  const [show3D, setShow3D] = useState(false);
+  const navigate = useNavigate();
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
   const y2 = useTransform(scrollY, [0, 500], [0, -150]);
+
+  const handlePlanetClick = (id: string) => {
+    if (id === 'portfolio') navigate('/stories');
+    if (id === 'crypto') navigate('/crypto');
+    if (id === 'garden') navigate('/plants');
+    if (id === 'guestbook') navigate('/guestbook');
+  };
 
   // Performance-optimized low-overhead mouse parallax using Framer Motion values
   const mouseX = useMotionValue(0);
@@ -99,8 +108,8 @@ const HeroSection = memo(() => {
     <>
       <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[92vh] pointer-events-none -mt-8 md:-mt-16 mb-12 w-full overflow-hidden">
         {/* Full bleed wrapper for SolarSystem3D background */}
-        <div className="absolute inset-0 w-full h-full -z-10 pointer-events-auto">
-          <SolarSystem3D />
+        <div className={`absolute inset-0 w-full h-full -z-10 pointer-events-auto transition-opacity duration-1000 ${show3D ? 'opacity-100' : 'opacity-0'}`}>
+          {show3D && <SolarSystem3D onPlanetClick={handlePlanetClick} />}
         </div>
       
       {/* Abstract Background Deep World Elements */}
@@ -152,9 +161,9 @@ const HeroSection = memo(() => {
       </div>
 
       <div
-        className="relative z-50 w-full max-w-5xl mx-auto space-y-12 flex flex-col items-center px-6 pointer-events-auto"
+        className="relative z-50 w-full max-w-5xl mx-auto space-y-12 flex flex-col items-center px-6 pointer-events-none"
       >
-        <div className="space-y-12 flex flex-col items-center justify-center relative w-full pointer-events-auto">
+        <div className="space-y-12 flex flex-col items-center justify-center relative w-full pointer-events-none">
           
           {/* SolarSystem3D is now rendered outside this flow as a fixed full-screen background */}
           
@@ -165,22 +174,25 @@ const HeroSection = memo(() => {
                initial={{ opacity: 0, y: 30 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-               className="text-center"
+               className="text-center pointer-events-none"
             >
-
-               
-
-               
-
-               
-
+               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-6 pointer-events-auto transition-all duration-700 ${show3D ? "opacity-0 select-none" : "opacity-100"}`}>
+                 우물 그리고 세계들
+               </h1>
+               <p className={`text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10 pointer-events-auto transition-all duration-700 delay-100 ${show3D ? "opacity-0 select-none" : "opacity-100"}`}>
+                 가상자산 동향, 반려식물 기록, 방명록이 함께하는 나만의 디지털 아카이브. 우물 속 다채로운 세계를 탐험하세요.
+               </p>
+               <button 
+                 onClick={() => setShow3D(!show3D)} 
+                 className="px-8 py-4 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 rounded-full font-bold shadow-lg shadow-primary/20 backdrop-blur-md border border-white/10 pointer-events-auto"
+               >
+                 {show3D ? '3D 뷰 닫기' : '우주 탐험하기'}
+               </button>
             </motion.div>
           </div>
         </div>
 
-
       </div>
-
 
     </header>
     </>
