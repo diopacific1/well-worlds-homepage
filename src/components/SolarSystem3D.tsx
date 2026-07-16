@@ -4,7 +4,7 @@ import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocess
 import * as THREE from 'three';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { PLANETS, PlanetData } from '../data/planets';
-import { Play, Pause, FastForward, RotateCcw, Crosshair, Orbit, ChevronRight, Activity } from 'lucide-react';
+import { Play, Pause, FastForward, RotateCcw, Crosshair, Orbit, ChevronRight, Activity, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Camera tracking logic
@@ -224,34 +224,43 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
           </div>
           
           {/* Controls Panel */}
-          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-lg p-3 w-48 md:w-64 pointer-events-auto flex flex-col gap-4 shadow-2xl">
+          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-lg p-3 w-48 md:w-64 pointer-events-auto flex flex-col gap-4 shadow-2xl relative z-50">
             <div className="text-[10px] text-gray-400 tracking-wider mb-1 flex items-center gap-1 border-b border-white/10 pb-2">
               <Orbit className="w-3 h-3" /> 시뮬레이션 제어
             </div>
             
-            <div className="flex flex-col gap-2">
-              <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">궤도 표시</span>
-                <input type="checkbox" className="accent-cyan-500" checked={settings.orbitsVisible} onChange={e => setSettings(s => ({ ...s, orbitsVisible: e.target.checked }))} />
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center justify-between cursor-pointer group pointer-events-auto py-1">
+                <span className="text-xs tracking-wider text-gray-300 group-hover:text-white transition-colors">궤도 표시</span>
+                <div className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-300 ${settings.orbitsVisible ? 'bg-cyan-500' : 'bg-white/10'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${settings.orbitsVisible ? 'translate-x-5' : 'translate-x-1'}`} />
+                </div>
+                <input type="checkbox" className="hidden" checked={settings.orbitsVisible} onChange={() => setSettings(s => ({ ...s, orbitsVisible: !s.orbitsVisible }))} />
               </label>
-              <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">자전</span>
-                <input type="checkbox" className="accent-cyan-500" checked={settings.rotationEnabled} onChange={e => setSettings(s => ({ ...s, rotationEnabled: e.target.checked }))} />
+              <label className="flex items-center justify-between cursor-pointer group pointer-events-auto py-1">
+                <span className="text-xs tracking-wider text-gray-300 group-hover:text-white transition-colors">자전</span>
+                <div className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-300 ${settings.rotationEnabled ? 'bg-cyan-500' : 'bg-white/10'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${settings.rotationEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
+                </div>
+                <input type="checkbox" className="hidden" checked={settings.rotationEnabled} onChange={() => setSettings(s => ({ ...s, rotationEnabled: !s.rotationEnabled }))} />
               </label>
-              <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">공전</span>
-                <input type="checkbox" className="accent-cyan-500" checked={settings.revolutionEnabled} onChange={e => setSettings(s => ({ ...s, revolutionEnabled: e.target.checked }))} />
+              <label className="flex items-center justify-between cursor-pointer group pointer-events-auto py-1">
+                <span className="text-xs tracking-wider text-gray-300 group-hover:text-white transition-colors">공전</span>
+                <div className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-300 ${settings.revolutionEnabled ? 'bg-cyan-500' : 'bg-white/10'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${settings.revolutionEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
+                </div>
+                <input type="checkbox" className="hidden" checked={settings.revolutionEnabled} onChange={() => setSettings(s => ({ ...s, revolutionEnabled: !s.revolutionEnabled }))} />
               </label>
             </div>
             
-            <div className="pt-2 border-t border-white/10">
-              <span className="text-[9px] text-gray-500 tracking-widest mb-2 block">시간 가속</span>
-              <div className="flex gap-1">
+            <div className="pt-4 border-t border-white/10">
+              <span className="text-xs text-gray-400 tracking-wider mb-3 block">시간 가속</span>
+              <div className="flex bg-white/5 p-1 rounded-lg pointer-events-auto">
                 {[1, 10, 100, 1000].map(mult => (
                   <button
                     key={mult}
-                    onClick={() => setSettings(s => ({ ...s, timeMultiplier: mult }))}
-                    className={`flex-1 py-1 text-[9px] font-bold rounded transition-colors ${settings.timeMultiplier === mult ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50' : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-transparent'}`}
+                    onClick={(e) => { e.stopPropagation(); setSettings(s => ({ ...s, timeMultiplier: mult })); }}
+                    className={`flex-1 py-2 text-xs font-bold rounded-md transition-all duration-300 ${settings.timeMultiplier === mult ? 'bg-cyan-500 text-black shadow-md' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
                   >
                     {mult}x
                   </button>
@@ -263,63 +272,72 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
 
         {/* Selected Planet Info */}
         <div className="flex justify-between items-end w-full pointer-events-none">
+          <AnimatePresence mode="wait">
           {selectedPlanet ? (
-            <div className="bg-black/70 backdrop-blur-xl border border-cyan-500/30 rounded-xl p-4 w-64 md:w-80 pointer-events-auto shadow-[0_0_30px_rgba(6,182,212,0.1)] transition-all">
-              <div className="flex justify-between items-start mb-4">
+            <motion.div 
+              key={selectedPlanet.id}
+              initial={{ opacity: 0, x: 20, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 20, scale: 0.95 }}
+              transition={{ duration: 0.3, type: "spring", bounce: 0.4 }}
+              className="bg-black/70 backdrop-blur-xl border border-cyan-500/30 rounded-xl p-4 w-64 md:w-80 pointer-events-auto shadow-[0_0_30px_rgba(6,182,212,0.15)] origin-bottom-right"
+            >
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white tracking-wider flex items-center gap-2">
+                  <h2 className="text-3xl font-bold text-white tracking-wider flex items-center gap-2 mb-1">
                     {selectedPlanet.name}
                   </h2>
-                  <p className="text-[10px] text-cyan-400 tracking-widest">{selectedPlanet.en}</p>
+                  <p className="text-xs text-cyan-400 tracking-widest">{selectedPlanet.en}</p>
                 </div>
                 <button 
                   onClick={() => setSelectedPlanetId(null)}
-                  className="text-gray-400 hover:text-white p-1"
+                  className="text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors group"
+                  title="선택 해제"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
               
-              <div className="space-y-2 text-[11px] tracking-wide">
-                <div className="flex justify-between border-b border-white/5 pb-1">
-                  <span className="text-gray-500">RADIUS</span>
-                  <span className="text-gray-200">{selectedPlanet.radius.toLocaleString()} km</span>
+              <div className="space-y-3 text-xs tracking-wide">
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-gray-400">RADIUS</span>
+                  <span className="text-gray-100 font-medium">{selectedPlanet.radius.toLocaleString()} km</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-1">
-                  <span className="text-gray-500">MASS</span>
-                  <span className="text-gray-200">{selectedPlanet.mass}</span>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-gray-400">MASS</span>
+                  <span className="text-gray-100 font-medium">{selectedPlanet.mass}</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-1">
-                  <span className="text-gray-500">GRAVITY</span>
-                  <span className="text-gray-200">{selectedPlanet.gravity} m/s²</span>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-gray-400">GRAVITY</span>
+                  <span className="text-gray-100 font-medium">{selectedPlanet.gravity} m/s²</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-1">
-                  <span className="text-gray-500">자전</span>
-                  <span className="text-gray-200">{selectedPlanet.rotationPeriod} hrs</span>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-gray-400">자전</span>
+                  <span className="text-gray-100 font-medium">{selectedPlanet.rotationPeriod} hrs</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-1">
-                  <span className="text-gray-500">ORBIT</span>
-                  <span className="text-gray-200">{selectedPlanet.orbitalPeriod} days</span>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-gray-400">ORBIT</span>
+                  <span className="text-gray-100 font-medium">{selectedPlanet.orbitalPeriod} days</span>
                 </div>
-                <div className="flex justify-between border-b border-white/5 pb-1">
-                  <span className="text-gray-500">AVG DIST</span>
-                  <span className="text-gray-200">{selectedPlanet.orbitRadius} × 10⁶ km</span>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-gray-400">AVG DIST</span>
+                  <span className="text-gray-100 font-medium">{selectedPlanet.orbitRadius} × 10⁶ km</span>
                 </div>
                 <div className="flex justify-between pt-1">
-                  <span className="text-gray-500">MOONS</span>
-                  <span className="text-cyan-400 font-bold">{selectedPlanet.moons}</span>
+                  <span className="text-gray-400">MOONS</span>
+                  <span className="text-cyan-400 font-bold text-sm">{selectedPlanet.moons}</span>
                 </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="mt-6 pt-5 border-t border-white/10">
                 <button
                   onClick={() => onPlanetClick && onPlanetClick(selectedPlanet.id)}
-                  className="w-full py-2 bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 font-bold tracking-widest text-xs rounded transition-colors border border-cyan-500/50"
+                  className="w-full py-3 bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 font-bold tracking-widest text-sm rounded-lg transition-colors border border-cyan-500/50"
                 >
                   입장하기 {selectedPlanet.name}
                 </button>
               </div>
-            </div>
+            </motion.div>
           ) : (
             <div className="bg-black/50 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 pointer-events-auto animate-pulse">
               <span className="text-[10px] tracking-widest text-gray-400 flex items-center gap-2">
@@ -327,16 +345,17 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
               </span>
             </div>
           )}
-
+          </AnimatePresence>
+          
           {/* Quick Selection Menu */}
-          <div className="flex flex-col gap-1 pointer-events-auto">
+          <div className="flex flex-col gap-2 pointer-events-auto">
             {PLANETS.map(p => (
               <button
                 key={p.id}
                 onClick={() => setSelectedPlanetId(p.id)}
-                className={`text-right px-3 py-1.5 text-[10px] tracking-widest rounded transition-all flex items-center justify-end gap-2 ${selectedPlanetId === p.id ? 'text-cyan-300 bg-cyan-900/40 border-r-2 border-cyan-400' : 'text-gray-400 hover:text-white hover:bg-white/5 border-r-2 border-transparent'}`}
+                className={`text-right px-4 py-2 text-xs font-medium tracking-widest rounded-lg transition-all flex items-center justify-end gap-3 ${selectedPlanetId === p.id ? 'text-cyan-300 bg-cyan-900/40 border-r-4 border-cyan-400' : 'text-gray-400 hover:text-white hover:bg-white/10 border-r-4 border-transparent'}`}
               >
-                {p.name} <span className="w-2 h-2 rounded-full shadow-[0_0_5px_rgba(255,255,255,0.5)]" style={{ backgroundColor: p.color }} />
+                {p.name} <span className="w-3 h-3 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.6)]" style={{ backgroundColor: p.color }} />
               </button>
             ))}
           </div>

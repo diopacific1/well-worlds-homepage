@@ -190,7 +190,7 @@ const HeroSection = memo(() => {
                transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
                className="text-center pointer-events-none"
             >
-               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-6 transition-all duration-700 ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
+               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/60 mb-6 transition-all duration-700 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
                  우물 그리고 세계들
                </h1>
                <p className={`text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10 transition-all duration-700 delay-100 ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
@@ -599,8 +599,8 @@ export default function Home() {
                   수막을 넘어 흘러드는 또 다른 세계의 신호들.<br />
                   이곳을 스쳐 간 탐험가들의 사유를 마주하고, 당신만의 파동을 남겨보세요.
                 </p>
-                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#7D91B4] bg-[#7D91B4]/10 w-fit px-6 py-3 rounded-full group-hover:bg-[#7D91B4] group-hover:text-surface transition-all duration-300 shadow-[0_0_0_rgba(125,145,180,0)] group-hover:shadow-[0_8px_20px_rgba(125,145,180,0.25)]">
-                  나의 파동 남기기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#7D91B4] bg-[#7D91B4]/10 w-fit px-6 py-3 rounded-full group-hover:bg-[#7D91B4] group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(125,145,180,0)] group-hover:shadow-[0_8px_20px_rgba(125,145,180,0.25)]">
+                  나의 파동 남기기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>
@@ -656,9 +656,12 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="group p-6 md:p-8 rounded-[2rem] bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface hover:shadow-xl transition-all duration-500 relative flex flex-col justify-between"
+                    className="group p-6 md:p-8 rounded-[2rem] bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/80 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-2 transition-all duration-500 relative flex flex-col justify-between overflow-hidden"
                   >
-                    <div className="space-y-4">
+                    {/* Ambient Glow on Hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                    
+                    <div className="space-y-4 relative z-10">
                       <div className="flex justify-between items-start gap-4">
                         <h3 className="font-display font-bold text-2xl text-on-surface group-hover:text-primary transition-colors">
                           {item.title}
@@ -668,11 +671,14 @@ export default function Home() {
                             href={item.link} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition-colors shrink-0"
+                            className="group/btn flex items-center gap-0 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition-all duration-300 shrink-0 overflow-hidden px-3 py-2 sm:px-2 sm:py-2 hover:px-4"
                             title="프로젝트 바로가기"
                             aria-label={`${item.title} 프로젝트 외부 링크로 이동`}
                           >
-                            <ExternalLink className="w-4 h-4" />
+                            <span className="text-xs font-bold whitespace-nowrap opacity-0 w-0 group-hover/btn:opacity-100 group-hover/btn:w-auto group-hover/btn:mr-1 transition-all duration-300">
+                              Visit
+                            </span>
+                            <ExternalLink className="w-4 h-4 shrink-0" />
                           </a>
                         )}
                       </div>
@@ -682,11 +688,11 @@ export default function Home() {
                     </div>
                     
                     {item.techStack && (
-                      <div className="mt-8 flex flex-wrap gap-2">
+                      <div className="mt-8 flex flex-wrap gap-2 relative z-10">
                         {item.techStack.split(",").map((tech: string, i: number) => (
                           <span 
                             key={i} 
-                            className="text-xs font-mono bg-surface-variant/50 text-on-surface-variant px-3 py-1.5 rounded-lg border border-outline/5"
+                            className="text-[11px] font-mono font-medium bg-outline/5 text-on-surface-variant/90 px-3 py-1.5 rounded-full border border-outline/10 group-hover:bg-primary/5 group-hover:border-primary/10 group-hover:text-primary/90 transition-colors duration-300"
                           >
                             {tech.trim()}
                           </span>
