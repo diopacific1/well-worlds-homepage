@@ -4,7 +4,7 @@ import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocess
 import * as THREE from 'three';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { PLANETS, PlanetData } from '../data/planets';
-import { Play, Pause, FastForward, RotateCcw, Crosshair, Orbit, ChevronRight, Activity, X } from 'lucide-react';
+import { Play, Pause, FastForward, RotateCcw, Crosshair, Orbit, ChevronRight, Activity, X, Settings2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Camera tracking logic
@@ -148,6 +148,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
     revolutionEnabled: true,
   });
   const [selectedPlanetId, setSelectedPlanetId] = useState<string | null>(null);
+  const [isControlsOpen, setIsControlsOpen] = useState(false);
   const controlsRef = useRef<any>(null);
   
   const selectedPlanet = useMemo(() => PLANETS.find(p => p.id === selectedPlanetId) || null, [selectedPlanetId]);
@@ -155,7 +156,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
   return (
     <div className="absolute inset-0 z-0 bg-[#020205] text-white font-mono overflow-hidden pointer-events-auto">
       {/* 3D Canvas */}
-      <Canvas camera={{ position: [0, 20, 40], fov: 45 }} shadows className="outline-none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', touchAction: 'auto' }}>
+      <Canvas camera={{ position: [0, 20, 40], fov: 45 }} shadows className="outline-none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', touchAction: 'none' }}>
         <color attach="background" args={['#020205']} />
         
         {/* Lights */}
@@ -171,6 +172,11 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
           enablePan={true} 
           enableZoom={true} 
           enableRotate={true}
+          enableDamping={true}
+          dampingFactor={0.05}
+          rotateSpeed={0.6}
+          zoomSpeed={0.8}
+          panSpeed={0.6}
           minDistance={2} 
           maxDistance={100}
           autoRotate={!selectedPlanetId && settings.revolutionEnabled}
@@ -181,9 +187,17 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
         
         {/* Objects */}
         {/* Central Core (The Well) */}
-        <mesh>
-          <sphereGeometry args={[2, 32, 32]} />
-          <meshStandardMaterial color="#ffdd00" emissive="#ff6600" emissiveIntensity={4} toneMapped={false} />
+        <group>
+          {/* Inner bright core */}
+          <mesh>
+            <sphereGeometry args={[2, 32, 32]} />
+            <meshStandardMaterial color="#ffffff" emissive="#fff5cc" emissiveIntensity={5} toneMapped={false} />
+          </mesh>
+          {/* Outer glow/corona */}
+          <mesh>
+            <sphereGeometry args={[2.4, 32, 32]} />
+            <meshStandardMaterial color="#ffaa00" emissive="#ff5500" emissiveIntensity={2} transparent opacity={0.3} toneMapped={false} />
+          </mesh>
           <Html distanceFactor={15} zIndexRange={[100, 0]} className="pointer-events-none">
             <motion.div 
               initial={{ opacity: 0.5, y: -10 }}
@@ -194,7 +208,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
               태양 (THE WELL)
             </motion.div>
           </Html>
-        </mesh>
+        </group>
 
         <OrbitLines visible={settings.orbitsVisible} />
         {PLANETS.map((p) => (
@@ -224,10 +238,22 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
           </div>
           
           {/* Controls Panel */}
-          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-lg p-3 w-48 md:w-64 pointer-events-auto flex flex-col gap-4 shadow-2xl relative z-50">
-            <div className="text-[10px] text-gray-400 tracking-wider mb-1 flex items-center gap-1 border-b border-white/10 pb-2">
-              <Orbit className="w-3 h-3" /> 시뮬레이션 제어
-            </div>
+          <div className="relative z-50 flex flex-col items-end pointer-events-auto">
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsControlsOpen(!isControlsOpen); }}
+              className="md:hidden bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-lg mb-2 text-cyan-400 flex items-center justify-center hover:bg-white/10 transition-colors"
+            >
+              <Settings2 className="w-5 h-5" />
+            </button>
+            <div className={`bg-black/60 backdrop-blur-md border border-white/10 rounded-lg p-3 w-48 md:w-64 flex-col gap-4 shadow-2xl transition-all duration-300 transform origin-top-right ${isControlsOpen ? 'flex opacity-100 scale-100' : 'hidden md:flex opacity-0 md:opacity-100 scale-95 md:scale-100'}`}>
+              <div className="text-[10px] text-gray-400 tracking-wider mb-1 flex items-center justify-between border-b border-white/10 pb-2">
+                <div className="flex items-center gap-1">
+                  <Orbit className="w-3 h-3" /> 시뮬레이션 제어
+                </div>
+                <button onClick={() => setIsControlsOpen(false)} className="md:hidden text-gray-500 hover:text-white p-1">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
             
             <div className="flex flex-col gap-3">
               <label className="flex items-center justify-between cursor-pointer group pointer-events-auto py-1">
@@ -266,6 +292,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
                   </button>
                 ))}
               </div>
+            </div>
             </div>
           </div>
         </div>
