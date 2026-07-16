@@ -183,15 +183,15 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
         {/* Central Core (The Well) */}
         <mesh>
           <sphereGeometry args={[2, 32, 32]} />
-          <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={2} toneMapped={false} transparent opacity={0.8} />
+          <meshStandardMaterial color="#ffdd00" emissive="#ff6600" emissiveIntensity={4} toneMapped={false} />
           <Html distanceFactor={15} zIndexRange={[100, 0]} className="pointer-events-none">
             <motion.div 
               initial={{ opacity: 0.5, y: -10 }}
               animate={{ opacity: 0.8, y: 0 }}
               transition={{ repeat: Infinity, repeatType: 'mirror', duration: 2 }}
-              className="px-2 py-1 text-center whitespace-nowrap font-bold tracking-widest text-cyan-200/80 text-[10px]"
+              className="px-2 py-1 text-center whitespace-nowrap font-bold tracking-widest text-amber-200/80 text-[10px]"
             >
-              THE WELL
+              태양 (THE WELL)
             </motion.div>
           </Html>
         </mesh>
@@ -218,34 +218,34 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
           <div className="bg-black/50 backdrop-blur-md border border-white/10 p-3 rounded-lg flex items-center gap-3">
             <Activity className="text-cyan-400 w-5 h-5 animate-pulse" />
             <div>
-              <h1 className="text-xs md:text-sm font-bold tracking-widest text-white/90">SOLAR SYSTEM VIZ</h1>
-              <p className="text-[9px] md:text-[10px] text-cyan-400/70 tracking-widest">LIVE TELEMETRY ACTIVE</p>
+              <h1 className="text-xs md:text-sm font-bold tracking-widest text-white/90">태양계 시뮬레이션</h1>
+              <p className="text-[9px] md:text-[10px] text-cyan-400/70 tracking-widest">실시간 원격 측정 중</p>
             </div>
           </div>
           
           {/* Controls Panel */}
           <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-lg p-3 w-48 md:w-64 pointer-events-auto flex flex-col gap-4 shadow-2xl">
             <div className="text-[10px] text-gray-400 tracking-wider mb-1 flex items-center gap-1 border-b border-white/10 pb-2">
-              <Orbit className="w-3 h-3" /> SIMULATION CONTROLS
+              <Orbit className="w-3 h-3" /> 시뮬레이션 제어
             </div>
             
             <div className="flex flex-col gap-2">
               <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">ORBITS</span>
+                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">궤도 표시</span>
                 <input type="checkbox" className="accent-cyan-500" checked={settings.orbitsVisible} onChange={e => setSettings(s => ({ ...s, orbitsVisible: e.target.checked }))} />
               </label>
               <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">ROTATION</span>
+                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">자전</span>
                 <input type="checkbox" className="accent-cyan-500" checked={settings.rotationEnabled} onChange={e => setSettings(s => ({ ...s, rotationEnabled: e.target.checked }))} />
               </label>
               <label className="flex items-center justify-between cursor-pointer group">
-                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">REVOLUTION</span>
+                <span className="text-[10px] tracking-widest text-gray-300 group-hover:text-white transition-colors">공전</span>
                 <input type="checkbox" className="accent-cyan-500" checked={settings.revolutionEnabled} onChange={e => setSettings(s => ({ ...s, revolutionEnabled: e.target.checked }))} />
               </label>
             </div>
             
             <div className="pt-2 border-t border-white/10">
-              <span className="text-[9px] text-gray-500 tracking-widest mb-2 block">TIME MULTIPLIER</span>
+              <span className="text-[9px] text-gray-500 tracking-widest mb-2 block">시간 가속</span>
               <div className="flex gap-1">
                 {[1, 10, 100, 1000].map(mult => (
                   <button
@@ -262,15 +262,15 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
         </div>
 
         {/* Selected Planet Info */}
-        <div className="flex justify-between items-end w-full">
+        <div className="flex justify-between items-end w-full pointer-events-none">
           {selectedPlanet ? (
             <div className="bg-black/70 backdrop-blur-xl border border-cyan-500/30 rounded-xl p-4 w-64 md:w-80 pointer-events-auto shadow-[0_0_30px_rgba(6,182,212,0.1)] transition-all">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h2 className="text-2xl font-bold text-white tracking-wider flex items-center gap-2">
-                    {selectedPlanet.en}
+                    {selectedPlanet.name}
                   </h2>
-                  <p className="text-[10px] text-cyan-400 tracking-widest">{selectedPlanet.name}</p>
+                  <p className="text-[10px] text-cyan-400 tracking-widest">{selectedPlanet.en}</p>
                 </div>
                 <button 
                   onClick={() => setSelectedPlanetId(null)}
@@ -294,7 +294,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
                   <span className="text-gray-200">{selectedPlanet.gravity} m/s²</span>
                 </div>
                 <div className="flex justify-between border-b border-white/5 pb-1">
-                  <span className="text-gray-500">ROTATION</span>
+                  <span className="text-gray-500">자전</span>
                   <span className="text-gray-200">{selectedPlanet.rotationPeriod} hrs</span>
                 </div>
                 <div className="flex justify-between border-b border-white/5 pb-1">
@@ -316,7 +316,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
                   onClick={() => onPlanetClick && onPlanetClick(selectedPlanet.id)}
                   className="w-full py-2 bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 font-bold tracking-widest text-xs rounded transition-colors border border-cyan-500/50"
                 >
-                  ENTER {selectedPlanet.en.toUpperCase()}
+                  입장하기 {selectedPlanet.name}
                 </button>
               </div>
             </div>
@@ -336,7 +336,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
                 onClick={() => setSelectedPlanetId(p.id)}
                 className={`text-right px-3 py-1.5 text-[10px] tracking-widest rounded transition-all flex items-center justify-end gap-2 ${selectedPlanetId === p.id ? 'text-cyan-300 bg-cyan-900/40 border-r-2 border-cyan-400' : 'text-gray-400 hover:text-white hover:bg-white/5 border-r-2 border-transparent'}`}
               >
-                {p.en} <span className="w-2 h-2 rounded-full shadow-[0_0_5px_rgba(255,255,255,0.5)]" style={{ backgroundColor: p.color }} />
+                {p.name} <span className="w-2 h-2 rounded-full shadow-[0_0_5px_rgba(255,255,255,0.5)]" style={{ backgroundColor: p.color }} />
               </button>
             ))}
           </div>

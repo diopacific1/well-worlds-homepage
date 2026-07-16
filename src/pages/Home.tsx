@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ExternalLink,
   Code2,
+  X
 } from "lucide-react";
 import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -108,8 +109,21 @@ const HeroSection = memo(() => {
     <>
       <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[92vh] pointer-events-none -mt-8 md:-mt-16 mb-12 w-full overflow-hidden">
         {/* Full bleed wrapper for SolarSystem3D background */}
-        <div className={`absolute inset-0 w-full h-full -z-10 pointer-events-auto transition-opacity duration-1000 ${show3D ? 'opacity-100' : 'opacity-0'}`}>
-          {show3D && <SolarSystem3D onPlanetClick={handlePlanetClick} />}
+        <div className={`transition-opacity duration-1000 ${show3D ? 'fixed inset-0 z-50 bg-[#020205] opacity-100 pointer-events-auto' : 'absolute inset-0 w-full h-full -z-10 opacity-0 pointer-events-none'}`}>
+          {show3D && (
+            <>
+              <SolarSystem3D onPlanetClick={handlePlanetClick} />
+              <div className="absolute bottom-6 left-6 z-[100] pointer-events-auto">
+                <button 
+                  onClick={() => setShow3D(false)} 
+                  className="px-6 py-3 bg-black/60 text-white hover:bg-black/80 transition-all duration-300 rounded-full font-bold shadow-lg backdrop-blur-md border border-white/20 flex items-center gap-2"
+                >
+                  <X className="w-5 h-5" />
+                  3D 뷰 닫기
+                </button>
+              </div>
+            </>
+          )}
         </div>
       
       {/* Abstract Background Deep World Elements */}
@@ -176,17 +190,17 @@ const HeroSection = memo(() => {
                transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
                className="text-center pointer-events-none"
             >
-               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-6 pointer-events-auto transition-all duration-700 ${show3D ? "opacity-0 select-none" : "opacity-100"}`}>
+               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-6 transition-all duration-700 ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
                  우물 그리고 세계들
                </h1>
-               <p className={`text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10 pointer-events-auto transition-all duration-700 delay-100 ${show3D ? "opacity-0 select-none" : "opacity-100"}`}>
-                 가상자산 동향, 반려식물 기록, 방명록이 함께하는 나만의 디지털 아카이브. 우물 속 다채로운 세계를 탐험하세요.
+               <p className={`text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10 transition-all duration-700 delay-100 ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
+                 베란다 텃밭, AI 소설, 자산 투자 등 나만의 세계에 초대합니다.
                </p>
                <button 
-                 onClick={() => setShow3D(!show3D)} 
-                 className="px-8 py-4 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 rounded-full font-bold shadow-lg shadow-primary/20 backdrop-blur-md border border-white/10 pointer-events-auto"
+                 onClick={() => setShow3D(true)} 
+                 className={`group flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-primary-foreground bg-primary rounded-full hover:bg-primary/90 transition-all duration-700 delay-200 shadow-lg shadow-primary/20 hover:shadow-primary/40 backdrop-blur-md border border-white/10 ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}
                >
-                 {show3D ? '3D 뷰 닫기' : '우주 탐험하기'}
+                 우주 탐험하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                </button>
             </motion.div>
           </div>
@@ -242,7 +256,7 @@ export default function Home() {
     "@type": "WebSite",
     "name": "우물 그리고 세계들",
     "url": window.location.href,
-    "description": "다양한 데이터를 탐색하고 기록을 남기는 웹 공간. 가상자산 터미널, 반려식물 저널, 개인 기록실을 제공합니다."
+    "description": "베란다 텃밭, AI 소설, 자산 투자 등 나만의 세계에 초대합니다."
   }), []);
 
   return (
@@ -250,7 +264,7 @@ export default function Home() {
       <div className="space-y-12 md:space-y-24 pb-24 overflow-hidden relative">
       <Helmet>
         <title>디지털 정원과 가상자산 터미널 | 우물 그리고 세계들</title>
-        <meta name="description" content="가상자산 동향, 반려식물 기록, 방명록이 함께하는 나만의 디지털 아카이브. 우물 속 다채로운 세계를 탐험하세요." />
+        <meta name="description" content="베란다 텃밭, AI 소설, 자산 투자 등 나만의 세계에 초대합니다." />
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
         </script>
@@ -357,7 +371,7 @@ export default function Home() {
                    나의 감정과 사색의 습도로 흙 위에 자라나는 온전한 기억의 정원을 가꾸어보세요.
                  </p>
                  
-                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#5D7964] bg-[#5D7964]/10 w-fit px-4.5 py-2.5 rounded-full group-hover:bg-[#5D7964] group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(93,121,100,0)] group-hover:shadow-[0_8px_20px_rgba(93,121,100,0.25)]">
+                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#5D7964] bg-[#5D7964]/10 w-fit px-6 py-3 rounded-full group-hover:bg-[#5D7964] group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(93,121,100,0)] group-hover:shadow-[0_8px_20px_rgba(93,121,100,0.25)]">
                    정원 산책하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                  </div>
                </div>
@@ -441,7 +455,7 @@ export default function Home() {
                   온전히 나 자신에게만 몰입하는 침묵의 시간.<br />
                   내면의 잔잔한 고백과 소중한 가치들을 세상과 단절된 비밀 아카이브에 영원히 새겨보세요.
                 </p>
-                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-secondary bg-secondary/10 w-fit px-4.5 py-2.5 rounded-full group-hover:bg-secondary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-secondary),0)] group-hover:shadow-[0_8px_20px_rgba(200,80,180,0.2)]">
+                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-secondary bg-secondary/10 w-fit px-6 py-3 rounded-full group-hover:bg-secondary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-secondary),0)] group-hover:shadow-[0_8px_20px_rgba(200,80,180,0.25)]">
                   기록 시작하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -486,7 +500,7 @@ export default function Home() {
                   실시간 가상자산의 파동을 관측합니다. 차가운 데이터 속에서 시장의 깊이를 탐색하세요.
                 </p>
                 
-                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 w-fit px-4 py-2 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-primary),0)] group-hover:shadow-[0_4px_15px_rgba(var(--color-primary),0.3)]">
+                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 w-fit px-6 py-3 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-primary),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-primary),0.25)]">
                   관측소 접속 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -585,7 +599,7 @@ export default function Home() {
                   수막을 넘어 흘러드는 또 다른 세계의 신호들.<br />
                   이곳을 스쳐 간 탐험가들의 사유를 마주하고, 당신만의 파동을 남겨보세요.
                 </p>
-                <div className="mt-8 flex items-center gap-3 text-sm font-bold text-surface bg-[#7D91B4] w-fit px-6 py-3 rounded-full hover:bg-[#687C9E] hover:scale-105 transition-all duration-300 shadow-[0_4px_15px_rgba(125,145,180,0.3)] hover:shadow-[0_8px_25px_rgba(125,145,180,0.4)]">
+                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#7D91B4] bg-[#7D91B4]/10 w-fit px-6 py-3 rounded-full group-hover:bg-[#7D91B4] group-hover:text-surface transition-all duration-300 shadow-[0_0_0_rgba(125,145,180,0)] group-hover:shadow-[0_8px_20px_rgba(125,145,180,0.25)]">
                   나의 파동 남기기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
                 </div>
               </div>
