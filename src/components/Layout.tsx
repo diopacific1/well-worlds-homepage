@@ -240,15 +240,39 @@ export default function Layout() {
         </ErrorBoundary>
       </main>
 
-      {/* Footer */}
+      {/* Modern Footer */}
       <BackToTop />
 
-      <footer className="w-full border-t border-outline/20 bg-surface mt-12 py-10">
-        <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm font-medium text-on-surface-variant">
-          <p>© {new Date().getFullYear()} 우물 그리고 세계들. All rights reserved.</p>
-          <div className="flex items-center gap-6">
-            <Link to="/" className="hover:text-primary transition-colors" aria-label="홈페이지로 이동">홈</Link>
-            <Link to="/guestbook" className="hover:text-primary transition-colors" aria-label="방명록 페이지로 이동">방명록</Link>
+      <footer className="w-full border-t border-outline/20 bg-surface/50 backdrop-blur-xl mt-24 py-12 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="absolute bottom-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="max-w-[1280px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex flex-col items-center md:items-start gap-2">
+            <h2 className="text-lg font-display font-bold tracking-tight text-on-surface flex items-center gap-2">
+              우물 그리고 세계들 <span className="text-primary font-bold text-[10px] uppercase tracking-widest border border-primary/20 px-2 py-0.5 rounded-full bg-primary-light/30">v2.0</span>
+            </h2>
+            <p className="text-sm font-medium text-on-surface-variant/70">
+              © {new Date().getFullYear()} All rights reserved.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-8 text-sm font-semibold text-on-surface-variant/90">
+            <Link to="/" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="홈페이지로 이동">
+              홈
+            </Link>
+            <Link to="/guestbook" className="hover:text-primary transition-colors flex items-center gap-1.5" aria-label="방명록 페이지로 이동">
+              방명록
+            </Link>
+            <div className="h-4 w-[1px] bg-outline/20 hidden sm:block" />
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[10px] tracking-widest uppercase font-bold text-on-surface-variant">System Online</span>
+            </div>
           </div>
         </div>
       </footer>

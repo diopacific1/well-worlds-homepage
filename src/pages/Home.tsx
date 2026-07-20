@@ -10,7 +10,8 @@ import {
   ChevronDown,
   ExternalLink,
   Code2,
-  X
+  X,
+  Orbit
 } from "lucide-react";
 import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -198,9 +199,14 @@ const HeroSection = memo(() => {
                </p>
                <button 
                  onClick={() => setShow3D(true)} 
-                 className={`group flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-primary-foreground bg-primary rounded-full hover:bg-primary/90 transition-all duration-700 delay-200 shadow-lg shadow-primary/20 hover:shadow-primary/40 backdrop-blur-md border border-white/10 ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}
+                 className={`group relative flex items-center justify-center gap-3 px-8 py-4 text-sm font-bold text-cyan-50 bg-black/40 rounded-full hover:bg-black/60 transition-all duration-700 delay-200 shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_30px_rgba(6,182,212,0.3)] backdrop-blur-xl border border-cyan-500/30 overflow-hidden ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}
                >
-                 우주 탐험하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                 {/* Internal Glow Effect */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                 
+                 <Orbit className="w-5 h-5 text-cyan-400 group-hover:animate-spin-slow" />
+                 <span className="tracking-widest">우주 탐험하기</span>
+                 <ArrowRight className="w-4 h-4 text-cyan-400/70 group-hover:translate-x-1 group-hover:text-cyan-400 transition-all" />
                </button>
             </motion.div>
           </div>
@@ -472,18 +478,37 @@ export default function Home() {
             
             {/* Simulated Live Data Visuals (Glassmorphic Window) */}
             <div className="absolute right-[-5%] top-[15%] w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] border border-outline/20 bg-surface/40 backdrop-blur-3xl rounded-2xl p-4 opacity-30 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2 group-hover:-translate-x-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex flex-col gap-3 rotate-[5deg] group-hover:rotate-[-2deg] pointer-events-none">
-              <div className="flex justify-between items-center border-b border-outline/10 pb-2">
-                <span className="text-xs font-mono text-on-surface-variant font-bold">ETH/KRW</span>
-                <span className="text-xs font-mono text-green-500 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> +2.4%
+              <div className="flex justify-between items-center border-b border-outline/10 pb-2 relative z-10">
+                <span className="text-xs font-mono text-on-surface-variant font-bold">BTC/KRW</span>
+                <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> +4.2%
                 </span>
               </div>
-              <div className="flex-1 relative overflow-hidden flex items-end gap-1.5">
-                 {/* Fake Bar Chart */}
-                 {[40, 70, 45, 90, 65, 85, 100, 75, 50, 80].map((h, i) => (
-                    <div key={i} className="flex-1 bg-gradient-to-t from-primary/30 to-primary/80 rounded-t-sm transition-all duration-700" style={{ height: `${h}%` }} />
-                 ))}
-                 <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-surface to-transparent" />
+              <div className="flex-1 relative overflow-hidden flex items-end gap-1.5 pt-4">
+                 {/* Fake SVG Sparkline Chart */}
+                 <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible drop-shadow-[0_0_8px_rgba(70,72,212,0.5)] group-hover:drop-shadow-[0_0_12px_rgba(70,72,212,0.8)] transition-all duration-700">
+                    <defs>
+                      <linearGradient id="cryptoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="var(--color-primary, #4648D4)" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="var(--color-primary, #4648D4)" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path 
+                      d="M0,40 L0,30 C10,25 20,35 30,20 C40,5 50,25 60,15 C70,5 80,10 90,0 L100,-5 L100,40 Z" 
+                      fill="url(#cryptoGrad)" 
+                    />
+                    <path 
+                      d="M0,30 C10,25 20,35 30,20 C40,5 50,25 60,15 C70,5 80,10 90,0 L100,-5" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="1.5" 
+                      className="text-primary"
+                    />
+                 </svg>
+              </div>
+              <div className="text-[10px] font-mono text-on-surface-variant/50 flex justify-between items-center pt-1">
+                <span>VOL: 24.5K</span>
+                <span>NODE: SYNCED</span>
               </div>
             </div>
 

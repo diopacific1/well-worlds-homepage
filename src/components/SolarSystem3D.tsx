@@ -11,19 +11,43 @@ import { motion, AnimatePresence } from 'framer-motion';
 function CameraController({ targetPlanet, controlsRef }: { targetPlanet: PlanetData | null, controlsRef: any }) {
   const { camera } = useThree();
   const vec = new THREE.Vector3();
+  const idealPos = new THREE.Vector3();
+  const [prevTarget, setPrevTarget] = useState<string | null>(null);
+  const isAnimating = useRef(false);
+
+  useEffect(() => {
+    if (targetPlanet?.id !== prevTarget) {
+      isAnimating.current = true;
+      setPrevTarget(targetPlanet?.id || null);
+    }
+  }, [targetPlanet, prevTarget]);
   
   useFrame(() => {
     if (targetPlanet) {
-      // Find the planet object in the scene
       const planetObj = camera.parent?.getObjectByName(`planet-${targetPlanet.id}`);
       if (planetObj) {
         planetObj.getWorldPosition(vec);
-        // Smoothly interpolate camera target
         controlsRef.current?.target.lerp(vec, 0.05);
+        
+        if (isAnimating.current) {
+          const distance = Math.max(targetPlanet.size * 5, 5); 
+          idealPos.copy(camera.position).sub(vec).normalize().multiplyScalar(distance).add(vec);
+          camera.position.lerp(idealPos, 0.05);
+          
+          if (camera.position.distanceTo(idealPos) < 0.1) {
+            isAnimating.current = false;
+          }
+        }
       }
     } else {
-      // Default to Center
       controlsRef.current?.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
+      if (isAnimating.current) {
+        idealPos.set(0, 20, 40);
+        camera.position.lerp(idealPos, 0.05);
+        if (camera.position.distanceTo(idealPos) < 0.5) {
+          isAnimating.current = false;
+        }
+      }
     }
   });
   return null;
@@ -187,17 +211,9 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
         
         {/* Objects */}
         {/* Central Core (The Well) */}
-        <group>
-          {/* Inner bright core */}
-          <mesh>
-            <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="#ffffff" emissive="#fff5cc" emissiveIntensity={5} toneMapped={false} />
-          </mesh>
-          {/* Outer glow/corona */}
-          <mesh>
-            <sphereGeometry args={[2.4, 32, 32]} />
-            <meshStandardMaterial color="#ffaa00" emissive="#ff5500" emissiveIntensity={2} transparent opacity={0.3} toneMapped={false} />
-          </mesh>
+        <mesh>
+          <sphereGeometry args={[2, 32, 32]} />
+          <meshStandardMaterial color="#ffdd00" emissive="#ff6600" emissiveIntensity={4} toneMapped={false} />
           <Html distanceFactor={15} zIndexRange={[100, 0]} className="pointer-events-none">
             <motion.div 
               initial={{ opacity: 0.5, y: -10 }}
@@ -208,7 +224,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
               태양 (THE WELL)
             </motion.div>
           </Html>
-        </group>
+        </mesh>
 
         <OrbitLines visible={settings.orbitsVisible} />
         {PLANETS.map((p) => (
