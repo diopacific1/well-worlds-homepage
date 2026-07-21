@@ -13,6 +13,8 @@ import {
   List,
   RefreshCw,
   Info,
+  Star,
+  Command,
 } from "lucide-react";
 import {
   AreaChart,
@@ -265,6 +267,44 @@ export default function CryptoDashboard() {
   const [activeCoinId, setActiveCoinId] = useState("bitcoin");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchInputRef = useRef<HTMLDivElement>(null);
+  
+  // Watchlist (Favorites) state
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("crypto_favorites_v1");
+      return saved ? JSON.parse(saved) : ["bitcoin", "ethereum", "solana"];
+    } catch {
+      return ["bitcoin", "ethereum", "solana"];
+    }
+  });
+
+  const toggleFavorite = (id: string) => {
+    setFavorites(prev => {
+      const updated = prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id];
+      localStorage.setItem("crypto_favorites_v1", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Focus search on '/'
+      if (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        document.getElementById("cryptoSearch")?.focus();
+      }
+      // Escape to close dropdown or blur input
+      if (e.key === "Escape") {
+        setShowSearchDropdown(false);
+        if (document.activeElement?.id === "cryptoSearch") {
+          (document.activeElement as HTMLElement).blur();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
   
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -691,7 +731,6 @@ export default function CryptoDashboard() {
     if (coin.trendUp) return { label: "보유 (상승 흐름)", color: "text-[#E13030]", bg: "bg-[#E13030]/10" };
     return { label: "관망 (중립)", color: "text-on-surface-variant", bg: "bg-surface-dim" };
   }, [cryptoData?.rsi, coin.trendUp]);
-
   const sentimentScoreVal = cryptoData?.sentimentScore || 68;
   const sentimentColorClass = sentimentScoreVal >= 50 ? "text-[#E13030]" : "text-[#1261C4]";
 
@@ -705,95 +744,130 @@ export default function CryptoDashboard() {
         <PriceTicker />
         <div className="p-4 lg:p-6 space-y-8 animate-in fade-in duration-700 max-w-[1280px] mx-auto w-full mt-4">
           <MarketOverview />
- 
-          {/* Search Header */}
-          <form
-            onSubmit={handleSearch}
-            className="card p-5 md:p-6 flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6 transition-none"
-            aria-label="가상자산 검색"
-          >
-            <div className="flex items-center gap-4">
-              {coin.image ? (
-                <img
-                  src={coin.image}
-                  alt={`${coin.name} 로고`}
-                  loading="lazy"
-                  decoding="async"
-                  fetchPriority="high"
-                  className="w-12 h-12 rounded-full object-contain bg-surface p-1 border border-outline/20 shadow-sm content-visibility-auto"
-                />
-              ) : (
-                <div
-                  className={`w-12 h-12 rounded-full bg-gradient-to-br ${coin.color} flex items-center justify-center font-bold text-white shadow-sm text-sm p-1`}
-                >
-                  {coin.symbol}
+
+          <div className="card p-5 md:p-6 flex flex-col gap-5 transition-none">
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6 w-full"
+              aria-label="가상자산 검색"
+            >
+              <div className="flex items-center gap-4">
+                {coin.image ? (
+                  <img
+                    src={coin.image}
+                    alt={`${coin.name} 로고`}
+                    loading="lazy"
+                    decoding="async"
+                    fetchPriority="high"
+                    className="w-12 h-12 rounded-full object-contain bg-surface p-1 border border-outline/20 shadow-sm content-visibility-auto"
+                  />
+                ) : (
+                  <div
+                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${coin.color} flex items-center justify-center font-bold text-white shadow-sm text-sm p-1`}
+                  >
+                    {coin.symbol}
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <h1 className="font-display font-bold text-4xl md:text-5xl tracking-tight text-on-surface uppercase flex items-center gap-3">
+                    {coin.name}{" "}
+                    <span className="text-primary font-mono text-xl md:text-2xl opacity-80 mt-1">
+                      / USD
+                    </span>
+                  </h1>
                 </div>
-              )}
-              <h1 className="font-display font-bold text-4xl md:text-5xl tracking-tight text-on-surface uppercase flex items-center gap-3">
-                {coin.name}{" "}
-                <span className="text-primary font-mono text-xl md:text-2xl opacity-80 mt-1">
-                  / USD
+              </div>
+
+              <div className="flex-1 max-w-2xl relative w-full flex flex-col gap-3" ref={searchInputRef}>
+                <div className="relative">
+                  <label htmlFor="cryptoSearch" className="sr-only">
+                    검색어 입력
+                  </label>
+                  <Search
+                    className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none"
+                    aria-hidden="true"
+                  />
+                  <input
+                    id="cryptoSearch"
+                    type="text"
+                    value={searchTerm}
+                    onFocus={() => setShowSearchDropdown(true)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setShowSearchDropdown(true);
+                    }}
+                    placeholder="시장, 자산 검색 (예: 리플, 도지코인)"
+                    className="w-full input-field !pl-12 !pr-24 font-mono uppercase"
+                    aria-label="시장, 자산 검색"
+                    autoComplete="off"
+                  />
+                  <div className="absolute right-16 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1 pointer-events-none opacity-50">
+                    <kbd className="px-2 py-1 bg-surface-dim rounded text-[10px] font-mono border border-outline/10 text-on-surface-variant">/</kbd>
+                  </div>
+                  <button
+                    type="submit"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-primary/10 text-primary rounded-md text-xs font-bold hover:bg-primary/20 transition-colors"
+                    aria-label="검색 실행"
+                  >
+                    검색
+                  </button>
+                  
+                  {showSearchDropdown && searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-outline/20 rounded-xl shadow-lg z-50 overflow-hidden max-h-60 overflow-y-auto">
+                      {searchResults.map((id) => (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => {
+                            setActiveCoinId(id);
+                            setSearchTerm("");
+                            setShowSearchDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-surface-dim transition-colors flex items-center gap-3 border-b border-outline/5 last:border-b-0"
+                        >
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-[10px] font-bold uppercase overflow-hidden">
+                            {id.substring(0, 3)}
+                          </div>
+                          <span className="font-display font-bold text-on-surface uppercase">{id}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </form>
+
+            <div className="flex items-center justify-between border-t border-outline/10 pt-4 mt-1">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                <span className="text-xs font-bold text-on-surface-variant flex items-center gap-1.5 whitespace-nowrap mr-2">
+                  <Star className="w-3.5 h-3.5" /> 관심 자산
                 </span>
-              </h1>
-            </div>
- 
-            <div className="flex-1 max-w-2xl relative w-full" ref={searchInputRef}>
-              <label htmlFor="cryptoSearch" className="sr-only">
-                검색어 입력
-              </label>
-              <Search
-                className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none"
-                aria-hidden="true"
-              />
-              <input
-                id="cryptoSearch"
-                type="text"
-                value={searchTerm}
-                onFocus={() => setShowSearchDropdown(true)}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowSearchDropdown(true);
-                }}
-                placeholder="시장, 자산 검색 (예: 리플, 도지코인, 비트코인)"
-                className="w-full input-field !pl-12 font-mono uppercase"
-                aria-label="시장, 자산 검색"
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-primary/10 text-primary rounded-md text-xs font-bold hover:bg-primary/20 transition-colors"
-                aria-label="검색 실행"
-              >
-                검색
-              </button>
-              
-              {showSearchDropdown && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-outline/20 rounded-xl shadow-lg z-50 overflow-hidden max-h-60 overflow-y-auto">
-                  {searchResults.map((id) => (
+                {favorites.length > 0 ? (
+                  favorites.map(id => (
                     <button
                       key={id}
-                      type="button"
-                      onClick={() => {
-                        setActiveCoinId(id);
-                        setSearchTerm("");
-                        setShowSearchDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-surface-dim transition-colors flex items-center gap-3 border-b border-outline/5 last:border-b-0"
+                      onClick={() => setActiveCoinId(id)}
+                      className={`px-3 py-1.5 rounded-full text-[11px] font-mono font-bold whitespace-nowrap transition-colors border ${activeCoinId === id ? "bg-primary text-white border-primary" : "bg-surface-dim border-outline/10 text-on-surface hover:bg-surface-container"}`}
                     >
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-[10px] font-bold uppercase overflow-hidden">
-                        {id.substring(0, 3)}
-                      </div>
-                      <span className="font-display font-bold text-on-surface uppercase">{id}</span>
+                      {id.toUpperCase()}
                     </button>
-                  ))}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <span className="text-[11px] text-on-surface-variant/50 font-mono">별 아이콘을 눌러 추가하세요</span>
+                )}
+              </div>
+              <button
+                onClick={() => toggleFavorite(activeCoinId)}
+                className={`ml-4 flex-shrink-0 p-2 rounded-full transition-colors border ${favorites.includes(activeCoinId) ? "bg-amber-400/10 border-amber-400/30 text-amber-500" : "bg-surface-dim border-outline/10 text-on-surface-variant hover:text-on-surface hover:bg-surface-container"}`}
+                title={favorites.includes(activeCoinId) ? "관심 자산에서 제거" : "관심 자산에 추가"}
+              >
+                <Star className={`w-4 h-4 ${favorites.includes(activeCoinId) ? "fill-current" : ""}`} />
+              </button>
             </div>
-          </form>
-
+          </div>
           {/* Metrics Row */}
           <div className="flex overflow-x-auto pb-2 md:grid md:grid-cols-4 gap-6 no-scrollbar relative">
-
+          {/* Metrics Row */}
             <MetricCard
               isLoading={loadingCrypto}
               label="현재 가격"
@@ -1098,8 +1172,6 @@ export default function CryptoDashboard() {
                   sub={coin.volatility}
                   color="cyber"
                 />
-              </div>
-
               {/* Portfolio ROI Analysis Simulator */}
               <div className="card p-6 md:p-8 relative flex flex-col border border-primary/10 overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
@@ -1124,10 +1196,10 @@ export default function CryptoDashboard() {
                   <div className="space-y-5 flex flex-col justify-center">
                     <div>
                       <label htmlFor="buyPriceInput" className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
-                        평균 매수가 (₩ KRW)
+                        평균 매수 단가 (₩)
                       </label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-on-surface-variant">₩</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono font-bold text-on-surface-variant">₩</span>
                         <input
                           id="buyPriceInput"
                           type="number"
@@ -1149,7 +1221,6 @@ export default function CryptoDashboard() {
                         </button>
                       </div>
                     </div>
-
                     <div>
                       <label htmlFor="quantityInput" className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2">
                         보유 수량 ({coin.symbol})
@@ -1165,18 +1236,19 @@ export default function CryptoDashboard() {
                           step="any"
                         />
                       </div>
-                      <div className="flex justify-between text-[11px] text-on-surface-variant mt-1.5 px-1">
-                        <span>초소수점 단위 미세 수량 입력 지원</span>
-                        <div className="flex gap-1">
-                          <button type="button" onClick={() => handleQuantityChange(Math.max(0, currentQuantity * 0.5))} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">-50%</button>
-                          <button type="button" onClick={() => handleQuantityChange(Math.max(0, currentQuantity * 0.9))} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">-10%</button>
-                          <button type="button" onClick={() => handleQuantityChange(currentQuantity * 1.1)} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">+10%</button>
-                          <button type="button" onClick={() => handleQuantityChange(currentQuantity * 2)} className="px-1.5 py-0.5 bg-surface-dim border border-outline/10 rounded text-[9px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant">2x</button>
+                      <div className="flex justify-between text-[11px] text-on-surface-variant mt-2 px-1">
+                        <span>수량 빠른 조절</span>
+                        <div className="flex gap-1.5">
+                          <button type="button" onClick={() => handleQuantityChange(0)} className="px-2 py-0.5 bg-surface-dim border border-outline/10 rounded text-[10px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant text-center min-w-[36px]">0</button>
+                          <button type="button" onClick={() => handleQuantityChange(Math.max(0, currentQuantity * 0.5))} className="px-2 py-0.5 bg-surface-dim border border-outline/10 rounded text-[10px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant text-center min-w-[36px]">½</button>
+                          <button type="button" onClick={() => handleQuantityChange(currentQuantity + 0.1)} className="px-2 py-0.5 bg-surface-dim border border-outline/10 rounded text-[10px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant text-center min-w-[36px]">+0.1</button>
+                          <button type="button" onClick={() => handleQuantityChange(currentQuantity + 1)} className="px-2 py-0.5 bg-surface-dim border border-outline/10 rounded text-[10px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant text-center min-w-[36px]">+1</button>
+                          <button type="button" onClick={() => handleQuantityChange(currentQuantity * 2)} className="px-2 py-0.5 bg-surface-dim border border-outline/10 rounded text-[10px] hover:bg-outline/10 transition-colors font-bold text-on-surface-variant text-center min-w-[36px]">2x</button>
                         </div>
                       </div>
                     </div>
                   </div>
-
+                  
                   {/* Right Asset comparison visualizer */}
                   <div className="bg-surface-dim/40 rounded-2xl p-5 border border-outline/10 flex flex-col justify-between">
                     <div>
@@ -1184,7 +1256,6 @@ export default function CryptoDashboard() {
                         <BarChart2 className="w-3.5 h-3.5 text-primary" />
                         자산 총 가치 대비 현황 비교
                       </h4>
-                      
                       <div className="w-full h-24 relative mt-1">
                         {mounted && (
                           <ResponsiveContainer width="100%" height="100%">
@@ -1207,7 +1278,6 @@ export default function CryptoDashboard() {
                         )}
                       </div>
                     </div>
-
                     <div className="flex justify-between items-center pt-3 border-t border-outline/10 text-[11px] font-mono text-on-surface-variant">
                       <span>매수가: ₩{Math.round(currentBuyPrice).toLocaleString()} 원</span>
                       <span className="font-bold text-on-surface">잔고: {currentQuantity.toLocaleString()} {coin.symbol}</span>
@@ -1217,37 +1287,45 @@ export default function CryptoDashboard() {
 
                 {/* Bento dynamic stats indicators */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-                  <div className="bg-surface-container-lowest border border-outline/10 p-4 rounded-xl flex flex-col justify-between">
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">총 매수 금액 (원금)</span>
-                    <h4 className="text-lg font-mono font-bold text-on-surface mt-1.5">
-                      ₩{Math.round(totalInvested).toLocaleString()} 원
+                  <div className="bg-surface border border-outline/10 p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-primary/30 transition-colors">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-surface-dim/50 rounded-full blur-xl pointer-events-none group-hover:bg-primary/5 transition-colors"></div>
+                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                      총 매수 금액 (원금)
+                    </span>
+                    <h4 className="text-xl md:text-2xl font-mono font-bold text-on-surface mt-3 tracking-tight">
+                      ₩{Math.round(totalInvested).toLocaleString()} <span className="text-sm font-sans font-medium text-on-surface-variant">원</span>
                     </h4>
                   </div>
-
-                  <div className="bg-surface-container-lowest border border-outline/10 p-4 rounded-xl flex flex-col justify-between">
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">현재 평가 평가금액</span>
-                    <h4 className="text-lg font-mono font-bold text-on-surface mt-1.5">
-                      ₩{Math.round(currentValue).toLocaleString()} 원
+                  <div className="bg-surface border border-outline/10 p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:border-primary/30 transition-colors">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-surface-dim/50 rounded-full blur-xl pointer-events-none group-hover:bg-primary/5 transition-colors"></div>
+                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                      현재 평가 금액
+                    </span>
+                    <h4 className="text-xl md:text-2xl font-mono font-bold text-on-surface mt-3 tracking-tight">
+                      ₩{Math.round(currentValue).toLocaleString()} <span className="text-sm font-sans font-medium text-on-surface-variant">원</span>
                     </h4>
                   </div>
-
-                  <div className={`border p-4 rounded-xl flex flex-col justify-between ${profitLoss >= 0 ? "bg-[#E13030]/5 border-[#E13030]/25" : "bg-[#1261C4]/5 border-[#1261C4]/25"}`}>
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">평가 손익 (Net Profit)</span>
-                    <h4 className={`text-lg font-mono font-bold mt-1.5 ${profitLoss >= 0 ? "text-[#E13030]" : "text-[#1261C4]"}`}>
-                      {profitLoss >= 0 ? "+" : ""}₩{Math.round(profitLoss).toLocaleString()} 원
+                  <div className={`border p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden transition-colors ${profitLoss >= 0 ? "bg-[#E13030]/5 border-[#E13030]/20 hover:border-[#E13030]/40" : "bg-[#1261C4]/5 border-[#1261C4]/20 hover:border-[#1261C4]/40"}`}>
+                    <div className={`absolute top-0 right-0 w-16 h-16 rounded-full blur-xl pointer-events-none ${profitLoss >= 0 ? "bg-[#E13030]/10" : "bg-[#1261C4]/10"}`}></div>
+                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                      평가 손익 (Net Profit)
+                    </span>
+                    <h4 className={`text-xl md:text-2xl font-mono font-bold mt-3 tracking-tight ${profitLoss >= 0 ? "text-[#E13030]" : "text-[#1261C4]"}`}>
+                      {profitLoss > 0 ? "+" : ""}₩{Math.round(profitLoss).toLocaleString()} <span className={`text-sm font-sans font-medium ${profitLoss >= 0 ? "text-[#E13030]/70" : "text-[#1261C4]/70"}`}>원</span>
                     </h4>
                   </div>
-
-                  <div className={`border p-4 rounded-xl flex flex-col justify-between ${roi >= 0 ? "bg-[#E13030]/10 border-[#E13030]/35" : "bg-[#1261C4]/10 border-[#1261C4]/35"}`}>
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">실시간 수익 실현 비율</span>
-                    <h4 className={`text-xl font-display font-black mt-1.5 flex items-center gap-1 ${roi >= 0 ? "text-[#E13030]" : "text-[#1261C4]"}`}>
-                      {roi >= 0 ? "+" : ""}{roi.toFixed(2)}%
+                  <div className={`border p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden transition-colors ${roi >= 0 ? "bg-gradient-to-br from-[#E13030]/10 to-transparent border-[#E13030]/30 hover:border-[#E13030]/50" : "bg-gradient-to-br from-[#1261C4]/10 to-transparent border-[#1261C4]/30 hover:border-[#1261C4]/50"}`}>
+                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+                      수익률 (ROI)
+                    </span>
+                    <h4 className={`text-3xl md:text-4xl font-display font-black mt-2 flex items-center gap-1 tracking-tighter ${roi >= 0 ? "text-[#E13030]" : "text-[#1261C4]"}`}>
+                      {roi > 0 ? "+" : ""}{roi.toFixed(2)}<span className="text-xl">%</span>
                     </h4>
                   </div>
                 </div>
               </div>
-            </div>
 
+            </div>
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Sentiment */}
@@ -1404,6 +1482,7 @@ export default function CryptoDashboard() {
               </div>
             </article>
           </section>
+        </div>
         </div>
       </main>
     </PriceProvider>

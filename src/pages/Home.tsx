@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Code2,
   X,
-  Orbit
+  Orbit,
+  Activity
 } from "lucide-react";
 import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -298,10 +299,10 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-br from-[#5D7964]/12 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
             <div className="absolute -top-36 -left-36 w-[450px] h-[450px] bg-[#5D7964]/12 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
             
-            {/* Visual Glassmorphic Botanical Garden Status Widget */}
-            <div className="absolute right-[5%] top-[12%] w-[250px] sm:w-[280px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-70 md:opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[-2deg] shadow-[0_15px_40px_rgba(93,121,100,0.08)] flex flex-col justify-between pointer-events-none overflow-hidden rotate-[3deg] scale-95 sm:scale-100 origin-top-right">
+            {/* Visual Glassmorphic Botanical Garden Status Widget - Hidden on mobile for cleaner UX */}
+            <div className="hidden md:flex absolute right-[5%] top-[12%] w-[250px] sm:w-[280px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[-2deg] shadow-[0_15px_40px_rgba(93,121,100,0.08)] flex-col justify-between pointer-events-none overflow-hidden rotate-[3deg] scale-95 sm:scale-100 origin-top-right z-0">
               <div className="absolute top-[-50%] right-[-50%] w-48 h-48 bg-[#5D7964]/15 rounded-full blur-2xl opacity-60" />
-              <div className="flex justify-between items-center border-b border-outline/10 pb-2.5">
+              <div className="flex justify-between items-center border-b border-outline/10 pb-2.5 relative z-10">
                 <span className="text-[10px] font-mono text-[#5D7964] font-extrabold tracking-widest uppercase">BOTANICAL CORE</span>
                 <span className="text-[9px] font-mono text-on-surface-variant/80 flex items-center gap-1.5 bg-[#5D7964]/10 px-2.5 py-0.5 rounded-full text-[#5D7964]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> SYNC ACTIVE
@@ -394,10 +395,10 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-bl from-secondary/12 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
             <div className="absolute -top-36 -right-36 w-[400px] h-[400px] bg-secondary/12 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
             
-            {/* Elegant Glassmorphic Journal/Thoughts Widget */}
-            <div className="absolute right-[5%] top-[12%] w-[230px] sm:w-[250px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-70 md:opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[3deg] shadow-[0_15px_40px_rgba(var(--color-secondary),0.08)] flex flex-col justify-between pointer-events-none overflow-hidden rotate-[-4deg] scale-95 sm:scale-100 origin-top-right">
+            {/* Elegant Glassmorphic Journal/Thoughts Widget - Hidden on mobile for cleaner UX */}
+            <div className="hidden md:flex absolute right-[5%] top-[12%] w-[230px] sm:w-[250px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[3deg] shadow-[0_15px_40px_rgba(var(--color-secondary),0.08)] flex-col justify-between pointer-events-none overflow-hidden rotate-[-4deg] scale-95 sm:scale-100 origin-top-right z-0">
               <div className="absolute bottom-[-30%] left-[-30%] w-40 h-40 bg-secondary/10 rounded-full blur-2xl opacity-60" />
-              <div className="flex justify-between items-center border-b border-outline/10 pb-2.5">
+              <div className="flex justify-between items-center border-b border-outline/10 pb-2.5 relative z-10">
                 <span className="text-[9px] font-mono text-secondary font-extrabold tracking-widest uppercase">ARCHIVE MEMORIES</span>
                 <span className="text-[8px] font-mono text-on-surface-variant/70 bg-secondary/10 px-2 py-0.5 rounded-full text-secondary">
                   SECURE PASS
@@ -475,16 +476,18 @@ export default function Home() {
             className="md:col-span-5 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/60 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute -bottom-36 -left-36 w-[400px] h-[400px] bg-primary/15 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
             
-            {/* Simulated Live Data Visuals (Glassmorphic Window) */}
-            <div className="absolute right-[-5%] top-[15%] w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] border border-outline/20 bg-surface/40 backdrop-blur-3xl rounded-2xl p-4 opacity-70 md:opacity-30 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2 group-hover:-translate-x-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex flex-col gap-3 rotate-[5deg] group-hover:rotate-[-2deg] pointer-events-none">
+            {/* Simulated Live Data Visuals (Glassmorphic Window) - Hidden on mobile for cleaner UX */}
+            <div className="hidden md:flex absolute right-[-5%] top-[15%] w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] border border-outline/20 bg-surface/40 backdrop-blur-3xl rounded-2xl p-4 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2 group-hover:-translate-x-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex-col gap-3 rotate-[5deg] group-hover:rotate-[-2deg] pointer-events-none origin-bottom-right scale-90 sm:scale-100 z-0">
+              <div className="absolute top-[-40%] right-[-20%] w-40 h-40 bg-primary/20 rounded-full blur-2xl opacity-50" />
               <div className="flex justify-between items-center border-b border-outline/10 pb-2 relative z-10">
                 <span className="text-xs font-mono text-on-surface-variant font-bold">BTC/KRW</span>
                 <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> +4.2%
                 </span>
               </div>
-              <div className="flex-1 relative overflow-hidden flex items-end gap-1.5 pt-4">
+              <div className="flex-1 relative overflow-hidden flex items-end gap-1.5 pt-4 z-10">
                  {/* Fake SVG Sparkline Chart */}
                  <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible drop-shadow-[0_0_8px_rgba(70,72,212,0.5)] group-hover:drop-shadow-[0_0_12px_rgba(70,72,212,0.8)] transition-all duration-700">
                     <defs>
@@ -506,23 +509,52 @@ export default function Home() {
                     />
                  </svg>
               </div>
-              <div className="text-[10px] font-mono text-on-surface-variant/50 flex justify-between items-center pt-1">
+              <div className="text-[10px] font-mono text-on-surface-variant/50 flex justify-between items-center pt-1 z-10">
                 <span>VOL: 24.5K</span>
                 <span>NODE: SYNCED</span>
               </div>
             </div>
 
+            {/* Micro Floating Particles for Crypto */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute bg-primary/20 rounded-full"
+                  style={{
+                    width: `${(i + 1) * 2 + 2}px`,
+                    height: `${(i + 1) * 2 + 2}px`,
+                    left: `${20 + i * 20}%`,
+                    bottom: `${15 + i * 10}%`,
+                  }}
+                  animate={{
+                    y: [0, -20, 0],
+                    opacity: [0.1, 0.5, 0.1],
+                  }}
+                  transition={{
+                    duration: 3 + i * 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="absolute right-[-5%] bottom-[-5%] opacity-[0.02] group-hover:opacity-[0.05] transition-all duration-1000 group-hover:-translate-x-2 group-hover:rotate-12 pointer-events-none">
+              <Activity className="w-72 h-72 text-on-surface" />
+            </div>
+
             <div className="flex flex-col h-full p-8 md:p-10 relative z-10 w-full justify-between">
-              <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center border border-primary/20 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500 shadow-inner">
+              <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center border border-primary/20 group-hover:scale-110 group-hover:bg-primary/20 group-hover:rotate-3 transition-all duration-500 shadow-inner">
                 <LineChart className="w-8 h-8" />
               </div>
-
-              <div className="mt-20 md:mt-12 md:max-w-[90%]">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 group-hover:text-primary transition-colors duration-300">
+              <div className="mt-12 max-w-sm sm:max-w-md">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-primary transition-colors duration-300">
                   시장의 심연
                 </h2>
-                <p className="text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep">
-                  실시간 가상자산의 파동을 관측합니다. 차가운 데이터 속에서 시장의 깊이를 탐색하세요.
+                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep">
+                  실시간 가상자산의 파동을 관측합니다.<br />
+                  차가운 데이터 속에서 시장의 깊이를 탐색하세요.
                 </p>
                 
                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 w-fit px-6 py-3 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-primary),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-primary),0.25)]">
