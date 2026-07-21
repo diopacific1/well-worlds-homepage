@@ -10,7 +10,6 @@ import ErrorBoundary from './ErrorBoundary';
 
 export default function Layout() {
   const location = useLocation();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [newsIndex, setNewsIndex] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [globalNews, setGlobalNews] = useState<string[]>([
@@ -23,17 +22,6 @@ export default function Layout() {
     damping: 30,
     restDelta: 0.001
   });
-
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     if (!auth) {
@@ -154,16 +142,6 @@ export default function Layout() {
                 시스템 정상 작동
               </span>
             </div>
-            {/* Mobile Menu Toggle */}
-            <button 
-              className="lg:hidden p-2 text-on-surface-variant hover:text-on-surface z-50 transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-menu"
-              aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
-            </button>
           </div>
         </div>
 
@@ -190,51 +168,41 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* Mobile Nav Overlay */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div 
-              id="mobile-menu"
-              role="dialog"
-              aria-modal="true"
-              aria-label="모바일 메뉴"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute top-full left-0 w-full bg-surface/95 backdrop-blur-xl border-b border-outline/20 flex flex-col p-6 gap-3 lg:hidden shadow-2xl z-40"
-            >
-              {navItems.map((item) => {
-                const active = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`flex items-center gap-3 px-4 py-4 rounded-xl text-base font-bold transition-all ${
-                      active
-                        ? 'bg-primary text-white shadow-md'
-                        : 'text-on-surface-variant hover:text-primary hover:bg-primary-light/20'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" aria-hidden="true" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
         {/* Scroll Progress Bar */}
         <motion.div
-          className="h-1 bg-primary origin-left z-50 absolute bottom-0 left-0 right-0 translate-y-full"
+          className="h-1 bg-primary origin-left z-50 absolute bottom-0 left-0 right-0 translate-y-full hidden lg:block"
           style={{ scaleX }}
         />
       </header>
 
-      <main id="main-content" className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16 focus:outline-none" tabIndex={-1}>
+      {/* Mobile Bottom Navigation (GNB) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl border-t border-outline/20 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]" aria-label="모바일 하단 네비게이션">
+        <div className="flex justify-around items-center px-2 py-2">
+          {navItems.map((item) => {
+            const active = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex flex-col items-center justify-center w-full py-2 gap-1 rounded-xl transition-all duration-300 ${
+                  active ? "text-primary" : "text-on-surface-variant hover:text-on-surface"
+                }`}
+                aria-current={active ? 'page' : undefined}
+              >
+                <div className={`relative flex items-center justify-center p-1.5 rounded-full transition-all duration-300 ${active ? "bg-primary-light/40 scale-110" : ""}`}>
+                  <Icon className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <span className={`text-[10px] font-bold transition-all duration-300 ${active ? "opacity-100" : "opacity-70"}`}>
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      <main id="main-content" className="flex-1 w-full max-w-[1280px] mx-auto px-4 md:px-6 py-8 md:py-16 pb-28 lg:pb-16 focus:outline-none" tabIndex={-1}>
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>

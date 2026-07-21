@@ -299,7 +299,7 @@ export default function Home() {
             <div className="absolute -top-36 -left-36 w-[450px] h-[450px] bg-[#5D7964]/12 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
             
             {/* Visual Glassmorphic Botanical Garden Status Widget */}
-            <div className="absolute right-[5%] top-[12%] w-[250px] sm:w-[280px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[-2deg] shadow-[0_15px_40px_rgba(93,121,100,0.08)] flex flex-col justify-between pointer-events-none overflow-hidden rotate-[3deg] scale-95 sm:scale-100 origin-top-right">
+            <div className="absolute right-[5%] top-[12%] w-[250px] sm:w-[280px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-70 md:opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[-2deg] shadow-[0_15px_40px_rgba(93,121,100,0.08)] flex flex-col justify-between pointer-events-none overflow-hidden rotate-[3deg] scale-95 sm:scale-100 origin-top-right">
               <div className="absolute top-[-50%] right-[-50%] w-48 h-48 bg-[#5D7964]/15 rounded-full blur-2xl opacity-60" />
               <div className="flex justify-between items-center border-b border-outline/10 pb-2.5">
                 <span className="text-[10px] font-mono text-[#5D7964] font-extrabold tracking-widest uppercase">BOTANICAL CORE</span>
@@ -395,7 +395,7 @@ export default function Home() {
             <div className="absolute -top-36 -right-36 w-[400px] h-[400px] bg-secondary/12 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
             
             {/* Elegant Glassmorphic Journal/Thoughts Widget */}
-            <div className="absolute right-[5%] top-[12%] w-[230px] sm:w-[250px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[3deg] shadow-[0_15px_40px_rgba(var(--color-secondary),0.08)] flex flex-col justify-between pointer-events-none overflow-hidden rotate-[-4deg] scale-95 sm:scale-100 origin-top-right">
+            <div className="absolute right-[5%] top-[12%] w-[230px] sm:w-[250px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-70 md:opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[3deg] shadow-[0_15px_40px_rgba(var(--color-secondary),0.08)] flex flex-col justify-between pointer-events-none overflow-hidden rotate-[-4deg] scale-95 sm:scale-100 origin-top-right">
               <div className="absolute bottom-[-30%] left-[-30%] w-40 h-40 bg-secondary/10 rounded-full blur-2xl opacity-60" />
               <div className="flex justify-between items-center border-b border-outline/10 pb-2.5">
                 <span className="text-[9px] font-mono text-secondary font-extrabold tracking-widest uppercase">ARCHIVE MEMORIES</span>
@@ -477,7 +477,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
             
             {/* Simulated Live Data Visuals (Glassmorphic Window) */}
-            <div className="absolute right-[-5%] top-[15%] w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] border border-outline/20 bg-surface/40 backdrop-blur-3xl rounded-2xl p-4 opacity-30 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2 group-hover:-translate-x-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex flex-col gap-3 rotate-[5deg] group-hover:rotate-[-2deg] pointer-events-none">
+            <div className="absolute right-[-5%] top-[15%] w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] border border-outline/20 bg-surface/40 backdrop-blur-3xl rounded-2xl p-4 opacity-70 md:opacity-30 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2 group-hover:-translate-x-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex flex-col gap-3 rotate-[5deg] group-hover:rotate-[-2deg] pointer-events-none">
               <div className="flex justify-between items-center border-b border-outline/10 pb-2 relative z-10">
                 <span className="text-xs font-mono text-on-surface-variant font-bold">BTC/KRW</span>
                 <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">

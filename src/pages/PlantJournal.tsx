@@ -41,6 +41,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { compressAndConvertImage } from "../utils/imageCompressor";
+import Markdown from "react-markdown";
 
 export interface PlantJournalEntry {
   id: string;
@@ -473,7 +474,7 @@ export default function PlantJournal() {
       </section>
 
       {/* Sticky Tool & Filter Bar */}
-      <div className="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-y border-outline/10 shadow-sm py-4 px-4 lg:px-8 mb-8 mt-4 transition-all w-full">
+      <div className="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-outline/10 shadow-sm py-4 px-4 lg:px-8 mb-8 transition-all w-full">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative w-full sm:max-w-xs">
             <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
@@ -485,7 +486,7 @@ export default function PlantJournal() {
               className="w-full bg-surface-container-lowest border border-outline/20 focus:border-[#5D7964]/50 focus:ring-2 focus:ring-[#5D7964]/20 rounded-full py-2.5 pl-12 pr-4 text-sm font-medium transition-all"
             />
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 hide-scrollbar scroll-smooth">
+          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar scroll-smooth">
             <button
               onClick={() => setFilterActivity(null)}
               className={`px-5 py-2.5 whitespace-nowrap rounded-full text-sm font-bold transition-all ${!filterActivity ? "bg-[#5D7964] text-white shadow-md shadow-[#5D7964]/20" : "bg-transparent text-on-surface-variant hover:bg-surface-dim border border-outline/10"}`}
@@ -909,8 +910,8 @@ export default function PlantJournal() {
                       {entry.title}
                     </h3>
 
-                    <div className="prose prose-p:leading-relaxed prose-p:text-on-surface-variant max-w-none text-base md:text-lg whitespace-pre-wrap break-words font-medium">
-                      {entry.content}
+                    <div className="prose prose-p:leading-relaxed prose-p:text-on-surface-variant max-w-none text-base md:text-lg break-words font-medium markdown-body prose-headings:text-on-surface prose-strong:text-on-surface prose-a:text-[#5D7964]">
+                      <Markdown>{entry.content}</Markdown>
                     </div>
                   </div>
 
@@ -963,10 +964,10 @@ export default function PlantJournal() {
 
                 {/* Hero Image */}
                 <div
-                  className={`w-full md:w-2/5 order-1 ${isEven ? "md:order-2 border-b md:border-b-0 md:border-l" : "md:order-1 border-b md:border-b-0 md:border-r"} bg-surface-dim border-outline/10 relative`}
+                  className={`w-full md:w-2/5 order-1 ${isEven ? "md:order-2 border-b md:border-b-0 md:border-l" : "md:order-1 border-b md:border-b-0 md:border-r"} bg-surface-dim border-outline/10 relative overflow-hidden`}
                 >
                   <div className="relative w-full h-[300px] md:h-[420px] lg:h-full lg:min-h-[420px] overflow-hidden">
-                    <ImageWithFallback src={entry.image} alt={`${entry.title} 이미지`} loading="lazy" decoding="async" className="w-full h-full object-cover" containerClassName="w-full h-full" />
+                    <ImageWithFallback src={entry.image} alt={`${entry.title} 이미지`} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" containerClassName="w-full h-full" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none opacity-80 md:opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
                 </div>

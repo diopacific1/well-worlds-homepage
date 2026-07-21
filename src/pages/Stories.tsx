@@ -210,7 +210,7 @@ const PostItem = ({
             }
             return null;
           })()}
-          <div className="prose prose-base md:prose-lg max-w-none prose-p:leading-loose prose-h1:font-display prose-headings:font-bold prose-headings:text-on-surface prose-strong:text-primary">
+          <div className="prose prose-base md:prose-lg max-w-none prose-p:leading-loose prose-p:tracking-wide prose-headings:font-display prose-headings:font-extrabold prose-headings:tracking-tight prose-headings:text-on-surface prose-strong:text-primary prose-strong:font-bold prose-blockquote:border-l-4 prose-blockquote:border-primary/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-on-surface-variant/90 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:marker:text-primary/70">
             <Markdown>{post.content}</Markdown>
           </div>
           
@@ -857,7 +857,7 @@ export default function Stories() {
             {isPreview ? (
               <div
                 aria-label="마크다운 미리보기"
-                className="w-full bg-surface-container-lowest rounded-xl p-6 text-on-surface font-sans text-lg leading-relaxed min-h-[200px] mt-4 border border-outline/20 prose prose-lg prose-headings:text-on-surface prose-p:text-on-surface-variant prose-strong:text-primary max-w-none shadow-inner"
+                className="w-full bg-surface-container-lowest rounded-xl p-6 text-on-surface font-sans min-h-[200px] mt-4 border border-outline/20 prose prose-base md:prose-lg max-w-none prose-p:leading-loose prose-p:tracking-wide prose-headings:font-display prose-headings:font-extrabold prose-headings:tracking-tight prose-headings:text-on-surface prose-strong:text-primary prose-strong:font-bold prose-blockquote:border-l-4 prose-blockquote:border-primary/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-on-surface-variant/90 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:marker:text-primary/70 shadow-inner"
               >
                 {newPost.trim() ? (
                   <Markdown>{newPost}</Markdown>
@@ -1184,18 +1184,23 @@ export default function Stories() {
         </div>
         )}
 
-        {/* Filter */}
-        <div className="flex items-center gap-6 py-6 border-b border-outline/20 overflow-x-auto hide-scrollbar">
-          <div className="flex gap-6 px-1">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveFilter(cat.id)}
-                className={`text-base font-bold pb-3 border-b-[3px] transition-all whitespace-nowrap -mb-[27px] ${activeFilter === cat.id ? "border-primary text-primary" : "border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline/40"}`}
-              >
-                {cat.label}
-              </button>
-            ))}
+        {/* Modern Filter */}
+        <div className="flex items-center gap-3 py-6 overflow-x-auto hide-scrollbar snap-x">
+          <div className="flex gap-3 px-2">
+            {CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = activeFilter === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveFilter(cat.id)}
+                  className={`snap-center flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 whitespace-nowrap border ${isActive ? "bg-primary text-white border-primary shadow-md shadow-primary/20 scale-105" : "bg-surface text-on-surface-variant border-outline/20 hover:bg-surface-variant/50 hover:border-outline/40 hover:text-on-surface"}`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-primary/70"}`} />
+                  {cat.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

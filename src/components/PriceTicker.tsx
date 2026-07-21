@@ -20,7 +20,7 @@ export const PriceTicker = () => {
       
       const isUp = ticker.change === 'RISE';
       const isDown = ticker.change === 'FALL';
-      const colorClass = isUp ? 'text-green-500' : isDown ? 'text-red-500' : 'text-gray-500';
+      const colorClass = isUp ? 'text-[#E13030]' : isDown ? 'text-[#1261C4]' : 'text-gray-500';
 
       return (
         <div key={code} className="flex items-center gap-3 text-sm font-mono mx-6 whitespace-nowrap">
@@ -28,7 +28,7 @@ export const PriceTicker = () => {
           <span className={`${colorClass} font-semibold transition-colors duration-300`}>
             ₩{ticker.trade_price.toLocaleString()}
           </span>
-          <span className={`${colorClass} text-xs px-1.5 py-0.5 rounded ${isUp ? 'bg-green-500/10' : isDown ? 'bg-red-500/10' : 'bg-gray-500/10'}`}>
+          <span className={`${colorClass} text-xs px-1.5 py-0.5 rounded ${isUp ? 'bg-[#E13030]/10' : isDown ? 'bg-[#1261C4]/10' : 'bg-gray-500/10'}`}>
             {isUp ? '▲' : isDown ? '▼' : '-'} {(ticker.signed_change_rate * 100).toFixed(2)}%
           </span>
         </div>

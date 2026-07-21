@@ -17,6 +17,7 @@ interface GuestbookEntry {
 
 export default function Guestbook() {
   const [entries, setEntries] = useState<GuestbookEntry[]>([]);
+  const [localPendingEntries, setLocalPendingEntries] = useState<GuestbookEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
@@ -25,7 +26,6 @@ export default function Guestbook() {
   const [nickname, setNickname] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   // Check admin login status
@@ -111,15 +111,23 @@ export default function Guestbook() {
         nickname: nickname.trim(),
         message: message.trim(),
         createdAt: serverTimestamp(),
-        status: "pending"
+        status: "pending" as const
       };
       
       await addDoc(collection(db, "guestbook"), docData);
       
+      // Add to local optimistic entries
+      setLocalPendingEntries(prev => [{
+        id: `temp-${Date.now()}`,
+        nickname: docData.nickname,
+        message: docData.message,
+        createdAt: new Date(),
+        status: "pending"
+      }, ...prev]);
+      
       setNickname("");
       setMessage("");
-      setSubmitSuccess(true);
-      setTimeout(() => setSubmitSuccess(false), 5000);
+      toast.success("방명록이 등록되었습니다. 관리자 확인 후 반영됩니다.");
     } catch (err: any) {
       console.error(err);
       setSubmitError(`방명록 등록 중 오류가 발생했습니다: ${err.message || '알 수 없는 오류'}`);
@@ -145,27 +153,12 @@ export default function Guestbook() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 opacity-50 pointer-events-none"></div>
         <div className="absolute inset-0 backdrop-blur-xl"></div>
         <div className="relative bg-surface/80 rounded-[1.75rem] p-6 md:p-8 shadow-inner border border-white/5">
-        {submitSuccess ? (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-8 text-center"
-          >
-            <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
-              <Send className="w-8 h-8" />
-            </div>
-            <h3 className="text-xl font-bold text-on-surface mb-2">소중한 흔적이 남겨졌습니다!</h3>
-            <p className="text-on-surface-variant text-sm">관리자가 확인한 후에 정식으로 기록됩니다.</p>
-            <button 
-              onClick={() => setSubmitSuccess(false)}
-              className="mt-6 px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-full text-sm font-semibold transition-colors"
-            >
-              새로운 메시지 남기기
-            </button>
-          </motion.div>
-        ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label htmlFor="nickname" className="block text-xs font-bold text-on-surface-variant mb-1 ml-1">탐험가 이름 (필수, 최대 20자)</label>
+              <div className="flex justify-between items-end mb-1 ml-1 pr-1">
+                <label htmlFor="nickname" className="block text-xs font-bold text-on-surface-variant">탐험가 이름 (필수)</label>
+                <span className="text-[10px] font-mono text-on-surface-variant/60">{nickname.length}/20</span>
+              </div>
               <input
                 id="nickname"
                 type="text"
@@ -178,7 +171,10 @@ export default function Guestbook() {
               />
             </div>
             <div>
-              <label htmlFor="message" className="block text-xs font-bold text-on-surface-variant mb-1 ml-1">남길 메시지 (필수, 최대 500자)</label>
+              <div className="flex justify-between items-end mb-1 ml-1 pr-1">
+                <label htmlFor="message" className="block text-xs font-bold text-on-surface-variant">남길 메시지 (필수)</label>
+                <span className={`text-[10px] font-mono ${message.length >= 500 ? 'text-error font-bold' : 'text-on-surface-variant/60'}`}>{message.length}/500</span>
+              </div>
               <textarea
                 id="message"
                 value={message}
@@ -202,7 +198,6 @@ export default function Guestbook() {
               </button>
             </div>
           </form>
-        )}
         </div>
       </section>
 
@@ -221,19 +216,49 @@ export default function Guestbook() {
           <div className="p-6 text-center bg-error/10 text-error font-semibold rounded-2xl whitespace-pre-wrap leading-relaxed shadow-sm">
             {error}
           </div>
-        ) : entries.length === 0 ? (
+        ) : entries.length === 0 && localPendingEntries.length === 0 ? (
           <div className="p-16 text-center text-on-surface-variant font-medium bg-surface-container-lowest border border-outline/10 rounded-3xl">
             아직 승인된 기록이 없습니다.
           </div>
         ) : (
-          <div className="columns-1 md:columns-2 gap-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 임시 등록 항목들 (Optimistic UI) */}
+            {localPendingEntries.map((entry, idx) => (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }} 
+                animate={{ opacity: 0.6, y: 0 }}
+                key={entry.id} 
+                className="bg-surface/50 backdrop-blur-md p-7 rounded-3xl border border-outline/20 shadow-sm relative group overflow-hidden"
+              >
+                <div className="absolute top-4 right-4 text-[10px] bg-primary/20 text-primary font-bold px-2 py-1 rounded-md animate-pulse">승인 대기중</div>
+                <div className="flex justify-between items-start mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center font-serif text-primary font-bold text-lg border border-primary/10">
+                      {entry.nickname.charAt(0)}
+                    </div>
+                    <span className="font-bold text-on-surface text-lg">{entry.nickname}</span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-xs text-on-surface-variant">방금 전</span>
+                  </div>
+                </div>
+                <div className="relative z-10">
+                  <span className="absolute -top-4 -left-2 text-4xl text-primary/10 font-serif">"</span>
+                  <p className="text-on-surface font-medium leading-relaxed whitespace-pre-wrap word-break-all relative z-10 pt-2">
+                    {entry.message}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+
+            {/* 실제 항목들 */}
             {entries.map((entry, idx) => (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }} 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
                 key={entry.id} 
-                className="break-inside-avoid bg-surface/80 backdrop-blur-md p-7 rounded-3xl border border-outline/20 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative group"
+                className="bg-surface/80 backdrop-blur-md p-7 rounded-3xl border border-outline/20 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative group"
               >
                 <div className="flex justify-between items-start mb-5">
                   <div className="flex items-center gap-3">

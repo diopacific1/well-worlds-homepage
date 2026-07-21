@@ -26,11 +26,9 @@ export const CoinCard = ({ ticker, code }: { ticker?: TickerData, code: string }
   const isUp = ticker.change === 'RISE';
   const isDown = ticker.change === 'FALL';
   
-  // 상승: Red(Upbit standard) vs Green(Global)? 
-  // User Prompt: "상승: 녹색, 하락: 빨간색, 보합: 회색" 
-  // Very explicitly asked for Green=Up, Red=Down
-  const colorClass = isUp ? 'text-green-500' : isDown ? 'text-red-500' : 'text-gray-500';
-  const bgColorClass = isUp ? 'bg-green-500/10' : isDown ? 'bg-red-500/10' : 'bg-gray-500/10';
+  // Upbit Palette: Bright Red (#E13030) for Rise, Cool Indigo Blue (#1261C4) for Fall
+  const colorClass = isUp ? 'text-[#E13030]' : isDown ? 'text-[#1261C4]' : 'text-gray-500';
+  const bgColorClass = isUp ? 'bg-[#E13030]/10' : isDown ? 'bg-[#1261C4]/10' : 'bg-gray-500/10';
 
   return (
     <div className="card p-6 flex flex-col justify-between hover:shadow-lg transition-all border border-outline/20 group">

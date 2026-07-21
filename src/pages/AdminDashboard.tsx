@@ -5,6 +5,7 @@ import { auth, db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Settings, Plus, FileText, CheckCircle, Trash2, Edit3, X, ExternalLink } from "lucide-react";
 import { collection, query, getDocs, where, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { motion, AnimatePresence } from "motion/react";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -287,18 +288,30 @@ export default function AdminDashboard() {
       </div>
 
       {/* Portfolio Add Modal */}
-      {isPortfolioModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface w-full max-w-md rounded-3xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-outline/20 flex justify-between items-center bg-surface-container-lowest">
-              <h3 className="font-bold text-lg text-on-surface">새 포트폴리오 추가</h3>
-              <button 
-                onClick={() => setIsPortfolioModalOpen(false)}
-                className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <AnimatePresence>
+        {isPortfolioModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.3 }}
+              className="bg-surface w-full max-w-md rounded-3xl shadow-xl overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-outline/20 flex justify-between items-center bg-surface-container-lowest">
+                <h3 className="font-bold text-lg text-on-surface">새 포트폴리오 추가</h3>
+                <button 
+                  onClick={() => setIsPortfolioModalOpen(false)}
+                  className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             
             <form onSubmit={handleAddPortfolio} className="p-6 space-y-4 bg-surface">
               <div className="space-y-1.5">
@@ -364,9 +377,10 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
