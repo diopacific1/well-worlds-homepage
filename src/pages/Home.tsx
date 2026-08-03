@@ -108,7 +108,7 @@ const HeroSection = memo(() => {
 
   return (
     <>
-      <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[92vh] pointer-events-none -mt-8 md:-mt-16 mb-12 w-full overflow-hidden">
+      <header className="relative pt-[40px] md:pt-[80px] pb-32 flex flex-col items-center justify-start text-center min-h-[80vh] pointer-events-none w-full overflow-hidden">
         {/* Background for SolarSystem3D confined to HeroSection */}
         <div className="absolute inset-0 w-full h-full -z-10 pointer-events-auto">
           <SolarSystem3D onPlanetClick={handlePlanetClick} isBackground={true} />
@@ -179,10 +179,11 @@ const HeroSection = memo(() => {
                transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
                className="text-center pointer-events-none"
             >
-               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-6 transition-all duration-700 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] opacity-100 pointer-events-auto`}>
-                 우물 그리고 세계들
-               </h1>
-               
+               <div className="inline-block bg-black/30 backdrop-blur-md px-10 py-6 rounded-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] pointer-events-auto">
+                 <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white transition-all duration-700 [text-shadow:_0_4px_24px_rgba(0,0,0,0.9)]`}>
+                   우물 그리고 세계들
+                 </h1>
+               </div>
             </motion.div>
           </div>
         </div>
