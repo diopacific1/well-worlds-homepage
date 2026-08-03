@@ -164,7 +164,7 @@ function OrbitLines({ visible }: { visible: boolean }) {
   );
 }
 
-export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: string) => void }) {
+export default function SolarSystem3D({ onPlanetClick, isBackground = false }: { onPlanetClick?: (id: string) => void, isBackground?: boolean }) {
   const [settings, setSettings] = useState({
     timeMultiplier: 1,
     orbitsVisible: true,
@@ -180,7 +180,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
   return (
     <div className="absolute inset-0 z-0 bg-[#020205] text-white font-mono overflow-hidden pointer-events-auto">
       {/* 3D Canvas */}
-      <Canvas camera={{ position: [0, 20, 40], fov: 45 }} shadows className="outline-none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'auto', touchAction: 'none' }}>
+      <Canvas camera={{ position: [0, 20, 40], fov: 45 }} shadows className="outline-none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: isBackground ? 'none' : 'auto', touchAction: isBackground ? 'auto' : 'none' }}>
         <color attach="background" args={['#020205']} />
         
         {/* Lights */}
@@ -193,8 +193,8 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
         {/* Controls */}
         <OrbitControls 
           ref={controlsRef}
-          enablePan={true} 
-          enableZoom={true} 
+          enablePan={!isBackground} 
+          enableZoom={!isBackground} 
           enableRotate={true}
           enableDamping={true}
           dampingFactor={0.05}
@@ -242,6 +242,7 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
       </Canvas>
 
       {/* NASA Style UI Overlay */}
+      {!isBackground && (
       <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-between z-10 pointer-events-none">
         {/* Top Bar */}
         <div className="flex justify-between items-start w-full pointer-events-none">
@@ -403,7 +404,8 @@ export default function SolarSystem3D({ onPlanetClick }: { onPlanetClick?: (id: 
             ))}
           </div>
         </div>
-      </div>
+          </div>
+      )}
     </div>
   );
 }

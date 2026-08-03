@@ -44,7 +44,6 @@ const itemVariants: Variants = {
 };
 
 const HeroSection = memo(() => {
-  const [show3D, setShow3D] = useState(false);
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
@@ -110,22 +109,10 @@ const HeroSection = memo(() => {
   return (
     <>
       <header className="relative pt-[140px] md:pt-[180px] pb-32 md:pb-40 flex flex-col items-center justify-center text-center min-h-[92vh] pointer-events-none -mt-8 md:-mt-16 mb-12 w-full overflow-hidden">
-        {/* Full bleed wrapper for SolarSystem3D background */}
-        <div className={`transition-opacity duration-1000 ${show3D ? 'fixed inset-0 z-50 bg-[#020205] opacity-100 pointer-events-auto' : 'absolute inset-0 w-full h-full -z-10 opacity-0 pointer-events-none'}`}>
-          {show3D && (
-            <>
-              <SolarSystem3D onPlanetClick={handlePlanetClick} />
-              <div className="absolute bottom-6 left-6 z-[100] pointer-events-auto">
-                <button 
-                  onClick={() => setShow3D(false)} 
-                  className="px-6 py-3 bg-black/60 text-white hover:bg-black/80 transition-all duration-300 rounded-full font-bold shadow-lg backdrop-blur-md border border-white/20 flex items-center gap-2"
-                >
-                  <X className="w-5 h-5" />
-                  3D 뷰 닫기
-                </button>
-              </div>
-            </>
-          )}
+        {/* Background for SolarSystem3D confined to HeroSection */}
+        <div className="absolute inset-0 w-full h-full -z-10 pointer-events-auto">
+          <SolarSystem3D onPlanetClick={handlePlanetClick} isBackground={true} />
+          <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
         </div>
       
       {/* Abstract Background Deep World Elements */}
@@ -192,23 +179,10 @@ const HeroSection = memo(() => {
                transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
                className="text-center pointer-events-none"
             >
-               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/60 mb-6 transition-all duration-700 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
+               <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-6 transition-all duration-700 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)] opacity-100 pointer-events-auto`}>
                  우물 그리고 세계들
                </h1>
-               <p className={`text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10 transition-all duration-700 delay-100 ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}>
-                 베란다 텃밭, AI 소설, 자산 투자 등 나만의 세계에 초대합니다.
-               </p>
-               <button 
-                 onClick={() => setShow3D(true)} 
-                 className={`group relative flex items-center justify-center gap-3 px-8 py-4 text-sm font-bold text-cyan-50 bg-black/40 rounded-full hover:bg-black/60 transition-all duration-700 delay-200 shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_30px_rgba(6,182,212,0.3)] backdrop-blur-xl border border-cyan-500/30 overflow-hidden ${show3D ? "opacity-0 select-none pointer-events-none" : "opacity-100 pointer-events-auto"}`}
-               >
-                 {/* Internal Glow Effect */}
-                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                 
-                 <Orbit className="w-5 h-5 text-cyan-400 group-hover:animate-spin-slow" />
-                 <span className="tracking-widest">우주 탐험하기</span>
-                 <ArrowRight className="w-4 h-4 text-cyan-400/70 group-hover:translate-x-1 group-hover:text-cyan-400 transition-all" />
-               </button>
+               
             </motion.div>
           </div>
         </div>

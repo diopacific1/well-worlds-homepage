@@ -164,3 +164,20 @@ p {
   100% { transform: translateX(-33.3333%); }
 }
 
+
+@keyframes float-particle {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  50% { opacity: 1; transform: translateY(-15px) scale(1.2); }
+  100% { transform: translateY(-30px) scale(0.8); opacity: 0; }
+}
+.animate-float-particle {
+  animation: float-particle 3s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
