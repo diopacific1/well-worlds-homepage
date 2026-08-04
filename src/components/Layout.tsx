@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, LineChart, Leaf, MessageSquareHeart, BookOpen, Settings, Info, Menu, X, Globe } from 'lucide-react';
+import { LayoutDashboard, LineChart, BarChart2, Leaf, MessageSquareHeart, BookOpen, Settings, Info, Menu, X, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import BackToTop from "./BackToTop";
 import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
@@ -70,7 +70,8 @@ export default function Layout() {
     { name: '홈', path: '/', icon: LayoutDashboard },
     { name: '디지털 정원', path: '/plants', icon: Leaf },
     { name: '나의 세계', path: '/stories', icon: MessageSquareHeart },
-    { name: '크립토 월드', path: '/crypto', icon: LineChart },
+    { name: '머니월드(코인)', path: '/crypto', icon: LineChart },
+    { name: '머니월드(주식)', path: '/stock', icon: BarChart2 },
     { name: '방명록', path: '/guestbook', icon: BookOpen },
   ];
 

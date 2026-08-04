@@ -12,7 +12,9 @@ import {
   Code2,
   X,
   Orbit,
-  Activity
+  Activity,
+  TrendingUp,
+  BarChart2
 } from "lucide-react";
 import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -108,7 +110,7 @@ const HeroSection = memo(() => {
 
   return (
     <>
-      <header className="relative pt-[40px] md:pt-[80px] pb-32 flex flex-col items-center justify-start text-center min-h-[80vh] pointer-events-none w-full overflow-hidden">
+      <header className="relative pt-4 md:pt-8 pb-32 flex flex-col items-center justify-start text-center min-h-[80vh] pointer-events-none w-full overflow-hidden">
         {/* Background for SolarSystem3D confined to HeroSection */}
         <div className="absolute inset-0 w-full h-full -z-10 pointer-events-auto">
           <SolarSystem3D onPlanetClick={handlePlanetClick} isBackground={true} />
@@ -179,8 +181,10 @@ const HeroSection = memo(() => {
                transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
                className="text-center pointer-events-none"
             >
-               <div className="inline-block bg-black/30 backdrop-blur-md px-10 py-6 rounded-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] pointer-events-auto">
-                 <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tighter text-white transition-all duration-700 [text-shadow:_0_4px_24px_rgba(0,0,0,0.9)]`}>
+               <div className="inline-block relative pointer-events-auto px-10 py-6">
+                 {/* Subtle ambient glow behind text to separate it from stars without a hard box */}
+                 <div className="absolute inset-0 bg-cyan-900/20 blur-[50px] rounded-full" />
+                 <h1 className={`relative z-10 text-5xl md:text-7xl font-extrabold tracking-tighter !text-white transition-all duration-700 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] [text-shadow:_0_4px_30px_rgba(0,0,0,0.8)]`}>
                    우물 그리고 세계들
                  </h1>
                </div>
@@ -348,7 +352,7 @@ export default function Home() {
                  <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-[#5D7964] transition-colors duration-300">
                    디지털 정원
                  </h2>
-                 <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep">
+                 <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
                    고요히 고개 들며 자라나는 반려 식물의 생명력. <br />
                    나의 감정과 사색의 습도로 흙 위에 자라나는 온전한 기억의 정원을 가꾸어보세요.
                  </p>
@@ -433,7 +437,7 @@ export default function Home() {
                 <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-secondary transition-colors duration-300">
                   나의 세계
                 </h2>
-                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep">
+                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
                   온전히 나 자신에게만 몰입하는 침묵의 시간.<br />
                   내면의 잔잔한 고백과 소중한 가치들을 세상과 단절된 비밀 아카이브에 영원히 새겨보세요.
                 </p>
@@ -444,95 +448,68 @@ export default function Home() {
             </div>
           </BentoCard>
 
-          {/* Crypto Dashboard */}
+          {/* Crypto Market */}
           <BentoCard 
             to="/crypto" 
-            label="시장의 심연으로 이동" 
-            className="md:col-span-5 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/60 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
+            label="크립토시장으로 이동" 
+            className="md:col-span-4 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/60 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-primary/10 group overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="absolute -bottom-36 -left-36 w-[400px] h-[400px] bg-primary/15 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
+            <div className="absolute -bottom-36 -left-36 w-[300px] h-[300px] bg-primary/15 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
             
-            {/* Simulated Live Data Visuals (Glassmorphic Window) - Hidden on mobile for cleaner UX */}
-            <div className="hidden md:flex absolute right-[-5%] top-[15%] w-[280px] sm:w-[320px] h-[180px] sm:h-[200px] border border-outline/20 bg-surface/40 backdrop-blur-3xl rounded-2xl p-4 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2 group-hover:-translate-x-4 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex-col gap-3 rotate-[5deg] group-hover:rotate-[-2deg] pointer-events-none origin-bottom-right scale-90 sm:scale-100 z-0">
-              <div className="absolute top-[-40%] right-[-20%] w-40 h-40 bg-primary/20 rounded-full blur-2xl opacity-50" />
-              <div className="flex justify-between items-center border-b border-outline/10 pb-2 relative z-10">
-                <span className="text-xs font-mono text-on-surface-variant font-bold">BTC/KRW</span>
-                <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> +4.2%
-                </span>
-              </div>
-              <div className="flex-1 relative overflow-hidden flex items-end gap-1.5 pt-4 z-10">
-                 {/* Fake SVG Sparkline Chart */}
-                 <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible drop-shadow-[0_0_8px_rgba(70,72,212,0.5)] group-hover:drop-shadow-[0_0_12px_rgba(70,72,212,0.8)] transition-all duration-700">
-                    <defs>
-                      <linearGradient id="cryptoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="var(--color-primary, #4648D4)" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="var(--color-primary, #4648D4)" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <path 
-                      d="M0,40 L0,30 C10,25 20,35 30,20 C40,5 50,25 60,15 C70,5 80,10 90,0 L100,-5 L100,40 Z" 
-                      fill="url(#cryptoGrad)" 
-                    />
-                    <path 
-                      d="M0,30 C10,25 20,35 30,20 C40,5 50,25 60,15 C70,5 80,10 90,0 L100,-5" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="1.5" 
-                      className="text-primary"
-                    />
-                 </svg>
-              </div>
-              <div className="text-[10px] font-mono text-on-surface-variant/50 flex justify-between items-center pt-1 z-10">
-                <span>VOL: 24.5K</span>
-                <span>NODE: SYNCED</span>
-              </div>
-            </div>
-
-            {/* Micro Floating Particles for Crypto */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(3)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute bg-primary/20 rounded-full"
-                  style={{
-                    width: `${(i + 1) * 2 + 2}px`,
-                    height: `${(i + 1) * 2 + 2}px`,
-                    left: `${20 + i * 20}%`,
-                    bottom: `${15 + i * 10}%`,
-                  }}
-                  animate={{
-                    y: [0, -20, 0],
-                    opacity: [0.1, 0.5, 0.1],
-                  }}
-                  transition={{
-                    duration: 3 + i * 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-              ))}
-            </div>
-
             <div className="absolute right-[-5%] bottom-[-5%] opacity-[0.02] group-hover:opacity-[0.05] transition-all duration-1000 group-hover:-translate-x-2 group-hover:rotate-12 pointer-events-none">
-              <Activity className="w-72 h-72 text-on-surface" />
+              <Activity className="w-48 h-48 text-on-surface" />
             </div>
 
-            <div className="flex flex-col h-full p-8 md:p-10 relative z-10 w-full justify-between">
-              <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center border border-primary/20 group-hover:scale-110 group-hover:bg-primary/20 group-hover:rotate-3 transition-all duration-500 shadow-inner">
-                <LineChart className="w-8 h-8" />
+            <div className="flex flex-col h-full p-6 md:p-8 relative z-10 w-full justify-between">
+              <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center border border-primary/20 group-hover:scale-110 group-hover:bg-primary/20 group-hover:rotate-3 transition-all duration-500 shadow-inner">
+                <LineChart className="w-7 h-7" />
               </div>
-              <div className="mt-12 max-w-sm sm:max-w-md">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-primary transition-colors duration-300">
-                  시장의 심연
+              
+              <div className="mt-8 max-w-sm">
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-3 tracking-tight group-hover:text-primary transition-colors duration-300">
+                  머니월드 <span className="text-lg opacity-70">| 가상자산</span>
                 </h2>
-                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep">
-                  실시간 가상자산의 파동을 관측합니다.<br />
-                  차가운 데이터 속에서 시장의 깊이를 탐색하세요.
+                <p className="text-sm sm:text-base text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
+                  실시간 가상자산의 파동 관측.<br />
+                  심연의 데이터를 탐색하세요.
                 </p>
                 
-                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-primary bg-primary/10 w-fit px-6 py-3 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-primary),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-primary),0.25)]">
+                <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 w-fit px-5 py-2.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-primary),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-primary),0.25)]">
+                  관측소 접속 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </BentoCard>
+
+          {/* Stock Market */}
+          <BentoCard 
+            to="/stock" 
+            label="주식시장으로 이동" 
+            className="md:col-span-4 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/60 transition-all duration-500 shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 group overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute -bottom-36 -left-36 w-[300px] h-[300px] bg-emerald-500/15 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
+            
+            <div className="absolute right-[-5%] bottom-[-5%] opacity-[0.02] group-hover:opacity-[0.05] transition-all duration-1000 group-hover:-translate-x-2 group-hover:rotate-12 pointer-events-none">
+              <BarChart2 className="w-48 h-48 text-on-surface" />
+            </div>
+
+            <div className="flex flex-col h-full p-6 md:p-8 relative z-10 w-full justify-between">
+              <div className="w-14 h-14 bg-emerald-500/10 text-emerald-500 rounded-2xl flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:rotate-3 transition-all duration-500 shadow-inner">
+                <TrendingUp className="w-7 h-7" />
+              </div>
+              
+              <div className="mt-8 max-w-sm">
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-3 tracking-tight group-hover:text-emerald-500 transition-colors duration-300">
+                  머니월드 <span className="text-lg opacity-70">| 한국 주식</span>
+                </h2>
+                <p className="text-sm sm:text-base text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
+                  글로벌 기업의 가치 흐름.<br />
+                  자본의 동향을 파악하세요.
+                </p>
+                
+                <div className="mt-6 flex items-center gap-2 text-xs font-bold text-emerald-500 bg-emerald-500/10 w-fit px-5 py-2.5 rounded-full group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(16,185,129,0)] group-hover:shadow-[0_8px_20px_rgba(16,185,129,0.25)]">
                   관측소 접속 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -543,7 +520,7 @@ export default function Home() {
           <BentoCard 
             to="/guestbook" 
             label="방명록으로 이동" 
-            className="md:col-span-7 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-[#7D91B4]/10 group overflow-hidden"
+            className="md:col-span-4 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-[#7D91B4]/10 group overflow-hidden"
           >
             {/* Immersive Deep Water Ripple and Dynamic Light Gradients */}
             <div className="absolute inset-0 bg-gradient-to-tl from-[#7D91B4]/15 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
@@ -627,7 +604,7 @@ export default function Home() {
                 <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-[#7D91B4] transition-colors duration-300 drop-shadow-sm">
                   방명록
                 </h2>
-                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-keep text-shadow-sm">
+                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap text-shadow-sm">
                   수막을 넘어 흘러드는 또 다른 세계의 신호들.<br />
                   이곳을 스쳐 간 탐험가들의 사유를 마주하고, 당신만의 파동을 남겨보세요.
                 </p>
@@ -656,7 +633,7 @@ export default function Home() {
             <h2 className="text-3xl md:text-5xl font-display font-bold text-on-surface tracking-tight">
               나의 포트폴리오
             </h2>
-            <p className="text-on-surface-variant font-medium text-lg max-w-2xl mx-auto break-keep">
+            <p className="text-on-surface-variant font-medium text-lg max-w-2xl mx-auto break-words whitespace-pre-wrap">
               세상에 선보인 작은 세계들. 그동안 제가 만들고 가꿔온 프로젝트들을 소개합니다.
             </p>
           </motion.div>

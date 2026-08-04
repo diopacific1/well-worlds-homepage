@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Lazy-loaded pages
 const Home = lazy(() => import("./pages/Home"));
 const CryptoDashboard = lazy(() => import("./pages/CryptoDashboard"));
+const StockDashboard = lazy(() => import("./pages/StockDashboard"));
 const PlantJournal = lazy(() => import("./pages/PlantJournal"));
 const Stories = lazy(() => import("./pages/Stories"));
 const Guestbook = lazy(() => import("./pages/Guestbook"));
@@ -27,6 +28,11 @@ export default function App() {
           <Route index element={
             <Suspense fallback={<PageLoader />}>
               <Home />
+            </Suspense>
+          } />
+          <Route path="stock" element={
+            <Suspense fallback={<PageLoader />}>
+              <StockDashboard />
             </Suspense>
           } />
           <Route path="crypto" element={
