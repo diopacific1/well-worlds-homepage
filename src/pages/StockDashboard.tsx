@@ -359,59 +359,29 @@ export default function StockDashboard() {
       }
     }
 
-    const fetchData = async () => {
-      setLoadingCrypto(true);
-      try {
-        await new Promise(res => setTimeout(res, 600));
-        const stockInfo = MOCK_STOCKS[activeCoinId];
-        const basePriceStr = String(stockInfo?.price || "50000").replace(/[^0-9]/g, "");
-        const basePrice = parseInt(basePriceStr);
-        
-        const generateCandles = () => {
-          const candles = [];
-          let currentBase = basePrice * 0.9;
-          const numCandles = timeframe === "1D" ? 30 : timeframe === "1W" ? 52 : 24;
-          
-          for(let i=0; i<numCandles; i++) {
-            const open = currentBase + (Math.random() - 0.5) * (basePrice * 0.05);
-            const close = open + (Math.random() - 0.5) * (basePrice * 0.06);
-            const high = Math.max(open, close) + Math.random() * (basePrice * 0.02);
-            const low = Math.min(open, close) - Math.random() * (basePrice * 0.02);
-            
-            candles.push({
-              time: new Date(Date.now() - (numCandles - i) * 86400000).toISOString(),
-              open, high, low, close,
-              volume: Math.random() * 1000000
-            });
-            currentBase = close;
-          }
-          return candles;
-        };
-        
-        setCryptoData({
-          
-          price: basePrice,
-          trend: stockInfo?.trend || "+1.0%",
-          high24h: basePrice * 1.03,
-          low24h: basePrice * 0.97,
-          volume: 1500000,
-          marketCap: 100000000000,
-          rsi: 45 + Math.random() * 20,
-          ma20: String(basePrice * 0.98),
-          ma50: basePrice * 0.95,
-          ma200: basePrice * 0.9,
-          sentimentScore: 65,
-          sentimentStatus: "긍정적",
-          analysis: "시장 전반적으로 우상향 추세를 그리고 있습니다.",
-          candles: generateCandles()
-        });
-      } catch (err) {
-        console.error("Failed to generate mock data", err);
-      } finally {
+        const fetchController = new AbortController();
+    fetch(`/api/stock?id=${activeCoinId}&timeframe=${timeframe}`, {
+      signal: fetchController.signal,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          console.error("API Error:", data.error);
+          setCryptoData(null);
+        } else {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, data }));
+          setCryptoData(data);
+        }
         setLoadingCrypto(false);
-      }
-    };
-    fetchData();
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error(err);
+          setCryptoData(null);
+          setLoadingCrypto(false);
+        }
+      });
+      return () => fetchController.abort();
   }, [activeCoinId, refreshCount, timeframe]);
 
   const SEARCH_MAPPINGS: Record<string, string[]> = {
