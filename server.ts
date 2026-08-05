@@ -292,8 +292,8 @@ async function startServer() {
   
   app.get("/api/stock", async (req, res) => {
     try {
-      const id = (req.query.id || 'samsung').toLowerCase().trim();
-      const timeframe = (req.query.timeframe || '1D').toUpperCase().trim();
+      const id = ((req.query.id as string) || 'samsung').toLowerCase().trim();
+      const timeframe = ((req.query.timeframe as string) || '1D').toUpperCase().trim();
       
       const stockSymbolMap = {
         samsung: { ticker: "005930.KS", label: "삼성전자" },
