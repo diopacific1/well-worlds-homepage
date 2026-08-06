@@ -27,6 +27,14 @@
   --color-terracotta: #E2725B;
   --color-sage: #5D7964;
   --color-forest: #2D4739;
+  --color-kr-up: #E13030;
+  --color-kr-down: #1261C4;
+  --color-ma5: #F59E0B;
+  --color-ma10: #8B5CF6;
+  --color-tooltip-bg: #151b2e;
+  --color-sky-dust: #7D91B4;
+  --color-chart-grid: #E2E8F0;
+  --color-chart-text: #1E293B;
   
   --animate-shimmer: shimmer 2s infinite;
   @keyframes shimmer {
@@ -180,4 +188,9 @@ p {
 }
 .animate-spin-slow {
   animation: spin-slow 8s linear infinite;
+}
+
+/* A11Y: Global Focus Ring for Keyboard Navigation */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background rounded-sm;
 }

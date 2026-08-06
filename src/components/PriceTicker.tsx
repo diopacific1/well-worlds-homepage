@@ -2,7 +2,7 @@ import React from 'react';
 import { useUpbitTicker } from '../hooks/useUpbitTicker';
 import { nameMap } from './CoinCard';
 
-export const PriceTicker = () => {
+export const PriceTicker = React.memo(() => {
   const { prices } = useUpbitTicker();
   const codes = ['KRW-BTC', 'KRW-ETH', 'KRW-SOL', 'KRW-XRP', 'KRW-DOGE'];
 
@@ -48,4 +48,4 @@ export const PriceTicker = () => {
       </div>
     </div>
   );
-};
+});

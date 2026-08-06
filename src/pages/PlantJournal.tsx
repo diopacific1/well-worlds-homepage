@@ -36,6 +36,7 @@ import {
   doc,
   query,
   orderBy,
+  limit,
   onSnapshot,
   serverTimestamp,
 } from "firebase/firestore";
@@ -125,6 +126,7 @@ export default function PlantJournal() {
     const q = query(
       collection(db, "plant_journal"),
       orderBy("createdAt", "desc"),
+      limit(50)
     );
     const unsubscribe = onSnapshot(
       q,
@@ -429,13 +431,13 @@ export default function PlantJournal() {
       <div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
       {/* Hero Header */}
       <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto">
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#5D7964]/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-sage/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-[#5D7964]/20 to-[#5D7964]/5 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20 shadow-sm shadow-[#5D7964]/10 mb-6"
+          className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] bg-gradient-to-br from-[#5D7964]/20 to-[#5D7964]/5 text-sage flex items-center justify-center border border-sage/20 shadow-sm shadow-sage/10 mb-6"
         >
           <Sprout className="w-8 h-8 md:w-10 md:h-10" />
         </motion.div>
@@ -466,7 +468,7 @@ export default function PlantJournal() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
             onClick={() => openForm()}
-            className="bg-[#5D7964] text-white px-8 py-5 rounded-full font-bold hover:bg-[#4a6351] transition-all flex items-center justify-center gap-3 shadow-[0_8px_24px_rgba(93,121,100,0.3)] hover:shadow-[0_12px_32px_rgba(93,121,100,0.4)] hover:-translate-y-1 w-full sm:w-auto min-w-[240px] text-lg"
+            className="bg-sage text-white px-8 py-5 rounded-full font-bold hover:bg-[#4a6351] transition-all flex items-center justify-center gap-3 shadow-[0_8px_24px_rgba(93,121,100,0.3)] hover:shadow-[0_12px_32px_rgba(93,121,100,0.4)] hover:-translate-y-1 w-full sm:w-auto min-w-[240px] text-lg"
           >
             <PenSquare className="w-5 h-5" /> 새 추억 기록하기
           </motion.button>
@@ -483,13 +485,13 @@ export default function PlantJournal() {
               placeholder="일지 내용, 태그 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-surface-container-lowest border border-outline/20 focus:border-[#5D7964]/50 focus:ring-2 focus:ring-[#5D7964]/20 rounded-full py-2.5 pl-12 pr-4 text-sm font-medium transition-all"
+              className="w-full bg-surface-container-lowest border border-outline/20 focus:border-sage/50 focus:ring-2 focus:ring-[#5D7964]/20 rounded-full py-2.5 pl-12 pr-4 text-sm font-medium transition-all"
             />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar scroll-smooth">
             <button
               onClick={() => setFilterActivity(null)}
-              className={`px-5 py-2.5 whitespace-nowrap rounded-full text-sm font-bold transition-all ${!filterActivity ? "bg-[#5D7964] text-white shadow-md shadow-[#5D7964]/20" : "bg-transparent text-on-surface-variant hover:bg-surface-dim border border-outline/10"}`}
+              className={`px-5 py-2.5 whitespace-nowrap rounded-full text-sm font-bold transition-all ${!filterActivity ? "bg-sage text-white shadow-md shadow-sage/20" : "bg-transparent text-on-surface-variant hover:bg-surface-dim border border-outline/10"}`}
             >
               전체 보기
             </button>
@@ -497,7 +499,7 @@ export default function PlantJournal() {
               <button
                 key={opt.id}
                 onClick={() => setFilterActivity(opt.id)}
-                className={`px-5 py-2.5 whitespace-nowrap flex items-center gap-2 rounded-full text-sm font-bold transition-all ${filterActivity === opt.id ? "bg-[#5D7964] text-white shadow-md shadow-[#5D7964]/20" : "bg-transparent text-on-surface-variant hover:bg-surface-dim border border-outline/10"}`}
+                className={`px-5 py-2.5 whitespace-nowrap flex items-center gap-2 rounded-full text-sm font-bold transition-all ${filterActivity === opt.id ? "bg-sage text-white shadow-md shadow-sage/20" : "bg-transparent text-on-surface-variant hover:bg-surface-dim border border-outline/10"}`}
               >
                 <opt.icon className="w-4 h-4" />
                 {opt.label}
@@ -530,7 +532,7 @@ export default function PlantJournal() {
               </button>
 
               <h3 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-8 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#5D7964]/10 text-[#5D7964] flex items-center justify-center border border-[#5D7964]/20">
+                <div className="w-10 h-10 rounded-xl bg-sage/10 text-sage flex items-center justify-center border border-sage/20">
                   {editingId ? (
                     <Edit3 className="w-5 h-5" />
                   ) : (
@@ -662,7 +664,7 @@ export default function PlantJournal() {
                           onClick={() =>
                             setFormParams({ ...formParams, weather: w.id })
                           }
-                          className={`flex-1 py-3 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold shadow-sm ${formParams.weather === w.id ? "bg-[#5D7964] border-[#5D7964] text-white shadow-[#5D7964]/20" : "bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
+                          className={`flex-1 py-3 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold shadow-sm ${formParams.weather === w.id ? "bg-sage border-sage text-white shadow-sage/20" : "bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-sage/30 hover:text-sage"}`}
                         >
                           <w.icon className="w-4 h-4" />
                           <span className="hidden sm:inline">{w.label}</span>
@@ -687,7 +689,7 @@ export default function PlantJournal() {
                           onClick={() =>
                             setFormParams({ ...formParams, activity: a.id })
                           }
-                          className={`py-2 px-1 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold text-xs shadow-sm ${formParams.activity === a.id ? "bg-[#5D7964] border-[#5D7964] text-white shadow-[#5D7964]/20" : "bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-[#5D7964]/30 hover:text-[#5D7964]"}`}
+                          className={`py-2 px-1 border rounded-lg flex items-center justify-center gap-2 transition-all font-bold text-xs shadow-sm ${formParams.activity === a.id ? "bg-sage border-sage text-white shadow-sage/20" : "bg-surface-container-lowest border-outline/30 text-on-surface-variant hover:border-sage/30 hover:text-sage"}`}
                         >
                           <a.icon className="w-3.5 h-3.5" />
                           <span>{a.label}</span>
@@ -836,8 +838,8 @@ export default function PlantJournal() {
               exit={{ opacity: 0 }}
               className="text-center py-32 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
             >
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#5D7964]/5 rounded-full blur-3xl pointer-events-none" />
-              <Sprout className="w-20 h-20 text-[#5D7964]/30 mx-auto mb-6 relative z-10 animate-bounce" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-sage/5 rounded-full blur-3xl pointer-events-none" />
+              <Sprout className="w-20 h-20 text-sage/30 mx-auto mb-6 relative z-10 animate-bounce" />
               <p className="text-on-surface font-display font-extrabold text-3xl relative z-10 tracking-tight mb-4">
                 기다림의 공간이 비어있습니다
               </p>
@@ -874,21 +876,21 @@ export default function PlantJournal() {
                 viewport={{ once: true, margin: "-50px" }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 layout
-                className="bg-surface rounded-[2rem] relative overflow-hidden group border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm hover:shadow-2xl hover:shadow-[#5D7964]/10 hover:-translate-y-1 transition-all duration-500"
+                className="bg-surface rounded-[2rem] relative overflow-hidden group border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm hover:shadow-2xl hover:shadow-sage/10 hover:-translate-y-1 transition-all duration-500"
               >
                 <div
                   className={`relative z-10 w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between order-2 ${isEven ? "md:order-1" : "md:order-2"}`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-8">
-                      <span className="font-mono text-[#5D7964] text-sm font-bold tracking-widest uppercase bg-[#5D7964]/10 px-4 py-1.5 rounded-full border border-[#5D7964]/20 backdrop-blur-sm">
+                      <span className="font-mono text-sage text-sm font-bold tracking-widest uppercase bg-sage/10 px-4 py-1.5 rounded-full border border-sage/20 backdrop-blur-sm">
                         {entry.date.replace(/-/g, ". ")}
                       </span>
                       {isAdmin && (
                         <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 lg:translate-x-4 group-hover:translate-x-0">
                           <button
                             onClick={() => openForm(entry)}
-                            className="p-3 bg-surface hover:bg-surface-dim border border-outline/10 text-on-surface-variant hover:text-[#5D7964] transition-colors rounded-full shadow-sm hover:shadow-md focus:opacity-100 focus:translate-x-0 focus:ring-2 focus:ring-[#5D7964]"
+                            className="p-3 bg-surface hover:bg-surface-dim border border-outline/10 text-on-surface-variant hover:text-sage transition-colors rounded-full shadow-sm hover:shadow-md focus:opacity-100 focus:translate-x-0 focus:ring-2 focus:ring-[#5D7964]"
                             title="수정"
                             aria-label={`'${entry.title}' 일지 수정`}
                           >
@@ -910,7 +912,7 @@ export default function PlantJournal() {
                       {entry.title}
                     </h3>
 
-                    <div className="prose prose-p:leading-relaxed prose-p:text-on-surface-variant max-w-none text-base md:text-lg break-words font-medium markdown-body prose-headings:text-on-surface prose-strong:text-on-surface prose-a:text-[#5D7964]">
+                    <div className="prose prose-p:leading-relaxed prose-p:text-on-surface-variant max-w-none text-base md:text-lg break-words font-medium markdown-body prose-headings:text-on-surface prose-strong:text-on-surface prose-a:text-sage">
                       <Markdown>{entry.content}</Markdown>
                     </div>
                   </div>
@@ -944,14 +946,14 @@ export default function PlantJournal() {
 
                       <div className="flex items-center justify-between mt-2">
                         <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-surface-container-lowest border border-outline/20 text-on-surface-variant rounded-md text-xs font-bold whitespace-nowrap shadow-sm">
-                          <Leaf className="w-3.5 h-3.5 text-[#5D7964]" />{" "}
+                          <Leaf className="w-3.5 h-3.5 text-sage" />{" "}
                           {entry.type}
                         </span>
                         <div className="flex gap-2 flex-wrap justify-end">
                           {entry.tags?.map((tag: string, idx: number) => (
                             <span
                               key={idx}
-                              className="text-xs font-mono font-semibold text-[#5D7964] block bg-[#5D7964]/5 px-2 py-0.5 rounded border border-[#5D7964]/10"
+                              className="text-xs font-mono font-semibold text-sage block bg-sage/5 px-2 py-0.5 rounded border border-sage/10"
                             >
                               #{tag}
                             </span>

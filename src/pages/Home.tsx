@@ -21,7 +21,8 @@ import { db } from "../../firebase";
 import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 import { Helmet } from "react-helmet-async";
 
-import SolarSystem3D from "../components/SolarSystem3D";
+import { Suspense, lazy } from "react";
+const SolarSystem3D = lazy(() => import("../components/SolarSystem3D"));
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -113,7 +114,9 @@ const HeroSection = memo(() => {
       <header className="relative pt-4 md:pt-8 pb-32 flex flex-col items-center justify-start text-center min-h-[80vh] pointer-events-none w-full overflow-hidden">
         {/* Background for SolarSystem3D confined to HeroSection */}
         <div className="absolute inset-0 w-full h-full -z-10 pointer-events-auto">
-          <SolarSystem3D onPlanetClick={handlePlanetClick} isBackground={true} />
+          <Suspense fallback={<div className="w-full h-full min-h-[400px] flex items-center justify-center text-on-surface-variant"><div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div></div>}>
+            <SolarSystem3D onPlanetClick={handlePlanetClick} isBackground={true} />
+          </Suspense>
           <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
         </div>
       
@@ -272,18 +275,18 @@ export default function Home() {
           <BentoCard 
             to="/plants" 
             label="디지털 정원으로 이동" 
-            className="md:col-span-7 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-[#5D7964]/8 group"
+            className="md:col-span-7 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-sage/8 group"
           >
             {/* Organic Premium Gradients & Glows */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#5D7964]/12 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="absolute -top-36 -left-36 w-[450px] h-[450px] bg-[#5D7964]/12 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-br from-sage/12 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute -top-36 -left-36 w-[450px] h-[450px] bg-sage/12 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
             
             {/* Visual Glassmorphic Botanical Garden Status Widget - Hidden on mobile for cleaner UX */}
-            <div className="hidden md:flex absolute right-[5%] top-[12%] w-[250px] sm:w-[280px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[-2deg] shadow-[0_15px_40px_rgba(93,121,100,0.08)] flex-col justify-between pointer-events-none overflow-hidden rotate-[3deg] scale-95 sm:scale-100 origin-top-right z-0">
-              <div className="absolute top-[-50%] right-[-50%] w-48 h-48 bg-[#5D7964]/15 rounded-full blur-2xl opacity-60" />
+            <div className="hidden md:flex absolute right-[5%] top-[12%] w-[250px] sm:w-[280px] h-[190px] sm:h-[210px] border border-outline/15 bg-surface/35 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-2.5 group-hover:rotate-[-2deg] shadow-[0_15px_40px_rgba(var(--color-sage-rgb),0.08)] flex-col justify-between pointer-events-none overflow-hidden rotate-[3deg] scale-95 sm:scale-100 origin-top-right z-0">
+              <div className="absolute top-[-50%] right-[-50%] w-48 h-48 bg-sage/15 rounded-full blur-2xl opacity-60" />
               <div className="flex justify-between items-center border-b border-outline/10 pb-2.5 relative z-10">
-                <span className="text-[10px] font-mono text-[#5D7964] font-extrabold tracking-widest uppercase">BOTANICAL CORE</span>
-                <span className="text-[9px] font-mono text-on-surface-variant/80 flex items-center gap-1.5 bg-[#5D7964]/10 px-2.5 py-0.5 rounded-full text-[#5D7964]">
+                <span className="text-[10px] font-mono text-sage font-extrabold tracking-widest uppercase">BOTANICAL CORE</span>
+                <span className="text-[9px] font-mono text-on-surface-variant/80 flex items-center gap-1.5 bg-sage/10 px-2.5 py-0.5 rounded-full text-sage">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> SYNC ACTIVE
                 </span>
               </div>
@@ -294,14 +297,14 @@ export default function Home() {
                 </div>
                 {/* Custom Organic Progress Bar */}
                 <div className="w-full h-1.5 bg-outline/10 rounded-full overflow-hidden">
-                  <div className="w-[94%] h-full bg-gradient-to-r from-[#5D7964] to-emerald-400 rounded-full group-hover:animate-pulse" />
+                  <div className="w-[94%] h-full bg-gradient-to-r from-sage to-emerald-400 rounded-full group-hover:animate-pulse" />
                 </div>
                 <div className="flex items-center gap-2.5 text-[10px] font-medium text-on-surface-variant/85">
-                  <div className="flex items-center gap-1 bg-[#5D7964]/8 px-2 py-0.5 rounded-md border border-[#5D7964]/10">
+                  <div className="flex items-center gap-1 bg-sage/8 px-2 py-0.5 rounded-md border border-sage/10">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     <span>3 그루</span>
                   </div>
-                  <div className="flex items-center gap-1 bg-[#5D7964]/8 px-2 py-0.5 rounded-md border border-[#5D7964]/10">
+                  <div className="flex items-center gap-1 bg-sage/8 px-2 py-0.5 rounded-md border border-sage/10">
                     <span>습도 62%</span>
                   </div>
                 </div>
@@ -317,7 +320,7 @@ export default function Home() {
               {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute bg-[#5D7964]/15 rounded-full blur-[0.5px]"
+                  className="absolute bg-sage/15 rounded-full blur-[0.5px]"
                   style={{
                     width: `${(i + 1) * 4 + 4}px`,
                     height: `${(i + 1) * 4 + 4}px`,
@@ -344,12 +347,12 @@ export default function Home() {
             </div>
  
              <div className="flex flex-col h-full p-8 md:p-10 relative z-10 w-full justify-between">
-               <div className="w-16 h-16 bg-[#5D7964]/10 text-[#5D7964] rounded-2xl flex items-center justify-center border border-[#5D7964]/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner">
+               <div className="w-16 h-16 bg-sage/10 text-sage rounded-2xl flex items-center justify-center border border-sage/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner">
                  <Leaf className="w-8 h-8" />
                </div>
  
                <div className="mt-12 max-w-sm sm:max-w-md">
-                 <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-[#5D7964] transition-colors duration-300">
+                 <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-sage transition-colors duration-300">
                    디지털 정원
                  </h2>
                  <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
@@ -357,7 +360,7 @@ export default function Home() {
                    나의 감정과 사색의 습도로 흙 위에 자라나는 온전한 기억의 정원을 가꾸어보세요.
                  </p>
                  
-                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#5D7964] bg-[#5D7964]/10 w-fit px-6 py-3 rounded-full group-hover:bg-[#5D7964] group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(93,121,100,0)] group-hover:shadow-[0_8px_20px_rgba(93,121,100,0.25)]">
+                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-sage bg-sage/10 w-fit px-6 py-3 rounded-full group-hover:bg-sage group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-sage-rgb),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-sage-rgb),0.25)]">
                    정원 산책하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                  </div>
                </div>
@@ -520,18 +523,18 @@ export default function Home() {
           <BentoCard 
             to="/guestbook" 
             label="방명록으로 이동" 
-            className="md:col-span-4 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-[#7D91B4]/10 group overflow-hidden"
+            className="md:col-span-4 bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/65 transition-colors shadow-sm hover:shadow-2xl hover:shadow-sky-dust/10 group overflow-hidden"
           >
             {/* Immersive Deep Water Ripple and Dynamic Light Gradients */}
-            <div className="absolute inset-0 bg-gradient-to-tl from-[#7D91B4]/15 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="absolute -bottom-36 -right-36 w-[450px] h-[450px] bg-[#7D91B4]/15 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
+            <div className="absolute inset-0 bg-gradient-to-tl from-sky-dust/15 via-transparent to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute -bottom-36 -right-36 w-[450px] h-[450px] bg-sky-dust/15 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
 
             {/* Immersive Echoes / Footprints glassmorphic feed widget - Hidden on mobile for cleaner UX */}
-            <div className="hidden md:flex absolute right-[4%] top-[12%] w-[260px] h-[210px] border border-outline/15 bg-surface/40 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-3 group-hover:rotate-1 shadow-[0_15px_40px_rgba(125,145,180,0.12)] flex-col justify-between pointer-events-none overflow-hidden rotate-[-2deg] origin-top-right z-0">
-              <div className="absolute top-[-40%] left-[-20%] w-44 h-44 bg-[#7D91B4]/20 rounded-full blur-2xl opacity-60" />
+            <div className="hidden md:flex absolute right-[4%] top-[12%] w-[260px] h-[210px] border border-outline/15 bg-surface/40 backdrop-blur-2xl rounded-2xl p-5 opacity-40 group-hover:opacity-100 transition-all duration-700 group-hover:-translate-y-3 group-hover:rotate-1 shadow-[0_15px_40px_rgba(var(--color-sky-dust-rgb),0.12)] flex-col justify-between pointer-events-none overflow-hidden rotate-[-2deg] origin-top-right z-0">
+              <div className="absolute top-[-40%] left-[-20%] w-44 h-44 bg-sky-dust/20 rounded-full blur-2xl opacity-60" />
               <div className="flex justify-between items-center border-b border-outline/10 pb-2.5 relative z-10">
-                <span className="text-[10px] font-mono text-[#7D91B4] font-extrabold tracking-widest uppercase">ECHOES FEED</span>
-                <span className="text-[8px] font-mono text-on-surface-variant/90 bg-[#7D91B4]/15 px-2 py-0.5 rounded-full text-[#7D91B4] flex items-center gap-1.5 border border-[#7D91B4]/10">
+                <span className="text-[10px] font-mono text-sky-dust font-extrabold tracking-widest uppercase">ECHOES FEED</span>
+                <span className="text-[8px] font-mono text-on-surface-variant/90 bg-sky-dust/15 px-2 py-0.5 rounded-full text-sky-dust flex items-center gap-1.5 border border-sky-dust/10">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_5px_rgba(96,165,250,0.8)]" />
                   REALTIME
                 </span>
@@ -558,7 +561,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="text-[8px] font-mono text-[#7D91B4]/80 flex justify-between items-center border-t border-outline/10 pt-2.5 font-bold relative z-10">
+              <div className="text-[8px] font-mono text-sky-dust/80 flex justify-between items-center border-t border-outline/10 pt-2.5 font-bold relative z-10">
                 <span>TOTAL REVERBS: 1,342</span>
                 <span>SECURE SYNC: OK</span>
               </div>
@@ -569,7 +572,7 @@ export default function Home() {
               {[...Array(4)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute bg-[#7D91B4]/20 rounded-full blur-[0.5px]"
+                  className="absolute bg-sky-dust/20 rounded-full blur-[0.5px]"
                   style={{
                     width: `${(i + 1) * 4 + 4}px`,
                     height: `${(i + 1) * 4 + 4}px`,
@@ -596,19 +599,19 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col h-full p-8 md:p-10 relative z-10 w-full justify-between">
-              <div className="w-16 h-16 bg-[#7D91B4]/10 text-[#7D91B4] rounded-2xl flex items-center justify-center border border-[#7D91B4]/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner backdrop-blur-sm">
+              <div className="w-16 h-16 bg-sky-dust/10 text-sky-dust rounded-2xl flex items-center justify-center border border-sky-dust/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner backdrop-blur-sm">
                 <BookOpen className="w-8 h-8" />
               </div>
 
               <div className="mt-12 max-w-sm sm:max-w-md">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-[#7D91B4] transition-colors duration-300 drop-shadow-sm">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-sky-dust transition-colors duration-300 drop-shadow-sm">
                   방명록
                 </h2>
                 <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap text-shadow-sm">
                   수막을 넘어 흘러드는 또 다른 세계의 신호들.<br />
                   이곳을 스쳐 간 탐험가들의 사유를 마주하고, 당신만의 파동을 남겨보세요.
                 </p>
-                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-[#7D91B4] bg-[#7D91B4]/10 w-fit px-6 py-3 rounded-full group-hover:bg-[#7D91B4] group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(125,145,180,0)] group-hover:shadow-[0_8px_20px_rgba(125,145,180,0.25)]">
+                <div className="mt-8 flex items-center gap-2 text-sm font-bold text-sky-dust bg-sky-dust/10 w-fit px-6 py-3 rounded-full group-hover:bg-sky-dust group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-sky-dust-rgb),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-sky-dust-rgb),0.25)]">
                   나의 파동 남기기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>

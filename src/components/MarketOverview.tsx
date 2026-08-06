@@ -3,7 +3,7 @@ import { useUpbitTicker } from '../hooks/useUpbitTicker';
 import { CoinCard } from './CoinCard';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
-export const MarketOverview = () => {
+export const MarketOverview = React.memo(() => {
   const { prices, status } = useUpbitTicker();
   const codes = ['KRW-BTC', 'KRW-ETH', 'KRW-SOL', 'KRW-XRP', 'KRW-DOGE'];
 
@@ -38,4 +38,4 @@ export const MarketOverview = () => {
       </div>
     </div>
   );
-};
+});

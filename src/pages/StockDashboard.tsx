@@ -1,6 +1,8 @@
-import { useState, FormEvent, useEffect, useMemo, useRef } from "react";
+import { useState, FormEvent, useEffect, useMemo, useRef, useCallback, Suspense, lazy } from "react";
 import { useDebounce } from "../hooks/useDebounce";
+import { toast } from "../components/Toast";
 import { useAssetData } from "../hooks/useAssetData";
+import { useAssetFavorites } from "../hooks/useAssetFavorites";
 import { DashboardSkeleton } from "../components/dashboard/DashboardSkeleton";
 import { Helmet } from "react-helmet-async";
 import {
@@ -17,20 +19,9 @@ import {
   Star,
   Command,
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ComposedChart,
-  BarChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  Cell,
-} from "recharts";
+
+const AssetChart = lazy(() => import("../components/dashboard/AssetChart"));
+
 import { MarketOverview } from "../components/MarketOverview";
 import { PriceTicker } from "../components/PriceTicker";
 import { PriceProvider } from "../context/PriceContext";
@@ -44,88 +35,13 @@ import {
   LiveBadge,
 } from "../components/dashboard/SharedCards";
 
-// Upbit/Stock-Market style custom Candlestick rendering shape
-interface CandlestickProps {
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  payload?: {
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    isUp: boolean;
-  };
-}
-const CandlestickShape = (props: CandlestickProps) => {
-  const { x, y, width, height, payload } = props;
-  if (!payload) return null;
-  const { open, high, low, close, isUp } = payload;
 
-  // Upbit Palette: Bright Red (#E13030) for Bullish trend, Cool Indigo Blue (#1261C4) for Bearish trend
-  const strokeColor = isUp ? "#E13030" : "#1261C4";
-  const fillColor = isUp ? "#E13030" : "#1261C4";
-
-  const bodyDelta = Math.abs(open - close);
-  const pxPerPrice = bodyDelta > 0 ? height / bodyDelta : 1;
-
-  const maxOC = Math.max(open, close);
-  const minOC = Math.min(open, close);
-
-  // Position shadows relative to coordinate layout
-  const highY = y - (high - maxOC) * pxPerPrice;
-  const lowY = y + height + (minOC - low) * pxPerPrice;
-
-  const centerX = x + width / 2;
-
-  return (
-    <g>
-      {/* Candlestick shadow line */}
-      <line
-        x1={centerX}
-        y1={highY}
-        x2={centerX}
-        y2={lowY}
-        stroke={strokeColor}
-        strokeWidth={1.5}
-      />
-      {/* Candlestick body */}
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={Math.max(2, height)}
-        fill={fillColor}
-        stroke={strokeColor}
-        strokeWidth={1}
-      />
-    </g>
-  );
-};
 
 export default function StockDashboard() {
   const [activeCoinId, setActiveCoinId] = useState("samsung");
 
   // Watchlist (Favorites) state
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem("crypto_favorites_v1");
-      return saved ? JSON.parse(saved) : ["samsung", "hynix", "hyundai"];
-    } catch {
-      return ["samsung", "hynix", "hyundai"];
-    }
-  });
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => {
-      const updated = prev.includes(id)
-        ? prev.filter((f) => f !== id)
-        : [...prev, id];
-      localStorage.setItem("crypto_favorites_v1", JSON.stringify(updated));
-      return updated;
-    });
-  };
+  const { favorites, toggleFavorite } = useAssetFavorites("stock_favorites_v1");
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -479,7 +395,7 @@ export default function StockDashboard() {
     const highs = processedChartData.map((d) => d.high);
     const minLow = lows.length > 0 ? Math.min(...lows) : 0;
     const maxHigh = highs.length > 0 ? Math.max(...highs) : 100;
-    return [minLow * 0.997, maxHigh * 1.003];
+    return [minLow * 0.997, maxHigh * 1.003] as [number, number];
   }, [processedChartData]);
 
   // (Step 5) Algorithm Insights Analysis based on client-side properties
@@ -488,20 +404,20 @@ export default function StockDashboard() {
     if (rsiVal < 30)
       return {
         label: "강력 매수 (과매도)",
-        color: "text-[#E13030]",
-        bg: "bg-[#E13030]/10",
+        color: "text-kr-up",
+        bg: "bg-kr-up/10",
       };
     if (rsiVal > 70)
       return {
         label: "강력 매도 (과매수)",
-        color: "text-[#1261C4]",
-        bg: "bg-[#1261C4]/10",
+        color: "text-kr-down",
+        bg: "bg-kr-down/10",
       };
     if (coin.trendUp)
       return {
         label: "보유 (상승 흐름)",
-        color: "text-[#E13030]",
-        bg: "bg-[#E13030]/10",
+        color: "text-kr-up",
+        bg: "bg-kr-up/10",
       };
     return {
       label: "관망 (중립)",
@@ -511,7 +427,7 @@ export default function StockDashboard() {
   }, [cryptoData?.rsi, coin.trendUp]);
   const sentimentScoreVal = cryptoData?.sentimentScore || 68;
   const sentimentColorClass =
-    sentimentScoreVal >= 50 ? "text-[#E13030]" : "text-[#1261C4]";
+    sentimentScoreVal >= 50 ? "text-kr-up" : "text-kr-down";
 
   return (
     <PriceProvider>
@@ -532,7 +448,7 @@ export default function StockDashboard() {
             activeCoinId={activeCoinId}
             onSelectAsset={setActiveCoinId}
             favorites={favorites}
-            onToggleFavorite={toggleFavorite}
+            onToggleFavorite={(id) => toggleFavorite(id, favorites)}
             searchMappings={SEARCH_MAPPINGS}
             placeholder="주식 종목 검색 (예: 삼성전자, 테슬라)"
             coinData={coin}
@@ -559,14 +475,14 @@ export default function StockDashboard() {
               </p>
               <div className="flex items-baseline gap-2">
                 <h2
-                  className={`text-4xl font-display font-bold tracking-tight ${coin.volatility.includes("하락") ? "text-[#ba1a1a]" : "text-[#00C853]"}`}
+                  className={`text-4xl font-display font-bold tracking-tight ${coin.volatility.includes("하락") ? "text-kr-down" : "text-kr-up"}`}
                 >
                   {coin.volatility}
                 </h2>
               </div>
               <div className="mt-6 h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
                 <div
-                  className={`h-full ${coin.volatility.includes("하락") ? "bg-[#ba1a1a]" : "bg-[#00C853]"} rounded-full`}
+                  className={`h-full ${coin.volatility.includes("하락") ? "bg-kr-down" : "bg-kr-up"} rounded-full`}
                   style={{ width: cryptoData ? "50%" : coin.volPercent }}
                 ></div>
               </div>
@@ -617,7 +533,8 @@ export default function StockDashboard() {
                   </p>
                   <button
                     onClick={() => setRefreshCount((r) => r + 1)}
-                    className="px-6 py-2 bg-primary text-white rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
+                  aria-label="데이터 다시 불러오기"
+                  className="px-6 py-2 bg-primary text-white rounded-full font-bold text-sm hover:bg-primary/90 transition-colors"
                   >
                     다시 시도
                   </button>
@@ -670,6 +587,8 @@ export default function StockDashboard() {
                       <button
                         type="button"
                         onClick={() => setTimeframe("1H")}
+                        aria-pressed={timeframe === "1H"}
+                        aria-label="1시간 차트 보기"
                         className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                           timeframe === "1H"
                             ? "bg-primary text-white font-bold shadow-sm"
@@ -681,6 +600,8 @@ export default function StockDashboard() {
                       <button
                         type="button"
                         onClick={() => setTimeframe("1D")}
+                        aria-pressed={timeframe === "1D"}
+                        aria-label="1일 차트 보기"
                         className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                           timeframe === "1D"
                             ? "bg-primary text-white font-bold shadow-sm"
@@ -692,6 +613,8 @@ export default function StockDashboard() {
                       <button
                         type="button"
                         onClick={() => setTimeframe("1W")}
+                        aria-pressed={timeframe === "1W"}
+                        aria-label="1주 차트 보기"
                         className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                           timeframe === "1W"
                             ? "bg-primary text-white font-bold shadow-sm"
@@ -706,165 +629,14 @@ export default function StockDashboard() {
 
                 <div className="w-full h-[320px] md:h-[360px] relative mt-4">
                   {mounted && process.env.NODE_ENV !== "test" && (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart
+                    <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-on-surface-variant"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div></div>}>
+                      <AssetChart
                         data={processedChartData}
-                        margin={{ top: 15, right: 10, left: 10, bottom: 5 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          vertical={false}
-                          stroke="#E2E8F0"
-                        />
-                        <XAxis
-                          dataKey="time"
-                          stroke="#1E293B"
-                          fontSize={11}
-                          fontWeight={600}
-                          tickLine={false}
-                          axisLine={false}
-                          dy={10}
-                        />
-                        <YAxis
-                          yAxisId="price"
-                          domain={chartDomain}
-                          tickFormatter={(v) =>
-                            `₩${Math.round(v).toLocaleString()}`
-                          }
-                          stroke="#1E293B"
-                          fontSize={11}
-                          fontWeight={600}
-                          orientation="right"
-                          axisLine={false}
-                          tickLine={false}
-                          dx={5}
-                        />
-                        <YAxis
-                          yAxisId="volume"
-                          orientation="left"
-                          hide
-                          domain={[0, (dataMax: number) => dataMax * 5]}
-                        />
-                        <Tooltip
-                          content={({ active, payload }) => {
-                            if (active && payload && payload.length) {
-                              const data = payload[0].payload;
-                              const isUp = data.isUp;
-                              const formatPrice = (v: number) =>
-                                `₩${Math.round(v).toLocaleString()} 원`;
-                              const timeframeLabel =
-                                timeframe === "1H"
-                                  ? "시간봉"
-                                  : timeframe === "1D"
-                                    ? "일봉"
-                                    : "주봉";
-                              return (
-                                <div className="bg-[#151b2e]/98 text-white p-4 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md text-xs font-mono space-y-1.5 min-w-[210px]">
-                                  <div className="text-[11px] font-bold text-slate-400 border-b border-white/10 pb-1 mb-1.5 flex justify-between items-center">
-                                    <span>{data.time}</span>
-                                    <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-white/80">
-                                      업비트형 {timeframeLabel}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between gap-4">
-                                    <span className="text-slate-400">
-                                      시가 (Open)
-                                    </span>
-                                    <span className="font-bold text-slate-200">
-                                      {formatPrice(data.open)}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between gap-4">
-                                    <span className="text-slate-400">
-                                      고가 (High)
-                                    </span>
-                                    <span className="font-bold text-[#E13030]">
-                                      {formatPrice(data.high)}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between gap-4">
-                                    <span className="text-slate-400">
-                                      저가 (Low)
-                                    </span>
-                                    <span className="font-bold text-[#1261C4]">
-                                      {formatPrice(data.low)}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between gap-4 border-t border-white/10 pt-1.5 mt-1.5 flex-wrap">
-                                    <span className="text-slate-400 font-sans">
-                                      종가 (Close)
-                                    </span>
-                                    <span
-                                      className={`font-bold ${isUp ? "text-[#E13030]" : "text-[#1261C4]"}`}
-                                    >
-                                      {formatPrice(data.close)}{" "}
-                                      {isUp ? "▲ 상승" : "▼ 하락"}
-                                    </span>
-                                  </div>
-                                  {data.ma5 && (
-                                    <div className="flex justify-between gap-4 text-[10px] text-slate-300">
-                                      <span className="flex items-center gap-1 font-sans">
-                                        <span className="inline-block w-2 h-2 rounded-full bg-[#F59E0B]" />
-                                        5선 이평선
-                                      </span>
-                                      <span className="font-bold">
-                                        {formatPrice(data.ma5)}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {data.ma10 && (
-                                    <div className="flex justify-between gap-4 text-[10px] text-slate-300">
-                                      <span className="flex items-center gap-1 font-sans">
-                                        <span className="inline-block w-2 h-2 rounded-full bg-[#8B5CF6]" />
-                                        10선 이평선
-                                      </span>
-                                      <span className="font-bold">
-                                        {formatPrice(data.ma10)}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            }
-                            return null;
-                          }}
-                        />
-                        <Bar
-                          dataKey="bodyRange"
-                          yAxisId="price"
-                          shape={<CandlestickShape />}
-                        />
-                        <Bar
-                          dataKey="volume"
-                          yAxisId="volume"
-                          fill="#94A3B8"
-                          opacity={0.25}
-                          barSize={12}
-                        />
-                        {/* 5-Period Moving Average line */}
-                        <Line
-                          yAxisId="price"
-                          type="monotone"
-                          dataKey="ma5"
-                          stroke="#F59E0B"
-                          strokeWidth={1.5}
-                          dot={false}
-                          activeDot={{ r: 4 }}
-                          name="5선"
-                        />
-                        {/* 10-Period Moving Average line */}
-                        <Line
-                          yAxisId="price"
-                          type="monotone"
-                          dataKey="ma10"
-                          stroke="#8B5CF6"
-                          strokeWidth={1.5}
-                          dot={false}
-                          activeDot={{ r: 4 }}
-                          name="10선"
-                        />
-                      </ComposedChart>
-                    </ResponsiveContainer>
+                        domain={chartDomain}
+                        timeframe={timeframe}
+                        marketType="stock"
+                      />
+                    </Suspense>
                   )}
                   <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
                     <span className="text-7xl font-display font-black tracking-widest uppercase">

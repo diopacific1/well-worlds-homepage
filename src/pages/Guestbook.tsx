@@ -1,7 +1,7 @@
 
 import { toast } from "../components/Toast";
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, doc, deleteDoc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where, doc, deleteDoc, limit } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { Loader2, Send, Trash2 } from "lucide-react";
@@ -63,7 +63,8 @@ export default function Guestbook() {
     // 일반 방문자는 승인된 내역만 볼 수 있음
     const q = query(
       collection(db, "guestbook"), 
-      where("status", "==", "approved")
+      where("status", "==", "approved"),
+      limit(100)
     );
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
