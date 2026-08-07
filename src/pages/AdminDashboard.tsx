@@ -138,7 +138,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col gap-8 w-full animate-in fade-in duration-500 pb-12">
+<div className="max-w-6xl mx-auto flex flex-col gap-8 w-full animate-in fade-in duration-500 pb-12">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-outline/20 pb-8">
         <div>
           <h1 className="text-3xl font-display font-black tracking-tight text-on-surface flex items-center gap-3">
@@ -382,5 +382,6 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
     </div>
+    
   );
 }

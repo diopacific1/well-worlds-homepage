@@ -681,7 +681,7 @@ export default function Home() {
                         {item.link && (
                           <a 
                             href={item.link} 
-                            target="_blank" 
+                            target="_blank" rel="noopener noreferrer" 
                             rel="noopener noreferrer"
                             className="group/btn flex items-center gap-0 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition-all duration-300 shrink-0 overflow-hidden px-3 py-2 sm:px-2 sm:py-2 hover:px-4"
                             title="프로젝트 바로가기"

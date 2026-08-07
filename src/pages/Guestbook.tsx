@@ -138,8 +138,7 @@ export default function Guestbook() {
   };
 
   return (
-    
-      <div className="max-w-4xl mx-auto flex flex-col gap-12 w-full animate-in fade-in duration-700 pb-16 px-4">
+<div className="max-w-4xl mx-auto flex flex-col gap-12 w-full animate-in fade-in duration-700 pb-16 px-4">
       <header className="flex flex-col gap-4 text-center items-center pt-10 pb-4">
         <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-2">Guestbook</div>
         <h1 className="text-4xl md:text-5xl font-display font-black tracking-tight text-on-surface">방명록</h1>
@@ -296,6 +295,7 @@ export default function Guestbook() {
         )}
       </section>
     </div>
+    
     
   );
 }

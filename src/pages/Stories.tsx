@@ -184,7 +184,7 @@ const PostItem = ({
             
             if (hasFirst && hasSecond) {
               return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                   <div className="relative rounded-2xl overflow-hidden h-[300px] md:h-[400px] bg-surface-dim border border-outline/10 shadow-sm hover:shadow-md transition-shadow duration-500">
                     <ImageWithFallback src={post.image!} alt="첫 번째 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-cover" containerClassName="w-full h-full" />
                   </div>
@@ -879,8 +879,8 @@ export default function Stories() {
                   placeholder="당신의 이야기를 들려주세요... (마크다운 지원)"
                   className="w-full bg-transparent text-on-surface-variant font-sans text-base md:text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
                 />
-              </>
-            )}
+              
+            </>)}
 
             {showImageInput && (
               <motion.div 
@@ -928,8 +928,8 @@ export default function Stories() {
                           <>
                             <Upload className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
                             <span className="text-[11px] font-bold text-on-surface-variant group-hover:text-on-surface transition-colors text-center">컴퓨터/스마트폰 사진 선택 (1)</span>
-                          </>
-                        )}
+                          
+                        </>)}
                       </label>
 
                       {/* URL Input Slot 1 */}
@@ -984,8 +984,8 @@ export default function Stories() {
                           <>
                             <Upload className="w-5 h-5 text-on-surface-variant group-hover:text-primary transition-colors" />
                             <span className="text-[11px] font-bold text-on-surface-variant group-hover:text-on-surface transition-colors text-center">컴퓨터/스마트폰 사진 선택 (2)</span>
-                          </>
-                        )}
+                          
+                        </>)}
                       </label>
 
                       {/* URL Input Slot 2 */}
@@ -1282,5 +1282,6 @@ export default function Stories() {
         </div>
       </div>
     </div>
+    
   );
 }

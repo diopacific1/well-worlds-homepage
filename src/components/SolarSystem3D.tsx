@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { useRef, useMemo, useState, useEffect } from 'react';
 import { PLANETS, PlanetData } from '../data/planets';
 import { Play, Pause, FastForward, RotateCcw, Crosshair, Orbit, ChevronRight, Activity, X, Settings2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 // Camera tracking logic
 function CameraController({ targetPlanet, controlsRef }: { targetPlanet: PlanetData | null, controlsRef: any }) {

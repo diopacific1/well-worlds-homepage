@@ -757,7 +757,7 @@ export default function CryptoDashboard() {
                       insights.map((item, idx) => (
                         <a
                           href={item.link}
-                          target="_blank"
+                          target="_blank" rel="noopener noreferrer"
                           rel="noopener noreferrer"
                           key={idx}
                           className="block group p-4 rounded-xl border border-outline/10 bg-surface-container-lowest hover:bg-surface-dim hover:border-primary/30 transition-all shadow-sm"

@@ -427,8 +427,7 @@ export default function PlantJournal() {
   };
 
   return (
-    
-      <div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
+<div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
       {/* Hero Header */}
       <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto">
         <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-sage/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
@@ -979,6 +978,7 @@ export default function PlantJournal() {
         </AnimatePresence>
       </div>
     </div>
+    
     
   );
 }

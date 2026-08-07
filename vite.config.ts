@@ -12,6 +12,7 @@ export default defineConfig(() => {
       },
     },
     build: {
+      chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {
           manualChunks: {
@@ -20,6 +21,7 @@ export default defineConfig(() => {
             'vendor-recharts': ['recharts'],
             'vendor-motion': ['motion', 'motion/react'],
             'vendor-icons': ['lucide-react'],
+            'vendor-three': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
           }
         }
       }
