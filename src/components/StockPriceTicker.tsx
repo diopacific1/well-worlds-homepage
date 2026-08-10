@@ -25,15 +25,15 @@ export const StockPriceTicker = React.memo(() => {
     return stocks.map(stock => {
       const isUp = stock.changeRate > 0;
       const isDown = stock.changeRate < 0;
-      const colorClass = isUp ? 'text-kr-up' : isDown ? 'text-kr-down' : 'text-gray-500';
+      const colorClass = isUp ? 'text-[#E13030]' : isDown ? 'text-[#1261C4]' : 'text-gray-500';
       
       return (
         <div key={stock.code} className="flex items-center gap-3 text-sm font-mono mx-6 whitespace-nowrap">
           <span className="font-bold text-on-surface">{stock.name}</span>
           <span className={`${colorClass} font-semibold transition-colors duration-300`}>
-            {stock.price.toLocaleString()}원
+            ₩{stock.price.toLocaleString()}
           </span>
-          <span className={`${colorClass} text-xs px-1.5 py-0.5 rounded ${isUp ? 'bg-kr-up/10' : isDown ? 'bg-kr-down/10' : 'bg-gray-500/10'}`}>
+          <span className={`${colorClass} text-xs px-1.5 py-0.5 rounded ${isUp ? 'bg-[#E13030]/10' : isDown ? 'bg-[#1261C4]/10' : 'bg-gray-500/10'}`}>
             {isUp ? '▲' : isDown ? '▼' : '-'} {stock.changeRate.toFixed(2)}%
           </span>
         </div>

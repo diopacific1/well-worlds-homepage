@@ -26,7 +26,7 @@ export const useStockMarket = () => {
     };
 
     fetchMarketData();
-    intervalId = setInterval(fetchMarketData, 10000); // Poll every 10 seconds
+    intervalId = setInterval(fetchMarketData, 2000); // Poll every 10 seconds
 
     return () => clearInterval(intervalId);
   }, []);
