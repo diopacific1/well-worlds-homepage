@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 
 import ImageWithFallback from "../components/ImageWithFallback";
 import { toast } from "../components/Toast";
@@ -426,9 +427,12 @@ export default function PlantJournal() {
     return <Icon className="w-4 h-4" />;
   };
 
-  return (
-<div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
-      {/* Hero Header */}
+  return (<div className="animate-in fade-in duration-700 min-h-screen pb-24 overflow-x-hidden">
+      <Helmet>
+        <title>반려식물 관찰 일지 | 우물 그리고 세계들</title>
+        <meta name="description" content="베란다에서 자라는 식물들의 성장 기록을 사진과 함께 남기는 일지입니다." />
+      </Helmet>
+{/* Hero Header */}
       <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto">
         <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-sage/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 

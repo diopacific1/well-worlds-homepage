@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 
 import { toast } from "../components/Toast";
 import { useState, useEffect } from "react";
@@ -137,9 +138,12 @@ export default function Guestbook() {
     }
   };
 
-  return (
-<div className="max-w-4xl mx-auto flex flex-col gap-12 w-full animate-in fade-in duration-700 pb-16 px-4">
-      <header className="flex flex-col gap-4 text-center items-center pt-10 pb-4">
+  return (<div className="max-w-4xl mx-auto flex flex-col gap-12 w-full animate-in fade-in duration-700 pb-16 px-4">
+      <Helmet>
+        <title>방명록 | 우물 그리고 세계들</title>
+        <meta name="description" content="우물 그리고 세계들에 방문해주신 탐험가분들의 발자취를 남겨주세요." />
+      </Helmet>
+<header className="flex flex-col gap-4 text-center items-center pt-10 pb-4">
         <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-2">Guestbook</div>
         <h1 className="text-4xl md:text-5xl font-display font-black tracking-tight text-on-surface">방명록</h1>
         <p className="text-on-surface-variant font-medium text-sm md:text-base max-w-lg mt-2 leading-relaxed">

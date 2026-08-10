@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 
 
 
@@ -183,9 +184,7 @@ const PostItem = ({
             const hasSecond = !!post.image2;
             
             if (hasFirst && hasSecond) {
-              return (
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                  <div className="relative rounded-2xl overflow-hidden h-[300px] md:h-[400px] bg-surface-dim border border-outline/10 shadow-sm hover:shadow-md transition-shadow duration-500">
+              return (<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8"><div className="relative rounded-2xl overflow-hidden h-[300px] md:h-[400px] bg-surface-dim border border-outline/10 shadow-sm hover:shadow-md transition-shadow duration-500">
                     <ImageWithFallback src={post.image!} alt="첫 번째 이미지" loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-cover" containerClassName="w-full h-full" />
                   </div>
                   <div className="relative rounded-2xl overflow-hidden h-[300px] md:h-[400px] bg-surface-dim border border-outline/10 shadow-sm hover:shadow-md transition-shadow duration-500">
@@ -776,9 +775,11 @@ export default function Stories() {
       : feed.filter((post) => post.category === activeFilter);
   }, [feed, activeFilter]);
 
-  return (
-    
-      <div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
+  return (<div className="p-4 lg:py-10 max-w-4xl mx-auto min-h-screen">
+      <Helmet>
+        <title>이야기 기록실 | 우물 그리고 세계들</title>
+        <meta name="description" content="다양한 이야기와 소설, 설정 등을 기록하고 열람하는 공간입니다." />
+      </Helmet>
       {/* Cinematic Header */}
       <section className="relative px-6 pt-12 md:pt-20 pb-16 flex flex-col items-center text-center max-w-4xl mx-auto border-b border-outline/10 mb-10">
         <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />

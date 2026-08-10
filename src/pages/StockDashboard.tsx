@@ -22,10 +22,10 @@ import {
 
 const AssetChart = lazy(() => import("../components/dashboard/AssetChart"));
 
-import { MarketOverview } from "../components/MarketOverview";
-import { PriceTicker } from "../components/PriceTicker";
 import { PriceProvider } from "../context/PriceContext";
 import { AssetSearch } from "../components/dashboard/AssetSearch";
+import { StockMarketOverview } from "../components/StockMarketOverview";
+import { StockPriceTicker } from "../components/StockPriceTicker";
 import { FearAndGreed } from "../components/dashboard/FearAndGreed";
 import { MOCK_STOCKS, AssetInfo as CoinInfo } from "../data/mockData";
 import {
@@ -78,36 +78,36 @@ export default function StockDashboard() {
 
   // Portfolio tracking state with persistence in KRW
   const [userBalance, setUserBalance] = useState<number>(() => {
-    const saved = localStorage.getItem("crypto_balance_v1");
+    const saved = localStorage.getItem("stock_balance_v1");
     return saved ? parseFloat(saved) : 10000000;
   });
   const [userPositions, setUserPositions] = useState<Record<string, number>>(
     () => {
-      const saved = localStorage.getItem("crypto_positions_v1");
+      const saved = localStorage.getItem("stock_positions_v1");
       return saved ? JSON.parse(saved) : {};
     },
   );
 
   useEffect(() => {
-    localStorage.setItem("crypto_balance_v1", userBalance.toString());
-    localStorage.setItem("crypto_positions_v1", JSON.stringify(userPositions));
+    localStorage.setItem("stock_balance_v1", userBalance.toString());
+    localStorage.setItem("stock_positions_v1", JSON.stringify(userPositions));
   }, [userBalance, userPositions]);
 
   const [buyPrices, setBuyPrices] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem("crypto_buy_prices_v1");
+    const saved = localStorage.getItem("stock_buy_prices_v1");
     return saved ? JSON.parse(saved) : {};
   });
   const [quantities, setQuantities] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem("crypto_quantities_v1");
+    const saved = localStorage.getItem("stock_quantities_v1");
     return saved ? JSON.parse(saved) : {};
   });
 
   useEffect(() => {
-    localStorage.setItem("crypto_buy_prices_v1", JSON.stringify(buyPrices));
+    localStorage.setItem("stock_buy_prices_v1", JSON.stringify(buyPrices));
   }, [buyPrices]);
 
   useEffect(() => {
-    localStorage.setItem("crypto_quantities_v1", JSON.stringify(quantities));
+    localStorage.setItem("stock_quantities_v1", JSON.stringify(quantities));
   }, [quantities]);
 
   // Mount effect
@@ -169,6 +169,8 @@ export default function StockDashboard() {
     samsung: ["samsung", "삼성전자", "삼성", "005930"],
     hynix: ["hynix", "sk하이닉스", "하이닉스", "000660"],
     hyundai: ["hyundai", "현대차", "현대자동차", "현대", "005380"],
+    naver: ["naver", "네이버", "035420"],
+    kakao: ["kakao", "카카오", "035720"],
   };
 
   const coin = MOCK_STOCKS[activeCoinId] || {
@@ -177,19 +179,19 @@ export default function StockDashboard() {
     symbol: activeCoinId.substring(0, 4).toUpperCase(),
     symbolLength: "w-10 h-10",
     color: "from-slate-700 to-slate-900 border border-outline/30",
-    price: cryptoData?.price || "$0.00",
-    trend: cryptoData?.trend || "0.00%",
+    price: cryptoData?.price || "0원",
+    trend: cryptoData?.trend || "0%",
     trendUp: cryptoData?.trend ? !cryptoData.trend.includes("-") : true,
     volatility: "실시간 분석 자산",
-    volLow: cryptoData?.low24h || "-",
-    volHigh: cryptoData?.high24h || "-",
-    marketCap: cryptoData?.marketCap || "-",
+    volLow: cryptoData?.low24h || "0",
+    volHigh: cryptoData?.high24h || "0",
+    marketCap: cryptoData?.marketCap || "0",
     rank: "Live API",
     fdv: "실시간 연동국",
-    volume: cryptoData?.volume || "-",
+    volume: cryptoData?.volume || "0",
     volChange: "Live",
     english: activeCoinId.toUpperCase(),
-    targetPrice: cryptoData?.ma50 || "-",
+    targetPrice: cryptoData?.ma50 || "0",
     targetColor: "text-primary",
     volColor: "bg-primary",
     volPercent: "50%",
@@ -226,15 +228,15 @@ export default function StockDashboard() {
   const formatKRW = (val: string | number | undefined) => {
     if (val === undefined || val === "-") return "-";
     const num = parseKRW(val);
-    return `₩${Math.round(num).toLocaleString()}`;
+    return `${Math.round(num).toLocaleString()}원`;
   };
 
   const formatKRWMacro = (val: string | number | undefined) => {
     if (val === undefined || val === "-") return "-";
     const num = parseKRWWithUnit(val);
-    if (num >= 1e12) return `₩${(num / 1e12).toFixed(1)}조`;
-    if (num >= 1e8) return `₩${Math.round(num / 1e8).toLocaleString()}억`;
-    return `₩${num.toLocaleString()}`;
+    if (num >= 1e12) return `${(num / 1e12).toFixed(1)}조원`;
+    if (num >= 1e8) return `${Math.round(num / 1e8).toLocaleString()}억원`;
+    return `${num.toLocaleString()}원`;
   };
 
   const currentPriceKRW = parseKRW(cryptoData?.price || coin.price);
@@ -255,13 +257,13 @@ export default function StockDashboard() {
   const handleBuyPriceChange = (val: number) => {
     const updated = { ...buyPrices, [activeCoinId]: val };
     setBuyPrices(updated);
-    localStorage.setItem("stock_buy_prices_krw", JSON.stringify(updated));
+    localStorage.setItem("stock_buy_prices_v1", JSON.stringify(updated));
   };
 
   const handleQuantityChange = (val: number) => {
     const updated = { ...quantities, [activeCoinId]: val };
     setQuantities(updated);
-    localStorage.setItem("stock_quantities", JSON.stringify(updated));
+    localStorage.setItem("stock_quantities_v1", JSON.stringify(updated));
   };
 
   const totalInvested = currentBuyPrice * currentQuantity;
@@ -442,16 +444,19 @@ export default function StockDashboard() {
         />
       </Helmet>
       <main className="w-full flex flex-col pb-20">
-        <PriceTicker />
+        <StockPriceTicker />
+        
         <div className="p-4 lg:p-6 space-y-8 animate-in fade-in duration-700 max-w-[1280px] mx-auto w-full mt-4">
+          <StockMarketOverview onSelectAsset={setActiveCoinId} />
           <AssetSearch
             activeCoinId={activeCoinId}
             onSelectAsset={setActiveCoinId}
             favorites={favorites}
             onToggleFavorite={(id) => toggleFavorite(id, favorites)}
             searchMappings={SEARCH_MAPPINGS}
-            placeholder="주식 종목 검색 (예: 삼성전자, 테슬라)"
+            placeholder="주식 종목 검색 (예: 삼성전자, 현대차)"
             coinData={coin}
+            currencyLabel="KRW"
           />
 
           {/* Metrics Row */}
@@ -663,13 +668,13 @@ export default function StockDashboard() {
                 />
                 <IndicatorCard
                   title="MA (50)"
-                  value={formatKRW(cryptoData?.ma50 || "$2.82")}
+                  value={formatKRW(cryptoData?.ma50 || "72000")}
                   sub="단기 추세선"
                   color="cyber"
                 />
                 <IndicatorCard
                   title="MA (200)"
-                  value={formatKRW(cryptoData?.ma200 || "$2.15")}
+                  value={formatKRW(cryptoData?.ma200 || "68000")}
                   sub="장기 추세선"
                   color="cyber"
                 />
@@ -720,9 +725,7 @@ export default function StockDashboard() {
                     {insights.length > 0 ? (
                       insights.map((item, idx) => (
                         <a
-                          href={item.link}
-                          target="_blank" rel="noopener noreferrer"
-                          rel="noopener noreferrer"
+                          href={item.link} target="_blank" rel="noopener noreferrer"
                           key={idx}
                           className="block group p-4 rounded-xl border border-outline/10 bg-surface-container-lowest hover:bg-surface-dim hover:border-primary/30 transition-all shadow-sm"
                         >
@@ -854,7 +857,7 @@ export default function StockDashboard() {
                             단기 저항선 (24H High 기반)
                           </p>
                           <p className="text-xl font-mono bg-surface-dim px-3 py-1 rounded-lg font-bold text-on-surface">
-                            {formatKRW(cryptoData?.high24h || "$3.25")}
+                            {formatKRW(cryptoData?.high24h || "73200")}
                           </p>
                         </div>
                         <div className="flex justify-between items-center">

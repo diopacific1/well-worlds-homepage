@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { toast } from "../components/Toast";
 import { useState, useEffect } from "react";
 import { signOut } from "firebase/auth";
@@ -137,9 +138,12 @@ export default function AdminDashboard() {
     }
   };
 
-  return (
-<div className="max-w-6xl mx-auto flex flex-col gap-8 w-full animate-in fade-in duration-500 pb-12">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-outline/20 pb-8">
+  return (<div className="max-w-6xl mx-auto flex flex-col gap-8 w-full animate-in fade-in duration-500 pb-12">
+      <Helmet>
+        <title>관리자 대시보드 | 우물 그리고 세계들</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+<header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-outline/20 pb-8">
         <div>
           <h1 className="text-3xl font-display font-black tracking-tight text-on-surface flex items-center gap-3">
             <Settings className="text-primary w-8 h-8" />

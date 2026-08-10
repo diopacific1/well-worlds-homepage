@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
@@ -80,9 +81,12 @@ export default function AdminLogin() {
     }
   };
 
-  return (
-<div className="max-w-md mx-auto mt-10 p-8 bg-surface border border-outline/20 rounded-3xl shadow-lg animate-in fade-in slide-in-from-bottom-4">
-      <div className="flex flex-col items-center mb-6 gap-4">
+  return (<div className="max-w-md mx-auto mt-10 p-8 bg-surface border border-outline/20 rounded-3xl shadow-lg animate-in fade-in slide-in-from-bottom-4">
+      <Helmet>
+        <title>관리자 로그인 | 우물 그리고 세계들</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+<div className="flex flex-col items-center mb-6 gap-4">
         <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center">
           <ShieldAlert className="w-8 h-8" />
         </div>
@@ -100,7 +104,6 @@ export default function AdminLogin() {
               <a 
                 href={`https://console.firebase.google.com/project/${auth?.app?.options?.projectId || 'home-page-1-b923f'}/authentication/providers`}
                 target="_blank" rel="noopener noreferrer" 
-                rel="noreferrer"
                 className="block mt-4 p-3 bg-white/50 rounded-lg text-primary font-bold text-center underline"
               >
                 👉 Firebase 콘솔 바로가기 (본인 프로젝트일 경우)

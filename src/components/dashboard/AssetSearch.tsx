@@ -15,6 +15,7 @@ interface AssetSearchProps {
     image?: string;
     color: string;
   };
+  currencyLabel?: string;
 }
 
 export const AssetSearch = memo(function AssetSearch({
@@ -25,6 +26,7 @@ export const AssetSearch = memo(function AssetSearch({
   searchMappings,
   placeholder = "시장, 자산 검색...",
   coinData,
+  currencyLabel = "USD"
 }: AssetSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -122,7 +124,7 @@ export const AssetSearch = memo(function AssetSearch({
             <h1 className="font-display font-bold text-4xl md:text-5xl tracking-tight text-on-surface uppercase flex items-center gap-3">
               {coinData.name}{" "}
               <span className="text-primary font-mono text-xl md:text-2xl opacity-80 mt-1">
-                / USD
+                / {currencyLabel}
               </span>
             </h1>
           </div>

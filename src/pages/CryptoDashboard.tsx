@@ -22,10 +22,10 @@ import {
 
 const AssetChart = lazy(() => import("../components/dashboard/AssetChart"));
 
-import { MarketOverview } from "../components/MarketOverview";
 import { PriceTicker } from "../components/PriceTicker";
 import { PriceProvider } from "../context/PriceContext";
 import { AssetSearch } from "../components/dashboard/AssetSearch";
+import { MarketOverview } from "../components/MarketOverview";
 import { FearAndGreed } from "../components/dashboard/FearAndGreed";
 import { MOCK_COINS, AssetInfo as CoinInfo } from "../data/mockData";
 import {
@@ -480,6 +480,7 @@ export default function CryptoDashboard() {
       <main className="w-full flex flex-col pb-20">
         <PriceTicker />
         <div className="p-4 lg:p-6 space-y-8 animate-in fade-in duration-700 max-w-[1280px] mx-auto w-full mt-4">
+          <MarketOverview />
           <AssetSearch
             activeCoinId={activeCoinId}
             onSelectAsset={setActiveCoinId}
@@ -756,9 +757,7 @@ export default function CryptoDashboard() {
                     {insights.length > 0 ? (
                       insights.map((item, idx) => (
                         <a
-                          href={item.link}
-                          target="_blank" rel="noopener noreferrer"
-                          rel="noopener noreferrer"
+                          href={item.link} target="_blank" rel="noopener noreferrer"
                           key={idx}
                           className="block group p-4 rounded-xl border border-outline/10 bg-surface-container-lowest hover:bg-surface-dim hover:border-primary/30 transition-all shadow-sm"
                         >
