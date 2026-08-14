@@ -102,7 +102,7 @@ const PostItem = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="bg-surface p-8 md:p-12 group/card shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-500 border border-outline/10 rounded-[2rem] relative overflow-hidden"
+      className="bg-surface p-8 md:p-12 group/card shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-500 border border-outline/10 rounded-3xl relative overflow-hidden"
     >
       {/* Visual Flair */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none transition-all duration-700 group-hover/card:bg-primary/10 group-hover/card:scale-150" />
@@ -514,7 +514,7 @@ export default function Stories() {
         }
         toast.success(`이미지 ${slot}이(가) 로컬 데이터로 준비되었습니다!`);
       } catch (fallbackErr) {
-        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
+        toast.error("이미지 처리 실패: " + (fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)));
       } finally {
         setIsUploading(false);
       }
@@ -561,7 +561,7 @@ export default function Stories() {
         }
         toast.info("업로드가 지연되어 브라우저 로컬 이미지로 대체 준비했습니다.");
       } catch (fallbackErr) {
-        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
+        toast.error("이미지 처리 실패: " + (fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)));
       }
     } finally {
       setIsUploading(false);
@@ -694,7 +694,7 @@ export default function Stories() {
       localStorage.removeItem("story_draft_image2");
     } catch (err: Error | unknown) {
       console.error("Post writing error:", err);
-      toast.error("글 등록에 실패했습니다: " + (err instanceof Error ? (err as any).message : "알 수 없는 오류"));
+      toast.error("글 등록에 실패했습니다: " + (err instanceof Error ? (err instanceof Error ? err.message : String(err)) : "알 수 없는 오류"));
     } finally {
       setIsSaving(false);
     }
@@ -815,7 +815,7 @@ export default function Stories() {
 
       <div className="space-y-10">
         {isAdmin && (
-          <div className="bg-surface p-6 md:p-12 rounded-[2rem] shadow-sm hover:shadow-xl transition-shadow duration-500 relative overflow-hidden border border-outline/10">
+          <div className="bg-surface p-6 md:p-12 rounded-3xl shadow-sm hover:shadow-xl transition-shadow duration-500 relative overflow-hidden border border-outline/10">
             <div className="mb-8 flex gap-4 overflow-x-auto pb-2 hide-scrollbar items-center justify-between">
             <div className="flex gap-2">
               {CATEGORIES.slice(1).map((cat) => (
@@ -853,7 +853,7 @@ export default function Stories() {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="제목을 입력하세요"
-              className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-2xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-outline-variant transition-all duration-300"
+              className="w-full bg-transparent border-b-2 border-outline/20 text-on-surface font-display font-bold text-2xl md:text-4xl focus:outline-none focus:border-primary min-h-[50px] pb-3 placeholder:text-on-surface-variant/50 transition-all duration-300"
             />
             {isPreview ? (
               <div
@@ -863,7 +863,7 @@ export default function Stories() {
                 {newPost.trim() ? (
                   <Markdown>{newPost}</Markdown>
                 ) : (
-                  <span className="text-outline-variant italic font-medium">
+                  <span className="text-on-surface-variant/50 italic font-medium">
                     내용이 없습니다.
                   </span>
                 )}
@@ -878,7 +878,7 @@ export default function Stories() {
                   value={newPost}
                   onChange={(e) => setNewPost(e.target.value)}
                   placeholder="당신의 이야기를 들려주세요... (마크다운 지원)"
-                  className="w-full bg-transparent text-on-surface-variant font-sans text-base md:text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-outline-variant mt-4 font-medium"
+                  className="w-full bg-transparent text-on-surface-variant font-sans text-base md:text-lg leading-relaxed resize-none focus:outline-none min-h-[200px] placeholder:text-on-surface-variant/50 mt-4 font-medium"
                 />
               
             </>)}
@@ -1164,7 +1164,7 @@ export default function Stories() {
                   disabled={isSaving || isUploading || !newPost.trim() || !newTitle.trim()}
                   className={`px-8 py-4 rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 ease-out flex items-center justify-center gap-2 shadow-sm border w-full sm:w-auto ${
                     isSaving || isUploading || !newPost.trim() || !newTitle.trim()
-                      ? "bg-surface-dim text-outline-variant cursor-not-allowed border-outline/20"
+                      ? "bg-surface-dim text-on-surface-variant/50 cursor-not-allowed border-outline/20"
                       : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 border-outline/20 hover:border-blue-200 hover:shadow-md"
                   }`}
                 >
@@ -1216,7 +1216,7 @@ export default function Stories() {
                 className="space-y-10"
               >
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-surface rounded-[2rem] p-8 md:p-12 border border-outline/10 shadow-sm animate-pulse min-h-[300px] flex flex-col justify-between">
+                  <div key={i} className="bg-surface rounded-3xl p-8 md:p-12 border border-outline/10 shadow-sm animate-pulse min-h-[300px] flex flex-col justify-between">
                     <div>
                       <div className="w-24 h-8 bg-surface-variant/50 rounded-full mb-6" />
                       <div className="w-2/3 h-12 bg-surface-variant/50 rounded-lg mb-6" />
@@ -1237,10 +1237,10 @@ export default function Stories() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="py-32 flex flex-col items-center justify-center text-center relative bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm overflow-hidden"
+                role="status" aria-live="polite" className="py-32 flex flex-col items-center justify-center text-center relative bg-surface-container-lowest border border-outline/10 rounded-3xl shadow-sm overflow-hidden"
               >
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent -z-10" />
-                <div className="w-28 h-28 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[2rem] flex items-center justify-center mb-8 border border-primary/20 shadow-inner -rotate-3 hover:-rotate-6 transition-transform duration-500">
+                <div className="w-28 h-28 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl flex items-center justify-center mb-8 border border-primary/20 shadow-inner -rotate-3 hover:-rotate-6 transition-transform duration-500">
                   <BookOpen className="w-12 h-12 text-primary" />
                 </div>
                 <h3 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight">
@@ -1257,9 +1257,9 @@ export default function Stories() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
+                role="status" aria-live="polite" className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-3xl shadow-sm relative overflow-hidden"
               >
-                <BookOpen className="w-16 h-16 text-outline-variant mx-auto mb-4" />
+                <BookOpen className="w-16 h-16 text-on-surface-variant/50 mx-auto mb-4" />
                 <p className="text-on-surface font-display font-bold text-2xl tracking-tight mb-2">
                   해당 카테고리의 기록이 없습니다
                 </p>

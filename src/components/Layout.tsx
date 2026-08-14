@@ -42,7 +42,7 @@ export default function Layout() {
         if (!res.ok) throw new Error('API fetch failed');
         const data = await res.json();
         if (data.items && data.items.length > 0) {
-          setGlobalNews(data.items.map((item: any) => item.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"')));
+          setGlobalNews(data.items.map((item: { title: string }) => item.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"')));
         } else {
           throw new Error('No items');
         }

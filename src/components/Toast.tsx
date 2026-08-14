@@ -71,6 +71,7 @@ export function Toaster() {
               {t.message}
             </p>
             <button
+              aria-label="알림 닫기"
               onClick={() => removeToast(t.id)}
               className="shrink-0 p-1 rounded-full hover:bg-black/10 transition-colors opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-current"
             >

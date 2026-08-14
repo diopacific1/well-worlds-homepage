@@ -28,7 +28,8 @@ export default function AdminLogin() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       navigate("/admin/dashboard");
-    } catch (err: any) {
+    } catch (e: unknown) {
+      const err = e as { code?: string, message?: string };
       console.error(err);
       if (err.code === "auth/popup-closed-by-user") {
         setError("팝업 창이 닫혀서 로그인이 취소되었습니다.\n\n⚠️ 주의: 모바일 기기나 사내 보안망에서는 팝업 로그인이 차단될 수 있습니다. AI Studio 우측 상단의 '새 탭에서 열기' 아이콘을 눌러 새 창에서 시도하시거나, 하단의 이메일 로그인을 이용해주세요.");
@@ -63,7 +64,8 @@ export default function AdminLogin() {
         await signInWithEmailAndPassword(auth, targetEmail, password);
       }
       navigate("/admin/dashboard");
-    } catch (err: any) {
+    } catch (e: unknown) {
+      const err = e as { code?: string, message?: string };
       console.error(err);
       if (err.code === "auth/operation-not-allowed") {
         setError("이메일 로그인이 비활성화되어 있습니다.\n\n해결방법: Firebase 콘솔에 접속하여 Authentication > Sign-in method 메뉴에서 '이메일/비밀번호'를 사용 설정(활성화) 해주셔야 합니다.");
@@ -158,10 +160,11 @@ export default function AdminLogin() {
         ) : (
           <form onSubmit={handleEmailLogin} className="flex flex-col gap-4 mt-2">
             <div>
-              <label className="text-xs font-semibold text-on-surface-variant block mb-1">
+              <label htmlFor="email" className="text-xs font-semibold text-on-surface-variant block mb-1">
                 관리자 이메일
               </label>
               <input
+                id="email"
                 type="email"
                 placeholder="diopacific1@gmail.com"
                 value={email}
@@ -171,10 +174,11 @@ export default function AdminLogin() {
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-on-surface-variant block mb-1">
+              <label htmlFor="password" className="text-xs font-semibold text-on-surface-variant block mb-1">
                 {isSignUp ? "신규 가입할 비밀번호" : "비밀번호"}
               </label>
               <input
+                id="password"
                 type="password"
                 placeholder={isSignUp ? "최소 6자 이상 지정" : "비밀번호"}
                 value={password}

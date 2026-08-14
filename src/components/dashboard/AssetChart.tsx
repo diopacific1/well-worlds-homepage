@@ -15,7 +15,7 @@ interface CandlestickProps {
   y?: number;
   width?: number;
   height?: number;
-  payload?: any;
+  payload?: Record<string, any>;
 }
 
 const CandlestickShape = (props: CandlestickProps) => {
@@ -26,11 +26,11 @@ const CandlestickShape = (props: CandlestickProps) => {
   const strokeColor = isUp ? "var(--color-kr-up)" : "var(--color-kr-down)";
   const fillColor = isUp ? "var(--color-kr-up)" : "var(--color-kr-down)";
 
-  const bodyDelta = Math.abs(open - close);
+  const bodyDelta = Math.abs(Number(open) - Number(close));
   const pxPerPrice = bodyDelta > 0 ? height / bodyDelta : 1;
 
-  const maxOC = Math.max(open, close);
-  const minOC = Math.min(open, close);
+  const maxOC = Math.max(Number(open), Number(close));
+  const minOC = Math.min(Number(open), Number(close));
 
   const highY = y - (high - maxOC) * pxPerPrice;
   const lowY = y + height + (minOC - low) * pxPerPrice;
@@ -60,7 +60,7 @@ const CandlestickShape = (props: CandlestickProps) => {
 };
 
 interface AssetChartProps {
-  data: any[];
+  data: Array<Record<string, any>>;
   domain: [number, number];
   timeframe: string;
   marketType?: "crypto" | "stock";

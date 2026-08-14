@@ -138,7 +138,7 @@ export default function StockDashboard() {
             return `${Math.floor(diffHours / 24)}일 전`;
           };
 
-          const newInsights = data.items.map((item: any) => {
+          const newInsights = data.items.map((item: { title: string, link: string, pubDate?: string }) => {
             const title = item.title.replace(/<[^>]*>?/gm, "");
             const isBullish =
               title.includes("상승") ||
@@ -283,7 +283,7 @@ export default function StockDashboard() {
       return cryptoData.candles;
     }
     // Fallback candle generation directly in frontend using USD charts
-    let currentOpen = (baseData[0] as any) * 0.992;
+    let currentOpen = Number(baseData[0]) * 0.992;
     return (baseData as number[]).map((closeVal: number, i: number) => {
       const openVal = i === 0 ? currentOpen : (baseData as number[])[i - 1];
       const minOC = Math.min(openVal, closeVal);

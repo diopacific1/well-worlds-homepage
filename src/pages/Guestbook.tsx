@@ -48,9 +48,9 @@ export default function Guestbook() {
       if (!db) throw new Error("Firebase DB가 초기화되지 않았습니다.");
       await deleteDoc(doc(db, "guestbook", id));
       toast.success("지워졌습니다.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Delete guestbook entry error:", err);
-      toast.error(`삭제하는 동안 오류가 발생했습니다: ${(err as any).message}`);
+      toast.error(`삭제하는 동안 오류가 발생했습니다: ${(err instanceof Error ? err.message : String(err))}`);
     }
   };
 
@@ -130,9 +130,9 @@ export default function Guestbook() {
       setNickname("");
       setMessage("");
       toast.success("방명록이 등록되었습니다. 관리자 확인 후 반영됩니다.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setSubmitError(`방명록 등록 중 오류가 발생했습니다: ${err.message || '알 수 없는 오류'}`);
+      setSubmitError(`방명록 등록 중 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +153,7 @@ export default function Guestbook() {
       </header>
 
       {/* 방명록 작성 폼 */}
-      <section className="relative overflow-hidden rounded-[2rem] border border-outline/10 bg-surface/50 p-1">
+      <section className="relative overflow-hidden rounded-3xl border border-outline/10 bg-surface/50 p-1">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 opacity-50 pointer-events-none"></div>
         <div className="absolute inset-0 backdrop-blur-xl"></div>
         <div className="relative bg-surface/80 rounded-[1.75rem] p-6 md:p-8 shadow-inner border border-white/5">

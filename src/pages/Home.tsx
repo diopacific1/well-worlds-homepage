@@ -20,6 +20,8 @@ import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
 import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 import { Helmet } from "react-helmet-async";
+const ActivityChart = lazy(() => import('../components/ActivityChart').then(module => ({ default: module.ActivityChart })));
+
 
 import { Suspense, lazy } from "react";
 const SolarSystem3D = lazy(() => import("../components/SolarSystem3D"));
@@ -207,12 +209,12 @@ HeroSection.displayName = "HeroSection";
 const BentoCard = memo(({ to, label, className = "", children }: { to: string; label: string; className?: string; children: React.ReactNode }) => (
   <motion.article 
     variants={itemVariants} 
-    className={`group relative flex flex-col h-full rounded-[2rem] overflow-hidden content-visibility-auto will-change-transform ${className}`}
+    className={`group relative flex flex-col h-full rounded-3xl overflow-hidden content-visibility-auto will-change-transform ${className}`}
   >
     <Link
       to={to}
       aria-label={label}
-      className="absolute inset-0 z-20 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-[2rem]"
+      className="absolute inset-0 z-20 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background rounded-3xl"
     />
     {children}
   </motion.article>
@@ -352,12 +354,12 @@ export default function Home() {
                </div>
  
                <div className="mt-12 max-w-sm sm:max-w-md">
-                 <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-sage transition-colors duration-300">
+                 <h2 className="text-3xl md:text-4xl font-display font-extrabold text-on-surface mb-4 tracking-tight group-hover:text-sage transition-colors duration-300">
                    디지털 정원
                  </h2>
                  <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
-                   고요히 고개 들며 자라나는 반려 식물의 생명력. <br />
-                   나의 감정과 사색의 습도로 흙 위에 자라나는 온전한 기억의 정원을 가꾸어보세요.
+                   고요히 자라나는 반려 식물의 생명력.<br />
+                  자연이 가르쳐주는 기다림을 배웁니다.
                  </p>
                  
                  <div className="mt-8 flex items-center gap-2 text-sm font-bold text-sage bg-sage/10 w-fit px-6 py-3 rounded-full group-hover:bg-sage group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-sage-rgb),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-sage-rgb),0.25)]">
@@ -437,12 +439,12 @@ export default function Home() {
               </div>
 
               <div className="mt-12 max-w-sm sm:max-w-md">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-secondary transition-colors duration-300">
+                <h2 className="text-3xl md:text-4xl font-display font-extrabold text-on-surface mb-4 tracking-tight group-hover:text-secondary transition-colors duration-300">
                   나의 세계
                 </h2>
                 <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
-                  온전히 나 자신에게만 몰입하는 침묵의 시간.<br />
-                  내면의 잔잔한 고백과 소중한 가치들을 세상과 단절된 비밀 아카이브에 영원히 새겨보세요.
+                  온전히 나에게 몰입하는 침묵의 시간.<br />
+                  사유의 파편을 모아 궤도를 완성합니다.
                 </p>
                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-secondary bg-secondary/10 w-fit px-6 py-3 rounded-full group-hover:bg-secondary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-secondary),0)] group-hover:shadow-[0_8px_20px_rgba(200,80,180,0.25)]">
                   기록 시작하기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -469,13 +471,13 @@ export default function Home() {
                 <LineChart className="w-7 h-7" />
               </div>
               
-              <div className="mt-8 max-w-sm">
-                <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-3 tracking-tight group-hover:text-primary transition-colors duration-300">
-                  머니월드 <span className="text-lg opacity-70">| 가상자산</span>
+              <div className="mt-12 max-w-sm sm:max-w-md">
+                <h2 className="text-3xl md:text-4xl font-display font-extrabold text-on-surface mb-4 tracking-tight group-hover:text-primary transition-colors duration-300">
+                  머니월드 <span className="text-xl md:text-2xl opacity-70 font-bold">| 가상자산</span>
                 </h2>
-                <p className="text-sm sm:text-base text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
-                  실시간 가상자산의 파동 관측.<br />
-                  심연의 데이터를 탐색하세요.
+                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
+                  실시간 가상자산 파동의 관측.<br />
+                  심연의 데이터를 직관적으로 탐색합니다.
                 </p>
                 
                 <div className="mt-6 flex items-center gap-2 text-xs font-bold text-primary bg-primary/10 w-fit px-5 py-2.5 rounded-full group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-primary),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-primary),0.25)]">
@@ -503,13 +505,13 @@ export default function Home() {
                 <TrendingUp className="w-7 h-7" />
               </div>
               
-              <div className="mt-8 max-w-sm">
-                <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface mb-3 tracking-tight group-hover:text-emerald-500 transition-colors duration-300">
-                  머니월드 <span className="text-lg opacity-70">| 한국 주식</span>
+              <div className="mt-12 max-w-sm sm:max-w-md">
+                <h2 className="text-3xl md:text-4xl font-display font-extrabold text-on-surface mb-4 tracking-tight group-hover:text-emerald-500 transition-colors duration-300">
+                  머니월드 <span className="text-xl md:text-2xl opacity-70 font-bold">| 한국 주식</span>
                 </h2>
-                <p className="text-sm sm:text-base text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
-                  글로벌 기업의 가치 흐름.<br />
-                  자본의 동향을 파악하세요.
+                <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap">
+                  주요 기업들의 가치와 자본 흐름.<br />
+                  시장의 동향을 빠르게 파악합니다.
                 </p>
                 
                 <div className="mt-6 flex items-center gap-2 text-xs font-bold text-emerald-500 bg-emerald-500/10 w-fit px-5 py-2.5 rounded-full group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(16,185,129,0)] group-hover:shadow-[0_8px_20px_rgba(16,185,129,0.25)]">
@@ -604,12 +606,12 @@ export default function Home() {
               </div>
 
               <div className="mt-12 max-w-sm sm:max-w-md">
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-on-surface mb-4 tracking-tight group-hover:text-sky-dust transition-colors duration-300 drop-shadow-sm">
+                <h2 className="text-3xl md:text-4xl font-display font-extrabold text-on-surface mb-4 tracking-tight group-hover:text-sky-dust transition-colors duration-300 drop-shadow-sm">
                   방명록
                 </h2>
                 <p className="text-base sm:text-lg text-on-surface-variant/90 leading-relaxed font-medium break-words whitespace-pre-wrap text-shadow-sm">
-                  수막을 넘어 흘러드는 또 다른 세계의 신호들.<br />
-                  이곳을 스쳐 간 탐험가들의 사유를 마주하고, 당신만의 파동을 남겨보세요.
+                  수막을 넘어 흘러드는 타인의 신호들.<br />
+                  당신의 흔적을 이 고요한 우물에 남깁니다.
                 </p>
                 <div className="mt-8 flex items-center gap-2 text-sm font-bold text-sky-dust bg-sky-dust/10 w-fit px-6 py-3 rounded-full group-hover:bg-sky-dust group-hover:text-white transition-all duration-300 shadow-[0_0_0_rgba(var(--color-sky-dust-rgb),0)] group-hover:shadow-[0_8px_20px_rgba(var(--color-sky-dust-rgb),0.25)]">
                   나의 파동 남기기 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -618,6 +620,11 @@ export default function Home() {
             </div>
           </BentoCard>
         </motion.section>
+        
+        {/* Activity & Usage Trends Chart */}
+        <Suspense fallback={<div className="w-full h-[300px] bg-surface-dim/20 rounded-2xl animate-pulse" />}>
+          <ActivityChart />
+        </Suspense>
       </div>
 
       {/* Portfolio Section */}
@@ -646,7 +653,7 @@ export default function Home() {
               ? [...Array(3)].map((_, index) => (
                   <div
                     key={`skeleton-${index}`}
-                    className="p-6 md:p-8 rounded-[2rem] bg-surface-variant/30 animate-pulse border border-outline/5 relative flex flex-col justify-between min-h-[250px]"
+                    className="p-6 md:p-8 rounded-3xl bg-surface-variant/30 animate-pulse border border-outline/5 relative flex flex-col justify-between min-h-[250px]"
                   >
                     <div className="space-y-4">
                       <div className="h-8 bg-on-surface-variant/10 rounded-md w-1/2 mb-6"></div>
@@ -668,7 +675,7 @@ export default function Home() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="group p-6 md:p-8 rounded-[2rem] bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/80 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-2 transition-all duration-500 relative flex flex-col justify-between overflow-hidden"
+                    className="group p-6 md:p-8 rounded-3xl bg-surface/40 backdrop-blur-xl border border-outline/10 hover:bg-surface/80 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-2 transition-all duration-500 relative flex flex-col justify-between overflow-hidden"
                   >
                     {/* Ambient Glow on Hover */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />

@@ -44,6 +44,8 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { compressAndConvertImage } from "../utils/imageCompressor";
 import Markdown from "react-markdown";
+import { PlantCalendar } from '../components/PlantCalendar';
+
 
 export interface PlantJournalEntry {
   id: string;
@@ -229,7 +231,7 @@ export default function PlantJournal() {
         setFormParams({ ...formParams, image: base64Url });
         toast.success("이미지가 로컬 데이터로 준비되었습니다!");
       } catch (fallbackErr) {
-        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
+        toast.error("이미지 처리 실패: " + (fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)));
       } finally {
         setIsUploading(false);
       }
@@ -255,7 +257,7 @@ export default function PlantJournal() {
       const downloadURL = await getDownloadURL(snapshot.ref);
       setFormParams({ ...formParams, image: downloadURL });
       toast.success("이미지가 성공적으로 업로드되었습니다.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.warn(
         "Storage upload failed/timed out, falling back to local Base64. Error:",
         err,
@@ -273,7 +275,7 @@ export default function PlantJournal() {
         setFormParams({ ...formParams, image: base64Url });
         toast.info("파이어베이스 업로드 실패, 브라우저 로컬 데이터로 대체했습니다.");
       } catch (fallbackErr) {
-        toast.error("이미지 처리 실패: " + (fallbackErr as any).message);
+        toast.error("이미지 처리 실패: " + (fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr)));
       }
     } finally {
       setIsUploading(false);
@@ -381,7 +383,7 @@ export default function PlantJournal() {
       } else {
         setEntries(entries.filter((e) => e.id !== id));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error("삭제 실패!");
     }
@@ -485,6 +487,7 @@ export default function PlantJournal() {
             <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
             <input
               type="text"
+              aria-label="일지 내용 및 태그 검색"
               placeholder="일지 내용, 태그 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -519,7 +522,7 @@ export default function PlantJournal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-on-surface/40 backdrop-blur-md overflow-y-auto"
+            role="dialog" aria-modal="true" aria-labelledby="journal-modal-title" className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-on-surface/40 backdrop-blur-md overflow-y-auto"
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
@@ -555,7 +558,7 @@ export default function PlantJournal() {
                     {formParams.image ? (
                       <ImageWithFallback src={formParams.image} alt="커버 이미지 미리보기" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity" containerClassName="w-full h-full" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-outline-variant flex-col gap-3">
+                      <div className="w-full h-full flex items-center justify-center text-on-surface-variant/50 flex-col gap-3">
                         <ImageIcon className="w-10 h-10" />
                         <span className="text-sm font-semibold">
                           커버 이미지를 선택해주세요
@@ -782,7 +785,7 @@ export default function PlantJournal() {
                     isUploading ||
                     !formParams.title.trim() ||
                     !formParams.content.trim()
-                      ? "bg-surface-dim text-outline-variant cursor-not-allowed border-outline/20"
+                      ? "bg-surface-dim text-on-surface-variant/50 cursor-not-allowed border-outline/20"
                       : "bg-white text-on-surface hover:bg-blue-50 hover:text-blue-600 hover:scale-105 active:scale-95 border-outline/20 hover:border-blue-200 hover:shadow-md"
                   }`}
                 >
@@ -805,7 +808,13 @@ export default function PlantJournal() {
         )}
       </AnimatePresence>
 
-      {/* Feed Area */}
+      
+      {/* Calendar Area */}
+      <div className="max-w-5xl mx-auto px-4 lg:px-8 mb-12">
+        <PlantCalendar entries={entries} />
+      </div>
+
+{/* Feed Area */}
       <div className="max-w-5xl mx-auto px-4 lg:px-8 space-y-12 mt-8 relative">
         <AnimatePresence>
           {isLoadingEntries ? (
@@ -816,7 +825,7 @@ export default function PlantJournal() {
               className="space-y-12"
             >
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-surface rounded-[2rem] relative overflow-hidden border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm animate-pulse min-h-[400px]">
+                <div key={i} className="bg-surface rounded-3xl relative overflow-hidden border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm animate-pulse min-h-[400px]">
                   <div className={`w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between ${i % 2 === 0 ? "md:order-1" : "md:order-2"}`}>
                     <div>
                       <div className="w-24 h-8 bg-surface-variant/50 rounded-full mb-8" />
@@ -839,7 +848,7 @@ export default function PlantJournal() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="text-center py-32 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
+              className="text-center py-32 bg-surface-container-lowest border border-outline/10 rounded-3xl shadow-sm relative overflow-hidden"
             >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-sage/5 rounded-full blur-3xl pointer-events-none" />
               <Sprout className="w-20 h-20 text-sage/30 mx-auto mb-6 relative z-10 animate-bounce" />
@@ -857,9 +866,9 @@ export default function PlantJournal() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-[2rem] shadow-sm relative overflow-hidden"
+              className="text-center py-20 bg-surface-container-lowest border border-outline/10 rounded-3xl shadow-sm relative overflow-hidden"
             >
-              <Search className="w-16 h-16 text-outline-variant mx-auto mb-4" />
+              <Search className="w-16 h-16 text-on-surface-variant/50 mx-auto mb-4" />
               <p className="text-on-surface font-display font-bold text-2xl tracking-tight mb-2">
                 검색 결과가 없습니다
               </p>
@@ -879,7 +888,7 @@ export default function PlantJournal() {
                 viewport={{ once: true, margin: "-50px" }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 layout
-                className="bg-surface rounded-[2rem] relative overflow-hidden group border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm hover:shadow-2xl hover:shadow-sage/10 hover:-translate-y-1 transition-all duration-500"
+                className="bg-surface rounded-3xl relative overflow-hidden group border border-outline/10 flex flex-col md:flex-row gap-0 shadow-sm hover:shadow-2xl hover:shadow-sage/10 hover:-translate-y-1 transition-all duration-500"
               >
                 <div
                   className={`relative z-10 w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between order-2 ${isEven ? "md:order-1" : "md:order-2"}`}

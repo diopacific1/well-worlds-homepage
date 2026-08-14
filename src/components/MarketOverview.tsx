@@ -11,7 +11,7 @@ export const MarketOverview = React.memo(() => {
     <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl md:text-3xl font-display font-bold text-on-surface">실시간 마켓 동향</h2>
+          <h2 className="text-2xl md:text-3xl font-display font-extrabold text-on-surface tracking-tight">실시간 마켓 동향</h2>
           <p className="text-sm text-on-surface-variant mt-1">업비트(Upbit) 실시간 시세 (KRW 마켓)</p>
         </div>
         

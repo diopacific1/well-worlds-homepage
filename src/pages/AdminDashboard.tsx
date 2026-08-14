@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "motion/react";
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [adminData, setAdminData] = useState<{id: string, title?: string, link?: string, description?: string, techStack?: string}[]>([]);
-  const [pendingGuestbook, setPendingGuestbook] = useState<{id: string, nickname?: string, message?: string, createdAt?: any}[]>([]);
+  const [pendingGuestbook, setPendingGuestbook] = useState<{id: string, nickname?: string, message?: string, createdAt?: { toDate?: () => Date, toMillis?: () => number } | string | Date}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // 포트폴리오 폼 상태
@@ -38,9 +38,13 @@ export default function AdminDashboard() {
       const gSnap = await getDocs(gq);
       const entries = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       entries.sort((a, b) => {
-        const aTime = (a as any).createdAt?.toMillis ? (a as any).createdAt.toMillis() : (new Date((a as any).createdAt).getTime() || 0);
-        const bTime = (b as any).createdAt?.toMillis ? (b as any).createdAt.toMillis() : (new Date((b as any).createdAt).getTime() || 0);
-        return bTime - aTime;
+        const getMillis = (item: unknown) => {
+          const createdAt = (item as { createdAt?: any }).createdAt;
+          if (!createdAt) return 0;
+          if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
+          return new Date(createdAt).getTime() || 0;
+        };
+        return getMillis(b) - getMillis(a);
       });
       setPendingGuestbook(entries);
     } catch (err) {
@@ -49,10 +53,14 @@ export default function AdminDashboard() {
       try {
         const pq = query(collection(db, "portfolio"));
         const pSnap = await getDocs(pq);
-        setAdminData(pSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }) as any).sort((a: any, b: any) => {
-           const aTime = (a as any).createdAt?.toMillis ? (a as any).createdAt.toMillis() : 0;
-           const bTime = (b as any).createdAt?.toMillis ? (b as any).createdAt.toMillis() : 0;
-           return bTime - aTime;
+        setAdminData(pSnap.docs.map(doc => ({ id: doc.id, ...(doc.data() as object) })).sort((a, b) => {
+          const getMillis = (item: unknown) => {
+            const createdAt = (item as { createdAt?: any }).createdAt;
+            if (!createdAt) return 0;
+            if (typeof createdAt.toMillis === 'function') return createdAt.toMillis();
+            return new Date(createdAt).getTime() || 0;
+          };
+          return getMillis(b) - getMillis(a);
         }));
       } catch (e) {
         console.error("Fallback load failed:", e);
@@ -188,7 +196,7 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-start">
                     <span className="font-bold text-primary truncate pr-2">{entry.nickname}</span>
                     <span className="text-[10px] text-on-surface-variant">
-                      {entry.createdAt?.toDate ? entry.createdAt.toDate().toLocaleDateString() : (entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : '')}
+                      {(entry.createdAt as { toDate?: () => Date })?.toDate ? (entry.createdAt as { toDate: () => Date }).toDate().toLocaleDateString() : (entry.createdAt ? new Date(entry.createdAt as string | number | Date).toLocaleDateString() : "")}
                     </span>
                   </div>
                   <p className="text-sm text-on-surface font-medium whitespace-pre-wrap break-all flex-1 line-clamp-4">
@@ -298,7 +306,7 @@ export default function AdminDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            role="dialog" aria-modal="true" aria-labelledby="portfolio-modal-title" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
@@ -319,9 +327,10 @@ export default function AdminDashboard() {
             
             <form onSubmit={handleAddPortfolio} className="p-6 space-y-4 bg-surface">
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-on-surface-variant px-1">프로젝트명</label>
+                <label htmlFor="pf-title" className="text-sm font-semibold text-on-surface-variant px-1">프로젝트명</label>
                 <input 
                   required
+                  id="pf-title"
                   type="text" 
                   placeholder="프로젝트 이름"
                   value={portfolioForm.title}
@@ -331,7 +340,7 @@ export default function AdminDashboard() {
               </div>
               
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-on-surface-variant px-1">설명</label>
+                <label htmlFor="pf-desc" className="text-sm font-semibold text-on-surface-variant px-1">설명</label>
                 <textarea 
                   required
                   rows={3}
@@ -343,8 +352,9 @@ export default function AdminDashboard() {
               </div>
               
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-on-surface-variant px-1">링크 (선택)</label>
+                <label htmlFor="pf-link" className="text-sm font-semibold text-on-surface-variant px-1">링크 (선택)</label>
                 <input 
+                  id="pf-link"
                   type="url" 
                   placeholder="https://..."
                   value={portfolioForm.link}
@@ -354,9 +364,10 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-on-surface-variant px-1">기술 스택</label>
+                <label htmlFor="pf-tech" className="text-sm font-semibold text-on-surface-variant px-1">기술 스택</label>
                 <input 
                   type="text" 
+                  id="pf-tech"
                   placeholder="React, TypeScript, Firebase (쉼표로 구분)"
                   value={portfolioForm.techStack}
                   onChange={e => setPortfolioForm({...portfolioForm, techStack: e.target.value})}

@@ -69,10 +69,14 @@ export function useAssetData(activeCoinId: string, timeframe: "1H" | "1D" | "1W"
           setData(json);
           setLoading(false);
         }
-      } catch (err: any) {
-        if (err.name !== "AbortError" && isMounted) {
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== "AbortError" && isMounted) {
           console.error("API Error:", err.message);
           setError(err.message);
+          setData(null);
+          setLoading(false);
+        } else if (!(err instanceof Error) && isMounted) {
+          setError(String(err));
           setData(null);
           setLoading(false);
         }

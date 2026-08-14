@@ -257,6 +257,7 @@ export default function SolarSystem3D({ onPlanetClick, isBackground = false }: {
           {/* Controls Panel */}
           <div className="relative z-50 flex flex-col items-end pointer-events-auto">
             <button 
+              aria-label="설정 메뉴 토글"
               onClick={(e) => { e.stopPropagation(); setIsControlsOpen(!isControlsOpen); }}
               className="md:hidden bg-black/60 backdrop-blur-md border border-white/10 p-3 rounded-lg mb-2 text-cyan-400 flex items-center justify-center hover:bg-white/10 transition-colors"
             >
@@ -267,7 +268,7 @@ export default function SolarSystem3D({ onPlanetClick, isBackground = false }: {
                 <div className="flex items-center gap-1">
                   <Orbit className="w-3 h-3" /> 시뮬레이션 제어
                 </div>
-                <button onClick={() => setIsControlsOpen(false)} className="md:hidden text-gray-500 hover:text-white p-1">
+                <button aria-label="설정 메뉴 닫기" onClick={() => setIsControlsOpen(false)} className="md:hidden text-gray-500 hover:text-white p-1">
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -334,6 +335,7 @@ export default function SolarSystem3D({ onPlanetClick, isBackground = false }: {
                   <p className="text-xs text-cyan-400 tracking-widest">{selectedPlanet.en}</p>
                 </div>
                 <button 
+                  aria-label="행성 정보 닫기"
                   onClick={() => setSelectedPlanetId(null)}
                   className="text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors group"
                   title="선택 해제"
