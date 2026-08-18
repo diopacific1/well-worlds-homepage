@@ -74,6 +74,33 @@ export interface StoryPost {
 
 const MOCK_POSTS: StoryPost[] = [];
 
+const STORY_IMAGE_PRESETS = [
+  {
+    url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80",
+    label: "심연 & 성운",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80",
+    label: "황혼의 지평선",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1511497584788-87676104235f?w=1200&auto=format&fit=crop&q=80",
+    label: "비밀의 숲",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1200&auto=format&fit=crop&q=80",
+    label: "사유의 산맥",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
+    label: "디지털 우물",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1507842229452-7e9e80e1c668?w=1200&auto=format&fit=crop&q=80",
+    label: "기억의 서고",
+  },
+];
+
 const PostItem = ({
   post,
   handleEdit,
@@ -1014,6 +1041,38 @@ export default function Stories() {
                         </button>
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Curated Atmospheric Presets for Stories */}
+                <div className="mt-4 pt-4 border-t border-outline/10">
+                  <span className="block text-[11px] font-bold text-primary uppercase tracking-wider mb-2">
+                    추천 세계관 분위기 아트 (클릭 시 대표 이미지로 적용)
+                  </span>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {STORY_IMAGE_PRESETS.map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setNewImage(preset.url)}
+                        className={`relative h-16 rounded-xl overflow-hidden border transition-all duration-200 group ${
+                          newImage === preset.url
+                            ? "ring-2 ring-primary border-primary scale-95 shadow-md"
+                            : "border-outline/20 hover:border-primary/50 hover:scale-[1.03]"
+                        }`}
+                        title={preset.label}
+                      >
+                        <img
+                          src={preset.url}
+                          alt={preset.label}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/35 group-hover:bg-black/15 transition-colors" />
+                        <span className="absolute inset-x-1 bottom-1 text-[9px] text-white font-medium truncate drop-shadow text-center">
+                          {preset.label.split(" ")[0]}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </motion.div>

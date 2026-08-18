@@ -105,17 +105,20 @@ export const AssetSearch = memo(function AssetSearch({
       >
         <div className="flex items-center gap-4 shrink-0">
           {coinData.image ? (
-            <img
-              src={coinData.image}
-              alt={`${coinData.name} 로고`}
-              loading="lazy"
-              decoding="async"
-              fetchPriority="high"
-              className="w-12 h-12 rounded-full object-contain bg-surface p-1 border border-outline/20 shadow-sm content-visibility-auto"
-            />
+            <div className="relative group/logo">
+              <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-md opacity-0 group-hover/logo:opacity-100 transition-opacity" />
+              <img
+                src={coinData.image}
+                alt={`${coinData.name} 로고`}
+                loading="lazy"
+                decoding="async"
+                fetchPriority="high"
+                className="w-12 h-12 rounded-2xl object-contain bg-surface p-1.5 border border-outline/20 shadow-md content-visibility-auto relative z-10 ring-1 ring-inset ring-black/5 dark:ring-white/10"
+              />
+            </div>
           ) : (
             <div
-              className={`w-12 h-12 rounded-full bg-gradient-to-br ${coinData.color} flex items-center justify-center font-bold text-white shadow-sm text-sm p-1 uppercase`}
+              className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${coinData.color} flex items-center justify-center font-bold text-white shadow-md text-sm p-1 uppercase ring-1 ring-inset ring-white/20`}
             >
               {coinData.symbol.substring(0, 4)}
             </div>

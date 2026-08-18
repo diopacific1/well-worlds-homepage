@@ -62,10 +62,30 @@ export interface PlantJournalEntry {
 const INITIAL_ENTRIES: PlantJournalEntry[] = [];
 
 const PRESET_IMAGES = [
-  "https://images.unsplash.com/photo-1466692476877-396416fd8b22?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1416879598555-220b8fcc5a44?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1518731306385-d6d7ac5c15ab?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1453904300235-0f2f60b15b5d?w=800&auto=format&fit=crop",
+  {
+    url: "https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=1200&auto=format&fit=crop&q=80",
+    label: "몬스테라 & 열대 잎사귀",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=1200&auto=format&fit=crop&q=80",
+    label: "다육식물 & 햇살",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1200&auto=format&fit=crop&q=80",
+    label: "온실 가든 & 허브",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1512428813834-c702c7702b78?w=1200&auto=format&fit=crop&q=80",
+    label: "실내 화분 & 인테리어",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=1200&auto=format&fit=crop&q=80",
+    label: "싱그러운 새싹 & 이슬",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1545241047-6083a3684587?w=1200&auto=format&fit=crop&q=80",
+    label: "미니멀 세라믹 팟",
+  },
 ];
 
 const WEATHER_OPTIONS = [
@@ -302,7 +322,7 @@ export default function PlantJournal() {
       content: formParams.content,
       image:
         formParams.image ||
-        PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)],
+        PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)].url,
       tags: newTags,
       type: formParams.type,
       date: formParams.date,
@@ -391,7 +411,7 @@ export default function PlantJournal() {
 
   const handleImageRandomize = () => {
     const randomImg =
-      PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)];
+      PRESET_IMAGES[Math.floor(Math.random() * PRESET_IMAGES.length)].url;
     setFormParams({ ...formParams, image: randomImg });
   };
 
@@ -609,6 +629,38 @@ export default function PlantJournal() {
                       aria-label="커버 이미지 주소 입력"
                       className="w-full input-field text-xs font-medium"
                     />
+                  </div>
+
+                  {/* Curated Botanical Preset Gallery */}
+                  <div className="mt-4">
+                    <span className="block text-[10px] font-bold text-on-surface-variant/80 uppercase tracking-wider mb-2">
+                      추천 감성 식물 테마 (클릭하여 적용)
+                    </span>
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                      {PRESET_IMAGES.map((preset, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setFormParams({ ...formParams, image: preset.url })}
+                          className={`relative h-16 rounded-xl overflow-hidden border transition-all duration-200 group ${
+                            formParams.image === preset.url
+                              ? "ring-2 ring-sage border-sage scale-95 shadow-md"
+                              : "border-outline/20 hover:border-sage/50 hover:scale-[1.03]"
+                          }`}
+                          title={preset.label}
+                        >
+                          <img
+                            src={preset.url}
+                            alt={preset.label}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
+                          <span className="absolute inset-x-1 bottom-1 text-[9px] text-white font-medium truncate drop-shadow text-center">
+                            {preset.label.split(" ")[0]}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

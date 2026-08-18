@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, memo, useState } from "react";
+import { useEffect, useMemo, memo, useState, Suspense, lazy } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   LineChart,
@@ -20,10 +20,8 @@ import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
 import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
 import { Helmet } from "react-helmet-async";
+
 const ActivityChart = lazy(() => import('../components/ActivityChart').then(module => ({ default: module.ActivityChart })));
-
-
-import { Suspense, lazy } from "react";
 const SolarSystem3D = lazy(() => import("../components/SolarSystem3D"));
 
 const containerVariants: Variants = {
