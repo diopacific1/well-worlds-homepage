@@ -18,11 +18,11 @@ import {
 } from "lucide-react";
 import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
-import { motion, Variants, useScroll, useTransform, useMotionValue, useSpring } from "motion/react";
+import { motion, Variants } from "motion/react";
 import { Helmet } from "react-helmet-async";
 
 const ActivityChart = lazy(() => import('../components/ActivityChart').then(module => ({ default: module.ActivityChart })));
-const SolarSystem3D = lazy(() => import("../components/SolarSystem3D"));
+const CelestialWell3D = lazy(() => import("../components/CelestialWell3D"));
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -48,157 +48,64 @@ const itemVariants: Variants = {
 
 const HeroSection = memo(() => {
   const navigate = useNavigate();
-  const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
-  const y2 = useTransform(scrollY, [0, 500], [0, -150]);
 
-  const handlePlanetClick = (id: string) => {
+  const handleWorldSelect = (id: string) => {
     if (id === 'portfolio') navigate('/stories');
     if (id === 'crypto') navigate('/crypto');
     if (id === 'garden') navigate('/plants');
     if (id === 'guestbook') navigate('/guestbook');
   };
 
-  // Performance-optimized low-overhead mouse parallax using Framer Motion values
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Smooth springs for mouse parallax updates
-  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
-
-  // Map mouse coordinates to deep light parallax coordinate styles directly
-  const glow1X = useTransform(springX, (val) => val * -1.5);
-  const glow1Y = useTransform(springY, (val) => val * -1.5);
-
-  const glow2X = useTransform(springX, (val) => val * 1.5);
-  const glow2Y = useTransform(springY, (val) => val * 1.5);
-
-  const glow3X = useTransform(springX, (val) => val * 0.5);
-  const glow3Y = useTransform(springY, (val) => val * 0.5);
-
-  // Combine scroll offsets and mouse movements for perfectly smooth GPU-accelerated calculations
-  const glow1CombinedY = useTransform([y1, glow1Y], ([latestY1, latestGlowY]) => (latestY1 as number) + (latestGlowY as number));
-  const glow2CombinedY = useTransform([y2, glow2Y], ([latestY2, latestGlowY]) => (latestY2 as number) + (latestGlowY as number));
-
-  useEffect(() => {
-    let animationFrameId: number;
-    const handleMouseMove = (e: MouseEvent) => {
-      // requestAnimationFrame을 활용한 마우스 이벤트 최적화
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = requestAnimationFrame(() => {
-        mouseX.set((e.clientX / window.innerWidth - 0.5) * 30);
-        mouseY.set((e.clientY / window.innerHeight - 0.5) * 30);
-      });
-    };
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [mouseX, mouseY]);
-
-  // Generate stable particle arrays using useMemo
-  const particles = useMemo(() => 
-    Array.from({ length: 20 }).map(() => ({
-      width: Math.random() * 6 + 2,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      duration: Math.random() * 10 + 10,
-      delay: Math.random() * 10,
-    })), 
-  []);
+  const scrollToContent = () => {
+    const el = document.getElementById('bento-grid-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
-    <>
-      <header className="relative pt-4 md:pt-8 pb-32 flex flex-col items-center justify-start text-center min-h-[80vh] pointer-events-none w-full overflow-hidden">
-        {/* Background for SolarSystem3D confined to HeroSection */}
-        <div className="absolute inset-0 w-full h-full -z-10 pointer-events-auto">
-          <Suspense fallback={<div className="w-full h-full min-h-[400px] flex items-center justify-center text-on-surface-variant"><div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div></div>}>
-            <SolarSystem3D onPlanetClick={handlePlanetClick} isBackground={true} />
-          </Suspense>
-          <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
-        </div>
-      
-      {/* Abstract Background Deep World Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-transparent" />
-        
-        {/* Floating Particles simulating deep well / underwater space in subtle sine motion */}
-        {particles.map((p, i) => (
-          <motion.div
-            key={i}
-            className="absolute bg-primary/25 rounded-full blur-[0.5px] will-change-transform"
-            style={{
-              width: p.width,
-              height: p.width,
-              left: `${p.left}%`,
-              top: `${p.top}%`,
-            }}
-            animate={{
-              y: [0, -180],
-              x: [0, Math.sin(i) * 15, 0],
-              opacity: [0, 0.7, 0],
-              scale: [0.7, 1.3, 0.7]
-            }}
-            transition={{
-              duration: p.duration + 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: p.delay,
-            }}
-          />
-        ))}
-
-        {/* Deep well ambient lights with Mouse Parallax - Expanded with higher saturation & premium blur dynamics */}
-        <motion.div 
-          style={{ x: glow1X, y: glow1CombinedY }}
-          className="absolute top-[8%] left-[12%] w-[450px] md:w-[700px] h-[450px] md:h-[700px] bg-primary/25 rounded-full blur-[130px] md:blur-[180px] mix-blend-screen animate-glow-pulse will-change-transform" 
-        />
-        <motion.div 
-          style={{ x: glow2X, y: glow2CombinedY }}
-          className="absolute bottom-[15%] right-[8%] w-[350px] md:w-[600px] h-[350px] md:h-[600px] bg-secondary/20 rounded-full blur-[130px] md:blur-[170px] mix-blend-screen animate-glow-pulse [animation-delay:3.5s] will-change-transform" 
-        />
-        <motion.div 
-          style={{ x: glow3X, y: glow3Y }}
-          className="absolute top-[35%] left-[50%] -translate-x-1/2 w-[550px] h-[450px] bg-sky-400/15 rounded-full blur-[130px] md:blur-[180px] mix-blend-screen animate-glow-pulse [animation-delay:1.8s] will-change-transform" 
-        />
-        
-        {/* Subtle top glow simulating surface light reflecting down the well */}
-        <div className="absolute top-0 inset-x-0 h-[350px] bg-gradient-to-b from-primary/10 to-transparent blur-[90px]" />
+    <header className="relative w-full h-[90vh] min-h-[640px] max-h-[960px] flex flex-col justify-between overflow-hidden bg-[#020308]">
+      {/* Flagship Three.js Celestial Orrery 3D Scene */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <Suspense
+          fallback={
+            <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center bg-[#020308] text-white">
+              <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin mb-3" />
+              <span className="text-xs font-mono text-cyan-300/80 tracking-widest">
+                천체 3D 오르러리 동기화 중...
+              </span>
+            </div>
+          }
+        >
+          <CelestialWell3D onWorldSelect={handleWorldSelect} />
+        </Suspense>
       </div>
 
-      <div
-        className="relative z-50 w-full max-w-5xl mx-auto space-y-12 flex flex-col items-center px-6 pointer-events-none"
-      >
-        <div className="space-y-12 flex flex-col items-center justify-center relative w-full pointer-events-none">
-          
-          {/* SolarSystem3D is now rendered outside this flow as a fixed full-screen background */}
-          
-          <div className="flex flex-col items-center gap-8 relative z-20 mt-8">
-
-            {/* Typography */}
-            <motion.div
-               initial={{ opacity: 0, y: 30 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-               className="text-center pointer-events-none"
-            >
-               <div className="inline-block relative pointer-events-auto px-10 py-6">
-                 {/* Subtle ambient glow behind text to separate it from stars without a hard box */}
-                 <div className="absolute inset-0 bg-cyan-900/20 blur-[50px] rounded-full" />
-                 <h1 className={`relative z-10 text-5xl md:text-7xl font-extrabold tracking-tighter !text-white transition-all duration-700 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] [text-shadow:_0_4px_30px_rgba(0,0,0,0.8)]`}>
-                   우물 그리고 세계들
-                 </h1>
-               </div>
-            </motion.div>
-          </div>
-        </div>
-
+      {/* Top Floating Cinematic Brand & Typography Overlay (Minimalist) */}
+      <div className="relative z-20 pointer-events-none pt-8 md:pt-14 px-4 flex flex-col items-center text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col items-center max-w-2xl"
+        >
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tighter text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
+            우물 그리고 세계들
+          </h1>
+        </motion.div>
       </div>
 
+      {/* Subtle Scroll Down Prompt at Bottom Edge */}
+      <div className="relative z-20 pointer-events-none pb-2 flex flex-col items-center">
+        <button
+          onClick={scrollToContent}
+          className="pointer-events-auto flex items-center gap-1.5 text-[11px] font-mono text-gray-400 hover:text-white transition-colors py-1 px-3 rounded-full hover:bg-white/10"
+        >
+          <span>아래로 스크롤하여 둘러보기</span>
+          <ChevronDown className="w-3.5 h-3.5 animate-bounce" />
+        </button>
+      </div>
     </header>
-    </>
   );
 });
 
@@ -262,7 +169,7 @@ export default function Home() {
       <HeroSection />
 
       {/* Bento Grid Layer */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div id="bento-grid-section" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.section 
           variants={containerVariants}
           initial="hidden"

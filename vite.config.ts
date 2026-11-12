@@ -9,7 +9,21 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        'react': path.resolve(__dirname, 'node_modules/react'),
+        'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
       },
+      dedupe: ['react', 'react-dom'],
+    },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'react-router-dom',
+        'react-helmet-async',
+        'motion/react',
+      ],
     },
     build: {
       chunkSizeWarningLimit: 1500,
@@ -21,7 +35,7 @@ export default defineConfig(() => {
             'vendor-recharts': ['recharts'],
             'vendor-motion': ['motion', 'motion/react'],
             'vendor-icons': ['lucide-react'],
-            'vendor-three': ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing'],
+            'vendor-three': ['three'],
           }
         }
       }

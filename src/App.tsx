@@ -55,6 +55,7 @@ export default function App() {
               <Guestbook />
             </Suspense>
           } />
+          <Route path="apple-analysis" element={<Navigate to="/" replace />} />
           
           <Route path="admin" element={<Navigate to="/admin/dashboard" replace />} />
           
